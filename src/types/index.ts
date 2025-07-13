@@ -1,4 +1,4 @@
-import type { AnalyzeVideoVeracityOutput } from "@/ai/flows/analyze-video-veracity";
+import type { AnalyzeIntelVeracityOutput } from "@/ai/flows/analyze-intel-veracity";
 
 export interface Politician {
   id: string;
@@ -35,9 +35,15 @@ export interface CrowdIntel {
   id: string;
   politician: Politician;
   description: string;
-  videoUrl: string; // For display
-  videoDataUri: string; // For AI analysis
+  file: {
+    url: string; // For display
+    type: string;
+    name: string;
+  };
+  dataUri: string; // For AI analysis
   verifications: number;
   isVerified: boolean;
-  aiAnalysis: AnalyzeVideoVeracityOutput | 'loading' | null;
+  aiAnalysis: AnalyzeIntelVeracityOutput | 'loading' | null;
+  blockchainTransactionId: string;
+  storageHash: string;
 }
