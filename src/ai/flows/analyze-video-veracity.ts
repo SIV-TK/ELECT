@@ -12,7 +12,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const AnalyzeVideoVeracityInputSchema = z.object({
+const AnalyzeVideoVeracityInputSchema = z.object({
   videoDataUri: z
     .string()
     .describe(
@@ -23,7 +23,7 @@ export const AnalyzeVideoVeracityInputSchema = z.object({
 });
 export type AnalyzeVideoVeracityInput = z.infer<typeof AnalyzeVideoVeracityInputSchema>;
 
-export const AnalyzeVideoVeracityOutputSchema = z.object({
+const AnalyzeVideoVeracityOutputSchema = z.object({
   isAuthentic: z.boolean().describe("A boolean indicating if the video is likely authentic and not AI-generated or manipulated."),
   analysisSummary: z.string().describe("A detailed summary of the analysis, including reasons for the authenticity conclusion."),
   keyMoments: z.array(z.string()).describe("A list of key moments or objects identified in the video that support the analysis."),

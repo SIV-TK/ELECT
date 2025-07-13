@@ -1,4 +1,4 @@
-import type { AnalyzeVideoVeracityOutput } from "./ai/flows/analyze-video-veracity";
+import type { AnalyzeVideoVeracityOutput } from "@/ai/flows/analyze-video-veracity";
 
 export interface Politician {
   id: string;
