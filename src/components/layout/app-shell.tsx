@@ -33,10 +33,22 @@ const navItems = [
   { href: "/campaign-advice", icon: Lightbulb, label: "Campaign Advice" },
   { href: "/crowd-sourced-intel", icon: UsersRound, label: "Crowd Sourced Intel" },
   { href: "/verification-gallery", icon: GalleryVertical, label: "Verification Gallery" },
+  { href: "/live-tally", icon: Landmark, label: "Live Tally" },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+
+  const getPageTitle = () => {
+    // Exact match first
+    const exactMatch = navItems.find(item => item.href === pathname);
+    if (exactMatch) return exactMatch.label;
+    // Then check for partial match for nested pages
+    const partialMatch = navItems.find(item => item.href !== '/' && pathname.startsWith(item.href));
+    if (partialMatch) return partialMatch.label;
+    // Default fallback
+    return "Sauti Ya Watu";
+  }
 
   return (
     <SidebarProvider>
@@ -53,7 +65,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <SidebarMenuItem key={item.href}>
                 <Link href={item.href}>
                   <SidebarMenuButton
-                    isActive={pathname === item.href}
+                    isActive={pathname.startsWith(item.href) && (item.href !== '/' || pathname === '/')}
                     tooltip={item.label}
                   >
                     <item.icon />
@@ -70,7 +82,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
            <SidebarTrigger className="md:hidden" />
            <div className="flex-1">
              <h1 className="text-xl font-semibold font-headline">
-               {navItems.find(item => pathname.startsWith(item.href) && item.href !== '/')?.label || navItems.find(item => pathname === item.href)?.label || "Sauti Ya Watu"}
+               {getPageTitle()}
              </h1>
            </div>
         </header>

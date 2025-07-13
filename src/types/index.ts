@@ -47,3 +47,12 @@ export interface CrowdIntel {
   blockchainTransactionId: string;
   storageHash: string;
 }
+
+export interface LiveTally {
+  id: string;
+  officerId: string;
+  pollingStation: string;
+  voteDistribution: { id: string; votes: number }[];
+  timestamp: Date;
+  verifications: number;
+}
