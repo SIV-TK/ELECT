@@ -7,3 +7,4 @@ import '@/ai/flows/analyze-candidate-sentiment.ts';
 import '@/ai/flows/predict-vote-distribution.ts';
 import '@/ai/flows/summarize-politician.ts';
 import '@/ai/flows/analyze-intel-veracity.ts';
+import '@/ai/flows/analyze-tally-anomaly.ts';

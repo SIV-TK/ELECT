@@ -1,4 +1,5 @@
 import type { AnalyzeIntelVeracityOutput } from "@/ai/flows/analyze-intel-veracity";
+import type { TallyAnomalyOutput } from "@/ai/flows/analyze-tally-anomaly";
 
 export interface Politician {
   id: string;
@@ -52,7 +53,13 @@ export interface LiveTally {
   id: string;
   officerId: string;
   pollingStation: string;
+  registeredVoters: number;
   voteDistribution: { id: string; votes: number }[];
   timestamp: Date;
   verifications: number;
 }
+
+export type TallyAnalysisState = {
+  status: 'loading' | 'complete' | 'error';
+  result?: TallyAnomalyOutput;
+};
