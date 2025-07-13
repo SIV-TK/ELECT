@@ -16,8 +16,14 @@ export interface Politician {
     courtCases: string[];
     hasAdverseFindings: boolean;
   };
+  academicLife: {
+    primarySchool: string;
+    highSchool: string;
+    university: string;
+    notableAchievements: string[];
+  };
 }
 
-export interface Candidate extends Omit<Politician, 'trackRecord' | 'legalOversight'> {
+export interface Candidate extends Omit<Politician, 'trackRecord' | 'legalOversight' | 'academicLife'> {
   votes: number;
 }

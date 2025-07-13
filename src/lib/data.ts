@@ -17,6 +17,12 @@ export const politicians: Politician[] = [
       courtCases: ['Presidential election petition (2013, 2017, 2022)'],
       hasAdverseFindings: false,
     },
+    academicLife: {
+      primarySchool: 'Maranda Primary School',
+      highSchool: 'Maranda High School',
+      university: 'Technical University of Magdeburg (Germany)',
+      notableAchievements: ['Degree in Mechanical Engineering'],
+    }
   },
   {
     id: 'william-ruto',
@@ -34,6 +40,12 @@ export const politicians: Politician[] = [
       courtCases: ['ICC case (charges dropped)', 'Land acquisition disputes (media reports)'],
       hasAdverseFindings: true,
     },
+    academicLife: {
+        primarySchool: 'Kamagut Primary School',
+        highSchool: 'Wareng Secondary School',
+        university: 'University of Nairobi (PhD in Plant Ecology)',
+        notableAchievements: ['Published several scientific papers'],
+    }
   },
     {
     id: 'sakaja-johnson',
@@ -52,6 +64,12 @@ export const politicians: Politician[] = [
       courtCases: ['Degree certificate validity case'],
       hasAdverseFindings: true,
     },
+    academicLife: {
+        primarySchool: 'Aga Khan Primary School',
+        highSchool: 'Lenana School',
+        university: 'Team University (Uganda)',
+        notableAchievements: ['Student leader at University of Nairobi (unconfirmed)'],
+    }
   },
 ];
 
