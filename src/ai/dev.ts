@@ -8,3 +8,4 @@ import '@/ai/flows/predict-vote-distribution.ts';
 import '@/ai/flows/summarize-politician.ts';
 import '@/ai/flows/analyze-intel-veracity.ts';
 import '@/ai/flows/analyze-tally-anomaly.ts';
+import '@/ai/flows/summarize-form-34a.ts';

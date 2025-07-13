@@ -6,10 +6,11 @@ import Image from "next/image";
 import { presidentialCandidates } from "@/lib/data";
 import type { Candidate, LiveTally, TallyAnalysisState } from "@/types";
 import { analyzeTallyAnomaly } from "@/ai/flows/analyze-tally-anomaly";
+import { summarizeForm34a } from "@/ai/flows/summarize-form-34a";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Landmark, Check, User, MapPin, Hash, BarChart, PieChart, Microscope, Loader2, ShieldCheck, ShieldAlert, FileText } from "lucide-react";
+import { Landmark, Check, User, MapPin, Hash, BarChart, PieChart, Microscope, Loader2, ShieldCheck, ShieldAlert, FileText, Bot } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ChartContainer,
@@ -31,6 +32,83 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+
+// A mock function to get a data URI for the placeholder image
+const getForm34aPlaceholderUri = async (): Promise<string> => {
+  const response = await fetch("https://placehold.co/600x800.png");
+  const blob = await response.blob();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+};
+
+
+const Form34AViewer = ({ tally }: { tally: LiveTally }) => {
+  const [isSummarizing, setIsSummarizing] = useState(false);
+  const [summary, setSummary] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const handleSummarize = async () => {
+    setIsSummarizing(true);
+    setSummary(null);
+    try {
+      // In a real app, you would use the actual form image data URI
+      const formImageUri = await getForm34aPlaceholderUri();
+      const result = await summarizeForm34a({ formImageUri });
+      setSummary(result.summary);
+    } catch (error) {
+      console.error("Error summarizing form:", error);
+      toast({ variant: "destructive", title: "Summarization Failed", description: "The AI could not process this form." });
+    } finally {
+      setIsSummarizing(false);
+    }
+  };
+
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button size="sm" variant="ghost" className="w-full mt-1">
+          <FileText className="mr-2 h-4 w-4" /> View Form 34A
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent className="max-w-3xl">
+        <AlertDialogHeader>
+          <AlertDialogTitle>Form 34A - {tally.pollingStation}</AlertDialogTitle>
+          <AlertDialogDescription>
+            This is a placeholder for the official Form 34A document from this polling station. You can use AI to summarize its content.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <div className="flex justify-center items-center p-4 border rounded-md bg-secondary max-h-[60vh] overflow-auto">
+          <Image
+            src="https://placehold.co/600x800.png"
+            width={500}
+            height={707}
+            alt="Placeholder for Form 34A"
+            data-ai-hint="document form"
+          />
+        </div>
+        <div className="space-y-4">
+           <Button onClick={handleSummarize} disabled={isSummarizing} className="w-full">
+            {isSummarizing ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Summarizing...</> : <><Bot className="mr-2 h-4 w-4"/> Summarize with AI</>}
+           </Button>
+           {summary && (
+              <Alert className="animate-in fade-in-50">
+                 <Bot className="h-4 w-4" />
+                <AlertTitle>AI Summary</AlertTitle>
+                <AlertDescription>{summary}</AlertDescription>
+              </Alert>
+           )}
+        </div>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Close</AlertDialogCancel>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+};
 
 
 const pollingStations = [
@@ -269,33 +347,7 @@ export default function LiveTallyPage() {
                        {analysis?.status ? 'Analyzed' : 'Analyze Tally'}
                      </Button>
                   </div>
-                   <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                         <Button size="sm" variant="ghost" className="w-full mt-1">
-                           <FileText className="mr-2 h-4 w-4" /> View Form 34A
-                         </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Form 34A - {tally.pollingStation}</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This is a placeholder for the official Form 34A document from this polling station.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <div className="flex justify-center items-center p-4 border rounded-md bg-secondary">
-                          <Image 
-                            src="https://placehold.co/600x800.png"
-                            width={500}
-                            height={707}
-                            alt="Placeholder for Form 34A"
-                            data-ai-hint="document form"
-                          />
-                        </div>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Close</AlertDialogCancel>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                   </AlertDialog>
+                   <Form34AViewer tally={tally} />
                 </div>
               )
             })}
