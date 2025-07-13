@@ -9,7 +9,7 @@ import { analyzeTallyAnomaly } from "@/ai/flows/analyze-tally-anomaly";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Landmark, Check, User, MapPin, Hash, BarChart, PieChart, Microscope, Loader2, ShieldCheck, ShieldAlert } from "lucide-react";
+import { Landmark, Check, User, MapPin, Hash, BarChart, PieChart, Microscope, Loader2, ShieldCheck, ShieldAlert, FileText } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ChartContainer,
@@ -20,6 +20,17 @@ import {
 import { Bar, BarChart as RechartsBarChart, XAxis, YAxis, CartesianGrid, LabelList, Pie, PieChart as RechartsPieChart, Cell } from "recharts";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 
 const pollingStations = [
@@ -48,7 +59,16 @@ export default function LiveTallyPage() {
   const addNewTally = useCallback(() => {
     const station = pollingStations[Math.floor(Math.random() * pollingStations.length)];
     const voteDistribution = candidates.map(c => {
-      const votes = Math.floor(Math.random() * (station.registeredVoters / candidates.length * (0.5 + Math.random()))) + 50;
+      // Simulate potential for anomalies in some tallies
+      const anomalyChance = Math.random();
+      let votes;
+      if (anomalyChance < 0.1) { // 10% chance of a high-turnout anomaly
+        votes = Math.floor(Math.random() * 100) + station.registeredVoters;
+      } else if (anomalyChance < 0.15) { // 5% chance of a vote spike for one candidate
+         votes = Math.floor(Math.random() * (station.registeredVoters * 0.8)) + 100;
+      } else {
+         votes = Math.floor(Math.random() * (station.registeredVoters / candidates.length * (0.5 + Math.random()))) + 50;
+      }
       return { id: c.id, votes };
     });
 
@@ -199,11 +219,18 @@ export default function LiveTallyPage() {
               )}
             {liveTallies.map((tally) => {
               const analysis = tallyAnalyses[tally.id];
+              const isAnomaly = analysis?.status === 'complete' && analysis.result?.isAnomaly;
+              const isCredible = analysis?.status === 'complete' && !analysis.result?.isAnomaly;
+              
               return (
                 <div key={tally.id} className="border rounded-lg p-3 space-y-2 animate-in fade-in-50">
                   <div className="flex justify-between items-start">
                      <div className="text-xs text-muted-foreground">
-                        <p className="flex items-center gap-1 font-semibold text-sm text-foreground"><MapPin className="h-3 w-3" /> {tally.pollingStation}</p>
+                        <div className="flex items-center gap-2">
+                           {isAnomaly && <div className="h-2 w-2 rounded-full bg-red-500 blinking-indicator"></div>}
+                           {isCredible && <div className="h-2 w-2 rounded-full bg-green-500 blinking-indicator"></div>}
+                           <p className="flex items-center gap-1 font-semibold text-sm text-foreground"><MapPin className="h-3 w-3" /> {tally.pollingStation}</p>
+                        </div>
                         <p>Registered Voters: {tally.registeredVoters.toLocaleString()}</p>
                         <p className="flex items-center gap-1"><User className="h-3 w-3" /> Officer: {tally.officerId}</p>
                      </div>
@@ -242,6 +269,33 @@ export default function LiveTallyPage() {
                        {analysis?.status ? 'Analyzed' : 'Analyze Tally'}
                      </Button>
                   </div>
+                   <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                         <Button size="sm" variant="ghost" className="w-full mt-1">
+                           <FileText className="mr-2 h-4 w-4" /> View Form 34A
+                         </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Form 34A - {tally.pollingStation}</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This is a placeholder for the official Form 34A document from this polling station.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <div className="flex justify-center items-center p-4 border rounded-md bg-secondary">
+                          <Image 
+                            src="https://placehold.co/600x800.png"
+                            width={500}
+                            height={707}
+                            alt="Placeholder for Form 34A"
+                            data-ai-hint="document form"
+                          />
+                        </div>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Close</AlertDialogCancel>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                   </AlertDialog>
                 </div>
               )
             })}
