@@ -12,7 +12,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const TallyAnomalyInputSchema = z.object({
+const TallyAnomalyInputSchema = z.object({
   pollingStation: z.string().describe("The name of the polling station."),
   registeredVoters: z.number().describe("The total number of registered voters at the station."),
   reportedVotes: z.string().describe("A summary string of the votes reported for each candidate."),
@@ -20,7 +20,7 @@ export const TallyAnomalyInputSchema = z.object({
 });
 export type TallyAnomalyInput = z.infer<typeof TallyAnomalyInputSchema>;
 
-export const TallyAnomalyOutputSchema = z.object({
+const TallyAnomalyOutputSchema = z.object({
   isAnomaly: z.boolean().describe("A boolean indicating if the tally is considered anomalous."),
   reason: z.string().describe("A brief explanation for why the tally is or is not considered an anomaly."),
   confidenceScore: z.number().min(0).max(1).describe("A score from 0 to 1 indicating the confidence in the anomaly detection."),
