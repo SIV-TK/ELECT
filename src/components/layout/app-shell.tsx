@@ -71,6 +71,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
            </div>
         </header>
         <main className="flex-1 p-4 md:p-6">{children}</main>
+        <footer className="border-t py-4 px-6 text-center text-sm text-muted-foreground">
+          Developed by Kariuki James Kariuki 0792698424
+        </footer>
       </SidebarInset>
     </SidebarProvider>
   );
