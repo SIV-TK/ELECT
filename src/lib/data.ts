@@ -7,14 +7,15 @@ export const politicians: Politician[] = [
     party: 'Azimio La Umoja',
     level: 'Presidential',
     imageUrl: 'https://placehold.co/400x400.png',
+    bio: 'A veteran Kenyan politician who has served as the Prime Minister and has been a long-time opposition leader. Known for his role in Kenya\'s constitutional reforms.',
     trackRecord: {
-      workHistory: ['Prime Minister of Kenya (2008-2013)', 'Member of Parliament for Langata'],
-      promisesKept: ['Devolution advocacy', 'Infrastructure development during premiership'],
-      promisesBroken: ['Pledge to reduce cost of living (during campaigns)'],
-      contributions: ['Key figure in Kenya\'s second liberation', 'Champion of the 2010 constitution'],
+      workHistory: ['Prime Minister of Kenya (2008-2013)', 'Member of Parliament for Langata', 'Minister of Energy', 'Minister of Roads, Public Works, and Housing'],
+      promisesKept: ['Devolution advocacy leading to the 2010 constitution', 'Infrastructure development during premiership, like the Thika Superhighway'],
+      promisesBroken: ['Pledge to reduce cost of living (during campaigns)', 'Unfulfilled promise to create 500,000 jobs annually'],
+      contributions: ['Key figure in Kenya\'s second liberation', 'Champion of the 2010 constitution', 'Advocate for democratic reforms'],
     },
     legalOversight: {
-      courtCases: ['Presidential election petition (2013, 2017, 2022)'],
+      courtCases: ['Presidential election petition (2013, 2017, 2022)', 'Acquitted in the molasses plant scandal'],
       hasAdverseFindings: false,
     },
     academicLife: {
@@ -30,21 +31,22 @@ export const politicians: Politician[] = [
     party: 'United Democratic Alliance',
     level: 'Presidential',
     imageUrl: 'https://placehold.co/400x400.png',
+    bio: 'The current President of Kenya, rising from a humble background to the highest office. He champions a "bottom-up" economic model.',
     trackRecord: {
-      workHistory: ['President of Kenya (2022-Present)', 'Deputy President of Kenya (2013-2022)', 'Minister of Agriculture'],
-      promisesKept: ['Hustler Fund initiative', 'Digital transformation projects'],
-      promisesBroken: ['Promise to lower fuel prices within first 100 days'],
-      contributions: ['Advocacy for bottom-up economic model', 'Agricultural reforms'],
+      workHistory: ['President of Kenya (2022-Present)', 'Deputy President of Kenya (2013-2022)', 'Minister of Agriculture', 'Minister of Higher Education'],
+      promisesKept: ['Establishment of the Hustler Fund', 'Digital transformation projects, including Wi-Fi hotspots'],
+      promisesBroken: ['Promise to lower fuel prices within first 100 days', 'Pledge to reduce national debt significantly'],
+      contributions: ['Advocacy for bottom-up economic model', 'Agricultural reforms during his ministerial tenure', 'Push for affordable housing program'],
     },
     legalOversight: {
-      courtCases: ['ICC case (charges dropped)', 'Land acquisition disputes (media reports)'],
+      courtCases: ['ICC case for crimes against humanity (charges dropped)', 'Various land acquisition disputes reported in media'],
       hasAdverseFindings: true,
     },
     academicLife: {
         primarySchool: 'Kamagut Primary School',
         highSchool: 'Wareng Secondary School',
         university: 'University of Nairobi (PhD in Plant Ecology)',
-        notableAchievements: ['Published several scientific papers'],
+        notableAchievements: ['Published several scientific papers on plant ecology'],
     }
   },
     {
@@ -54,21 +56,22 @@ export const politicians: Politician[] = [
     level: 'Gubernatorial',
     county: 'Nairobi',
     imageUrl: 'https://placehold.co/400x400.png',
+    bio: 'The Governor of Nairobi County, known for his appeal to the youth and focus on urban development and social programs in the city.',
     trackRecord: {
-      workHistory: ['Governor of Nairobi County (2022-Present)', 'Senator of Nairobi County (2017-2022)'],
-      promisesKept: ['School feeding program in Nairobi', 'Streamlining business permits'],
-      promisesBroken: ['Pledge to solve Nairobi\'s traffic menace within 2 years'],
-      contributions: ['Youth empowerment programs', 'Arts and culture promotion'],
+      workHistory: ['Governor of Nairobi County (2022-Present)', 'Senator of Nairobi County (2017-2022)', 'Nominated Member of Parliament'],
+      promisesKept: ['"Dishi na County" school feeding program in Nairobi', 'Streamlining business permits to create a friendlier business environment'],
+      promisesBroken: ['Pledge to solve Nairobi\'s traffic menace within 2 years', 'Promise to construct 20 new markets for traders'],
+      contributions: ['Youth empowerment programs through the Sakaja Foundation', 'Sponsorship of various bills in the Senate related to urban planning and development'],
     },
     legalOversight: {
-      courtCases: ['Degree certificate validity case'],
+      courtCases: ['Controversy and investigation over the validity of his degree certificate from Team University'],
       hasAdverseFindings: true,
     },
     academicLife: {
         primarySchool: 'Aga Khan Primary School',
         highSchool: 'Lenana School',
-        university: 'Team University (Uganda)',
-        notableAchievements: ['Student leader at University of Nairobi (unconfirmed)'],
+        university: 'Team University (Uganda), University of Nairobi (Actuarial Science - incomplete)',
+        notableAchievements: ['Held leadership positions in student politics at the University of Nairobi'],
     }
   },
 ];
@@ -80,6 +83,7 @@ export const presidentialCandidates: Candidate[] = [
     party: 'Azimio La Umoja',
     level: 'Presidential',
     imageUrl: 'https://placehold.co/100x100.png',
+    bio: 'A veteran Kenyan politician who has served as the Prime Minister and has been a long-time opposition leader. Known for his role in Kenya\'s constitutional reforms.',
     votes: 0,
   },
   {
@@ -88,6 +92,7 @@ export const presidentialCandidates: Candidate[] = [
     party: 'United Democratic Alliance',
     level: 'Presidential',
     imageUrl: 'https://placehold.co/100x100.png',
+    bio: 'The current President of Kenya, rising from a humble background to the highest office. He champions a "bottom-up" economic model.',
     votes: 0,
   },
     {
@@ -96,6 +101,7 @@ export const presidentialCandidates: Candidate[] = [
     party: 'Roots Party',
     level: 'Presidential',
     imageUrl: 'https://placehold.co/100x100.png',
+    bio: 'A quirky and unconventional politician who gained fame for his unique manifesto promises during the 2022 election.',
     votes: 0,
   },
 ];

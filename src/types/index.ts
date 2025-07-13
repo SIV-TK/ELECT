@@ -6,6 +6,7 @@ export interface Politician {
   county?: string;
   constituency?: string;
   imageUrl: string;
+  bio: string;
   trackRecord: {
     workHistory: string[];
     promisesKept: string[];
