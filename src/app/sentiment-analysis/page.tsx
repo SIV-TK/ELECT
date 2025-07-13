@@ -13,7 +13,20 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { ThumbsUp, ThumbsDown, Loader2 } from "lucide-react";
+import { ThumbsUp, ThumbsDown, Loader2, Check, ChevronsUpDown } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { cn } from "@/lib/utils";
+
+const suggestedTopics = [
+  { value: "The Economy", label: "The Economy" },
+  { value: "Healthcare", label: "Healthcare" },
+  { value: "The Housing Bill", label: "The Housing Bill" },
+  { value: "Education", label: "Education" },
+  { value: "Infrastructure", label: "Infrastructure" },
+  { value: "Unemployment", label: "Unemployment" },
+  { value: "Foreign Policy", label: "Foreign Policy" },
+];
 
 const formSchema = z.object({
   candidateName: z.string().min(2, "Candidate name is required."),
@@ -24,6 +37,7 @@ export default function SentimentAnalysisPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<AnalyzeCandidateSentimentOutput | null>(null);
   const { toast } = useToast();
+  const [popoverOpen, setPopoverOpen] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -80,11 +94,62 @@ export default function SentimentAnalysisPage() {
                   control={form.control}
                   name="topic"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="flex flex-col">
                       <FormLabel>Topic</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., The Economy, Healthcare, The Housing Bill" {...field} />
-                      </FormControl>
+                      <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              className={cn(
+                                "w-full justify-between",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value
+                                ? suggestedTopics.find(
+                                    (topic) => topic.value === field.value
+                                  )?.label
+                                : "Select or type a topic..."}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                           <Command>
+                            <CommandInput 
+                              placeholder="Search topic..."
+                              onValueChange={(value) => field.onChange(value)}
+                            />
+                            <CommandList>
+                            <CommandEmpty>No topic found.</CommandEmpty>
+                            <CommandGroup>
+                              {suggestedTopics.map((topic) => (
+                                <CommandItem
+                                  value={topic.label}
+                                  key={topic.value}
+                                  onSelect={() => {
+                                    form.setValue("topic", topic.value);
+                                    setPopoverOpen(false);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      topic.value === field.value
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                  {topic.label}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                       <FormMessage />
                     </FormItem>
                   )}
