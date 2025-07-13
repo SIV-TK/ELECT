@@ -83,7 +83,7 @@ export default function SentimentAnalysisPage() {
                     <FormItem>
                       <FormLabel>Topic</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., The Economy" {...field} />
+                        <Input placeholder="e.g., The Economy, Healthcare, The Housing Bill" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
