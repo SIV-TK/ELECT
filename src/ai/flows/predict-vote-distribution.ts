@@ -28,7 +28,7 @@ const PredictVoteDistributionInputSchema = z.object({
 });
 export type PredictVoteDistributionInput = z.infer<typeof PredictVoteDistributionInputSchema>;
 
-export const VoteDistributionSchema = z.object({
+const VoteDistributionSchema = z.object({
   name: z.enum(kenyanCounties as [string, ...string[]]).describe('The name of the Kenyan county.'),
   predictedVoteShare: z
     .number()
