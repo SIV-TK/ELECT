@@ -21,6 +21,7 @@ import {
 import { Bar, BarChart as RechartsBarChart, XAxis, YAxis, CartesianGrid, LabelList, Pie, PieChart as RechartsPieChart, Cell } from "recharts";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -110,14 +111,21 @@ const Form34AViewer = ({ tally }: { tally: LiveTally }) => {
   );
 };
 
-
 const pollingStations = [
-  { name: "KICC, Nairobi", registeredVoters: 2500 },
-  { name: "Moi Avenue Primary, Mombasa", registeredVoters: 1800 },
-  { name: "Kisumu Social Hall, Kisumu", registeredVoters: 2200 },
-  { name: "Eldoret Town Hall, Uasin Gishu", registeredVoters: 2800 },
-  { name: "Nyeri Primary, Nyeri", registeredVoters: 1500 },
+  { name: "KICC", registeredVoters: 2500, county: "Nairobi", subCounty: "Starehe", ward: "Nairobi Central" },
+  { name: "Moi Avenue Primary", registeredVoters: 1800, county: "Mombasa", subCounty: "Mvita", ward: "Mji wa Kale" },
+  { name: "Kisumu Social Hall", registeredVoters: 2200, county: "Kisumu", subCounty: "Kisumu Central", ward: "Market Milimani" },
+  { name: "Eldoret Town Hall", registeredVoters: 2800, county: "Uasin Gishu", subCounty: "Kapseret", ward: "Kapseret" },
+  { name: "Nyeri Primary", registeredVoters: 1500, county: "Nyeri", subCounty: "Nyeri Town", ward: "Kiganjo/Mathari" },
+  { name: "Uhuru Park", registeredVoters: 3500, county: "Nairobi", subCounty: "Starehe", ward: "Nairobi Central" },
+  { name: "Likoni Ferry", registeredVoters: 2100, county: "Mombasa", subCounty: "Likoni", ward: "Likoni" },
+  { name: "Jomo Kenyatta Grounds", registeredVoters: 2600, county: "Kisumu", subCounty: "Kisumu Central", ward: "Shaurimoyo" },
 ];
+
+const counties = [...new Set(pollingStations.map(p => p.county))];
+const subCounties = [...new Set(pollingStations.map(p => p.subCounty))];
+const wards = [...new Set(pollingStations.map(p => p.ward))];
+
 
 function generateMockId(length: number) {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -129,23 +137,26 @@ function generateMockId(length: number) {
 }
 
 export default function LiveTallyPage() {
-  const [candidates, setCandidates] = useState<Candidate[]>(presidentialCandidates.map(c => ({...c, votes: 0})));
-  const [liveTallies, setLiveTallies] = useState<LiveTally[]>([]);
+  const [allTallies, setAllTallies] = useState<LiveTally[]>([]);
   const { toast } = useToast();
   const [tallyAnalyses, setTallyAnalyses] = useState<Record<string, TallyAnalysisState>>({});
+  
+  // Filter state
+  const [filterLevel, setFilterLevel] = useState<string>("national");
+  const [filterValue, setFilterValue] = useState<string | null>(null);
+  const [filterPolitician, setFilterPolitician] = useState<string | null>(null);
 
   const addNewTally = useCallback(() => {
     const station = pollingStations[Math.floor(Math.random() * pollingStations.length)];
-    const voteDistribution = candidates.map(c => {
-      // Simulate potential for anomalies in some tallies
+    const voteDistribution = presidentialCandidates.map(c => {
       const anomalyChance = Math.random();
       let votes;
-      if (anomalyChance < 0.1) { // 10% chance of a high-turnout anomaly
+      if (anomalyChance < 0.1) {
         votes = Math.floor(Math.random() * 100) + station.registeredVoters;
-      } else if (anomalyChance < 0.15) { // 5% chance of a vote spike for one candidate
+      } else if (anomalyChance < 0.15) {
          votes = Math.floor(Math.random() * (station.registeredVoters * 0.8)) + 100;
       } else {
-         votes = Math.floor(Math.random() * (station.registeredVoters / candidates.length * (0.5 + Math.random()))) + 50;
+         votes = Math.floor(Math.random() * (station.registeredVoters / presidentialCandidates.length * (0.5 + Math.random()))) + 50;
       }
       return { id: c.id, votes };
     });
@@ -153,34 +164,29 @@ export default function LiveTallyPage() {
     const newTally: LiveTally = {
       id: `tally-${generateMockId(8)}`,
       officerId: `officer-${generateMockId(4)}`,
-      pollingStation: station.name,
+      pollingStation: `${station.name}, ${station.ward}`,
       registeredVoters: station.registeredVoters,
       voteDistribution,
       timestamp: new Date(),
       verifications: Math.floor(Math.random() * 5),
+      ...station
     };
 
-    setLiveTallies(prev => [newTally, ...prev.slice(0, 4)]);
-    setCandidates(prevCandidates => 
-      prevCandidates.map(pc => {
-        const newVotes = voteDistribution.find(v => v.id === pc.id)?.votes || 0;
-        return {...pc, votes: pc.votes + newVotes};
-      })
-    );
+    setAllTallies(prev => [newTally, ...prev]);
 
     toast({
       title: "New Tally Received",
       description: `From ${newTally.pollingStation} by Officer ${newTally.officerId}.`,
     });
-  }, [candidates, toast]);
+  }, [toast]);
   
   useEffect(() => {
-    const interval = setInterval(addNewTally, 7000); // Add a new tally every 7 seconds
+    const interval = setInterval(addNewTally, 7000);
     return () => clearInterval(interval);
   }, [addNewTally]);
 
   const handleVerification = (tallyId: string) => {
-    setLiveTallies(prev => 
+    setAllTallies(prev => 
       prev.map(t => 
         t.id === tallyId ? { ...t, verifications: t.verifications + 1 } : t
       )
@@ -191,14 +197,14 @@ export default function LiveTallyPage() {
     setTallyAnalyses(prev => ({ ...prev, [tally.id]: { status: 'loading' } }));
     
     const totalTallyVotes = tally.voteDistribution.reduce((sum, v) => sum + v.votes, 0);
-    const allReportedVotes = liveTallies.flatMap(t => t.voteDistribution).reduce((sum, v) => sum + v.votes, 0);
-    const averageTallySize = liveTallies.length > 0 ? allReportedVotes / liveTallies.length : totalTallyVotes;
+    const allReportedVotes = allTallies.flatMap(t => t.voteDistribution).reduce((sum, v) => sum + v.votes, 0);
+    const averageTallySize = allTallies.length > 0 ? allReportedVotes / allTallies.length : totalTallyVotes;
   
     try {
       const result = await analyzeTallyAnomaly({
         pollingStation: tally.pollingStation,
         registeredVoters: tally.registeredVoters,
-        reportedVotes: tally.voteDistribution.map(v => `${candidates.find(c=>c.id === v.id)?.name}: ${v.votes} votes`).join(', '),
+        reportedVotes: tally.voteDistribution.map(v => `${presidentialCandidates.find(c=>c.id === v.id)?.name}: ${v.votes} votes`).join(', '),
         previousTallyAverage: averageTallySize,
       });
       setTallyAnalyses(prev => ({ ...prev, [tally.id]: { status: 'complete', result } }));
@@ -209,30 +215,121 @@ export default function LiveTallyPage() {
     }
   };
 
-  const totalVotes = useMemo(() => candidates.reduce((acc, c) => acc + c.votes, 0), [candidates]);
+  const filteredTallies = useMemo(() => {
+    if (filterLevel === 'national' || !filterValue) return allTallies;
+    return allTallies.filter(tally => {
+      if (filterLevel === 'county') return tally.county === filterValue;
+      if (filterLevel === 'subCounty') return tally.subCounty === filterValue;
+      if (filterLevel === 'ward') return tally.ward === filterValue;
+      return true;
+    });
+  }, [allTallies, filterLevel, filterValue]);
   
-  const chartData = useMemo(() => candidates.map(c => ({ name: c.name, value: c.votes, fill: `var(--color-${c.name.split(' ').join('')})`})).sort((a,b) => b.value - a.value), [candidates]);
+  const displayTallies = useMemo(() => filteredTallies.slice(0, 5), [filteredTallies]);
 
-  const chartConfig = useMemo(() => candidates.reduce((acc, candidate, index) => {
+  const totalVotes = useMemo(() => {
+    const talliesToSum = filterValue ? filteredTallies : allTallies;
+    let votes = 0;
+    for(const tally of talliesToSum) {
+        for(const dist of tally.voteDistribution) {
+            if(!filterPolitician || dist.id === filterPolitician) {
+                 votes += dist.votes;
+            }
+        }
+    }
+    return votes;
+  }, [allTallies, filteredTallies, filterValue, filterPolitician]);
+  
+  const chartData = useMemo(() => {
+    const talliesToSum = filterValue ? filteredTallies : allTallies;
+    const voteMap = new Map<string, number>();
+
+    for(const tally of talliesToSum) {
+        for(const dist of tally.voteDistribution) {
+            const currentVotes = voteMap.get(dist.id) || 0;
+            voteMap.set(dist.id, currentVotes + dist.votes);
+        }
+    }
+    
+    let candidatesData = presidentialCandidates.map(c => ({
+        id: c.id,
+        name: c.name,
+        value: voteMap.get(c.id) || 0,
+        fill: `var(--color-${c.name.split(' ').join('')})`
+    }));
+
+    if(filterPolitician) {
+        candidatesData = candidatesData.filter(c => c.id === filterPolitician);
+    }
+    
+    return candidatesData.sort((a,b) => b.value - a.value);
+
+  }, [allTallies, filteredTallies, filterValue, filterPolitician]);
+
+  const chartConfig = useMemo(() => presidentialCandidates.reduce((acc, candidate, index) => {
     const key = candidate.name.split(' ').join('');
     acc[key] = {
       label: candidate.name,
       color: `hsl(var(--chart-${index + 1}))`,
     };
     return acc;
-  }, {} as ChartConfig), [candidates]);
+  }, {} as ChartConfig), []);
+
+  const getFilterLocationOptions = () => {
+    if (filterLevel === 'county') return counties;
+    if (filterLevel === 'subCounty') return subCounties;
+    if (filterLevel === 'ward') return wards;
+    return [];
+  };
+
+  const handleFilterLevelChange = (level: string) => {
+    setFilterLevel(level);
+    setFilterValue(null);
+  }
+
+  const getOverviewTitle = () => {
+    if(filterPolitician && filterValue) return `Tally for ${presidentialCandidates.find(c=>c.id === filterPolitician)?.name} in ${filterValue}`;
+    if(filterPolitician) return `National Tally for ${presidentialCandidates.find(c=>c.id === filterPolitician)?.name}`;
+    if(filterValue) return `Tally Overview for ${filterValue}`;
+    return "National Tally Overview";
+  }
 
   return (
     <div className="grid lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle className="font-headline text-2xl flex items-center gap-2"> National Tally Overview</CardTitle>
+            <CardTitle className="font-headline text-2xl flex items-center gap-2">{getOverviewTitle()}</CardTitle>
             <CardDescription>
-              This is a live, simulated feed of the national presidential election results. Total Votes Tallied: <span className="font-bold">{totalVotes.toLocaleString()}</span>
+              Live presidential results. Total Votes Tallied: <span className="font-bold">{totalVotes.toLocaleString()}</span>
             </CardDescription>
           </CardHeader>
            <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 border-b pb-4">
+                 <Select value={filterLevel} onValueChange={handleFilterLevelChange}>
+                    <SelectTrigger><SelectValue placeholder="Select Level" /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="national">National</SelectItem>
+                        <SelectItem value="county">County</SelectItem>
+                        <SelectItem value="subCounty">Sub-County</SelectItem>
+                        <SelectItem value="ward">Ward</SelectItem>
+                    </SelectContent>
+                 </Select>
+                 <Select value={filterValue || ""} onValueChange={(v) => setFilterValue(v)} disabled={filterLevel === 'national'}>
+                    <SelectTrigger><SelectValue placeholder="Select Location" /></SelectTrigger>
+                    <SelectContent>
+                        {getFilterLocationOptions().map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
+                    </SelectContent>
+                 </Select>
+                 <Select value={filterPolitician || ""} onValueChange={(v) => setFilterPolitician(v)}>
+                    <SelectTrigger><SelectValue placeholder="Track Politician (All)" /></SelectTrigger>
+                    <SelectContent>
+                         <SelectItem value="">All Politicians</SelectItem>
+                        {presidentialCandidates.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                    </SelectContent>
+                 </Select>
+                 <Button variant="outline" onClick={() => { setFilterLevel('national'); setFilterValue(null); setFilterPolitician(null); }}>Reset Filters</Button>
+            </div>
              <Tabs defaultValue="bar">
               <div className="flex justify-end">
                 <TabsList>
@@ -255,7 +352,7 @@ export default function LiveTallyPage() {
                   </ChartContainer>
                 ) : (
                   <div className="text-center text-muted-foreground py-16">
-                    <p>Waiting for the first polling station to report...</p>
+                    <p>Waiting for polling stations to report...</p>
                   </div>
                 )}
               </TabsContent>
@@ -273,7 +370,7 @@ export default function LiveTallyPage() {
                     </ChartContainer>
                  ) : (
                    <div className="text-center text-muted-foreground py-16">
-                     <p>Waiting for the first polling station to report...</p>
+                     <p>Waiting for polling stations to report...</p>
                    </div>
                  )}
                </TabsContent>
@@ -286,16 +383,16 @@ export default function LiveTallyPage() {
           <CardHeader>
             <CardTitle className="font-headline flex items-center gap-2"><Landmark/>Live Verification Feed</CardTitle>
             <CardDescription>
-              New tallies from polling stations appear here for verification and AI analysis.
+              New tallies from polling stations appear here. Feed updates every 7 seconds.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-             {liveTallies.length === 0 && (
+             {displayTallies.length === 0 && (
                 <div className="text-center text-muted-foreground py-8">
-                  <p>Awaiting incoming data...</p>
+                  <p>Awaiting incoming data for this location...</p>
                 </div>
               )}
-            {liveTallies.map((tally) => {
+            {displayTallies.map((tally) => {
               const analysis = tallyAnalyses[tally.id];
               const isAnomaly = analysis?.status === 'complete' && analysis.result?.isAnomaly;
               const isCredible = analysis?.status === 'complete' && !analysis.result?.isAnomaly;
@@ -320,7 +417,7 @@ export default function LiveTallyPage() {
                   <Separator/>
                   <div className="text-sm space-y-1">
                     {tally.voteDistribution.map(dist => {
-                       const candidate = candidates.find(c => c.id === dist.id);
+                       const candidate = presidentialCandidates.find(c => c.id === dist.id);
                        return (
                         <div key={dist.id} className="flex justify-between">
                            <span>{candidate?.name}</span>

@@ -57,6 +57,9 @@ export interface LiveTally {
   voteDistribution: { id: string; votes: number }[];
   timestamp: Date;
   verifications: number;
+  county: string;
+  subCounty: string;
+  ward: string;
 }
 
 export type TallyAnalysisState = {
