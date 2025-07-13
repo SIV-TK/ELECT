@@ -287,6 +287,10 @@ export default function LiveTallyPage() {
     setFilterValue(null);
   }
 
+  const handleLocationFilterChange = (value: string) => {
+    setFilterValue(value);
+  };
+
   const handlePoliticianFilterChange = (value: string) => {
     if (value === 'all') {
       setFilterPolitician(null);
@@ -323,7 +327,7 @@ export default function LiveTallyPage() {
                         <SelectItem value="ward">Ward</SelectItem>
                     </SelectContent>
                  </Select>
-                 <Select value={filterValue || ""} onValueChange={(v) => setFilterValue(v)} disabled={filterLevel === 'national'}>
+                 <Select value={filterValue || ""} onValueChange={handleLocationFilterChange} disabled={filterLevel === 'national'}>
                     <SelectTrigger><SelectValue placeholder="Select Location" /></SelectTrigger>
                     <SelectContent>
                         {getFilterLocationOptions().map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
