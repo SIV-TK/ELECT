@@ -11,10 +11,10 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import { Politician } from '@/types';
 
-export const SummarizePoliticianInputSchema = z.custom<Politician>();
+const SummarizePoliticianInputSchema = z.custom<Politician>();
 export type SummarizePoliticianInput = z.infer<typeof SummarizePoliticianInputSchema>;
 
-export const SummarizePoliticianOutputSchema = z.object({
+const SummarizePoliticianOutputSchema = z.object({
   summary: z.string().describe("A comprehensive, neutral summary of the politician's profile, including their career, achievements, and controversies."),
 });
 export type SummarizePoliticianOutput = z.infer<typeof SummarizePoliticianOutputSchema>;
