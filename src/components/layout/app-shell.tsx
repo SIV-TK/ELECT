@@ -22,6 +22,7 @@ import {
   BotMessageSquare,
   Landmark,
   UsersRound,
+  GalleryVertical,
 } from "lucide-react";
 
 const navItems = [
@@ -31,6 +32,7 @@ const navItems = [
   { href: "/sentiment-analysis", icon: BotMessageSquare, label: "Sentiment Analysis" },
   { href: "/campaign-advice", icon: Lightbulb, label: "Campaign Advice" },
   { href: "/crowd-sourced-intel", icon: UsersRound, label: "Crowd Sourced Intel" },
+  { href: "/verification-gallery", icon: GalleryVertical, label: "Verification Gallery" },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {

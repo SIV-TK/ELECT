@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { BarChart, Lightbulb, Users, BotMessageSquare, Vote, UsersRound } from "lucide-react";
+import { BarChart, Lightbulb, Users, BotMessageSquare, Vote, UsersRound, GalleryVertical } from "lucide-react";
 import Link from "next/link";
 
 const featureCards = [
@@ -37,6 +37,13 @@ const featureCards = [
     icon: UsersRound,
     href: "/crowd-sourced-intel",
     color: "text-teal-500",
+  },
+  {
+    title: "Verification Gallery",
+    description: "Browse and verify community-submitted intel on politicians.",
+    icon: GalleryVertical,
+    href: "/verification-gallery",
+    color: "text-indigo-500",
   },
 ];
 
