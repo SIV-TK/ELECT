@@ -21,6 +21,7 @@ import {
   Lightbulb,
   BotMessageSquare,
   Landmark,
+  UsersRound,
 } from "lucide-react";
 
 const navItems = [
@@ -29,6 +30,7 @@ const navItems = [
   { href: "/demo-voting", icon: Vote, label: "Demo Voting" },
   { href: "/sentiment-analysis", icon: BotMessageSquare, label: "Sentiment Analysis" },
   { href: "/campaign-advice", icon: Lightbulb, label: "Campaign Advice" },
+  { href: "/crowd-sourced-intel", icon: UsersRound, label: "Crowd Sourced Intel" },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -66,7 +68,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
            <SidebarTrigger className="md:hidden" />
            <div className="flex-1">
              <h1 className="text-xl font-semibold font-headline">
-               {navItems.find(item => pathname === item.href)?.label || "Sauti Ya Watu"}
+               {navItems.find(item => pathname.startsWith(item.href) && item.href !== '/')?.label || navItems.find(item => pathname === item.href)?.label || "Sauti Ya Watu"}
              </h1>
            </div>
         </header>

@@ -1,3 +1,5 @@
+import type { AnalyzeVideoVeracityOutput } from "./ai/flows/analyze-video-veracity";
+
 export interface Politician {
   id: string;
   name: string;
@@ -27,4 +29,15 @@ export interface Politician {
 
 export interface Candidate extends Omit<Politician, 'trackRecord' | 'legalOversight' | 'academicLife'> {
   votes: number;
+}
+
+export interface CrowdIntel {
+  id: string;
+  politician: Politician;
+  description: string;
+  videoUrl: string; // For display
+  videoDataUri: string; // For AI analysis
+  verifications: number;
+  isVerified: boolean;
+  aiAnalysis: AnalyzeVideoVeracityOutput | 'loading' | null;
 }

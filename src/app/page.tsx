@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { BarChart, Lightbulb, Users, BotMessageSquare, Vote } from "lucide-react";
+import { BarChart, Lightbulb, Users, BotMessageSquare, Vote, UsersRound } from "lucide-react";
 import Link from "next/link";
 
 const featureCards = [
@@ -31,6 +31,13 @@ const featureCards = [
     href: "/campaign-advice",
     color: "text-orange-500",
   },
+   {
+    title: "Crowd Sourced Intel",
+    description: "Upload and verify videos of politicians. Let AI analyze for authenticity.",
+    icon: UsersRound,
+    href: "/crowd-sourced-intel",
+    color: "text-teal-500",
+  },
 ];
 
 export default function DashboardPage() {
@@ -50,7 +57,7 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
       
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {featureCards.map((feature) => (
           <Link href={feature.href} key={feature.title} className="block hover:scale-[1.02] transition-transform duration-200">
             <Card className="hover:border-primary transition-colors h-full flex flex-col shadow-md">
