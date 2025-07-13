@@ -83,7 +83,7 @@ export const presidentialCandidates: Candidate[] = [
     party: 'Azimio La Umoja',
     level: 'Presidential',
     imageUrl: 'https://placehold.co/100x100.png',
-    bio: 'A veteran Kenyan politician who has served as the Prime Minister and has been a long-time opposition leader. Known for his role in Kenya\'s constitutional reforms.',
+    bio: 'A veteran Kenyan politician.',
     votes: 0,
   },
   {
@@ -92,16 +92,118 @@ export const presidentialCandidates: Candidate[] = [
     party: 'United Democratic Alliance',
     level: 'Presidential',
     imageUrl: 'https://placehold.co/100x100.png',
-    bio: 'The current President of Kenya, rising from a humble background to the highest office. He champions a "bottom-up" economic model.',
+    bio: 'The current President of Kenya.',
     votes: 0,
   },
-    {
+  {
     id: 'george-wajackoyah',
     name: 'George Wajackoyah',
     party: 'Roots Party',
     level: 'Presidential',
     imageUrl: 'https://placehold.co/100x100.png',
-    bio: 'A quirky and unconventional politician who gained fame for his unique manifesto promises during the 2022 election.',
+    bio: 'An unconventional politician.',
+    votes: 0,
+  },
+];
+
+export const gubernatorialCandidates: Candidate[] = [
+  {
+    id: 'sakaja-johnson',
+    name: 'Sakaja Johnson',
+    party: 'UDA',
+    level: 'Gubernatorial',
+    county: 'Nairobi',
+    imageUrl: 'https://placehold.co/100x100.png',
+    bio: 'Current Governor of Nairobi.',
+    votes: 0,
+  },
+  {
+    id: 'polycarp-igathe',
+    name: 'Polycarp Igathe',
+    party: 'Azimio',
+    level: 'Gubernatorial',
+    county: 'Nairobi',
+    imageUrl: 'https://placehold.co/100x100.png',
+    bio: 'A corporate executive and politician.',
+    votes: 0,
+  },
+];
+
+export const senatorialCandidates: Candidate[] = [
+  {
+    id: 'edwin-sifuna',
+    name: 'Edwin Sifuna',
+    party: 'ODM',
+    level: 'Senatorial',
+    county: 'Nairobi',
+    imageUrl: 'https://placehold.co/100x100.png',
+    bio: 'Current Senator for Nairobi.',
+    votes: 0,
+  },
+  {
+    id: 'margaret-wambui',
+    name: 'Margaret Wambui',
+    party: 'UDA',
+    level: 'Senatorial',
+    county: 'Nairobi',
+    imageUrl: 'https://placehold.co/100x100.png',
+    bio: 'A Bishop and politician.',
+    votes: 0,
+  },
+];
+
+export const womenRepCandidates: Candidate[] = [
+  {
+    id: 'esther-passaris',
+    name: 'Esther Passaris',
+    party: 'ODM',
+    level: 'WomenRep',
+    county: 'Nairobi',
+    imageUrl: 'https://placehold.co/100x100.png',
+    bio: 'Current Women Representative for Nairobi.',
+    votes: 0,
+  },
+  {
+    id: 'millicent-omanga',
+    name: 'Millicent Omanga',
+    party: 'UDA',
+    level: 'WomenRep',
+    county: 'Nairobi',
+    imageUrl: 'https://placehold.co/100x100.png',
+    bio: 'A businesswoman and politician.',
+    votes: 0,
+  },
+];
+
+export const mcaCandidates: Candidate[] = [
+  {
+    id: 'robert-alakadwa',
+    name: 'Robert Alai',
+    party: 'ODM',
+    level: 'MCA',
+    ward: 'Karen',
+    imageUrl: 'https://placehold.co/100x100.png',
+    bio: 'A well-known blogger and MCA.',
+    votes: 0,
+  },
+  {
+    id: 'jane-wanjiku',
+    name: 'Jane Wanjiku',
+    party: 'UDA',
+    level: 'MCA',
+    ward: 'Karen',
+    imageUrl: 'https://placehold.co/100x100.png',
+    bio: 'A community leader and aspirant.',
+    votes: 0,
+  },
+  {
+    id: 'peter-kariuki',
+    name: 'Peter Kariuki',
+    party: 'Independent',
+    level: 'MCA',
+    ward: 'Karen',
+    imageUrl: 'https://placehold.co/100x100.png',
+    bio: 'An independent candidate focusing on local issues.',
     votes: 0,
   },
 ];

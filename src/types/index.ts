@@ -5,9 +5,10 @@ export interface Politician {
   id: string;
   name: string;
   party: string;
-  level: 'Presidential' | 'Gubernatorial' | 'Senatorial' | 'MP';
+  level: 'Presidential' | 'Gubernatorial' | 'Senatorial' | 'WomenRep' | 'MP' | 'MCA';
   county?: string;
   constituency?: string;
+  ward?: string;
   imageUrl: string;
   bio: string;
   trackRecord: {
