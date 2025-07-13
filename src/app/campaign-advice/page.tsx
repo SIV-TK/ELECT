@@ -7,15 +7,17 @@ import { z } from "zod";
 import { getCampaignAdvice } from "@/ai/flows/get-campaign-advice";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Sparkles } from "lucide-react";
 
 const formSchema = z.object({
-  sentimentAnalysis: z.string().min(10, "Please provide a summary of sentiment analysis."),
+  candidateName: z.string().min(2, "Candidate name is required."),
   trendingTopics: z.string().min(10, "Please list some trending topics."),
   candidateCurrentStance: z.string().min(10, "Please describe the candidate's current stance."),
+  userSentimentAnalysis: z.string().min(10, "Please provide a summary of sentiment analysis."),
 });
 
 export default function CampaignAdvicePage() {
@@ -26,9 +28,10 @@ export default function CampaignAdvicePage() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      sentimentAnalysis: "",
+      candidateName: "",
       trendingTopics: "",
       candidateCurrentStance: "",
+      userSentimentAnalysis: "",
     },
   });
 
@@ -57,20 +60,20 @@ export default function CampaignAdvicePage() {
           <CardHeader>
             <CardTitle className="font-headline text-2xl">AI Campaign Strategist</CardTitle>
             <CardDescription>
-              Provide context about the campaign, and our AI will generate strategic advice to help the candidate connect with voters.
+             Provide campaign context. Our AI will analyze recent online sentiment and combine it with your insights to generate strategic advice.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
+                 <FormField
                   control={form.control}
-                  name="sentimentAnalysis"
+                  name="candidateName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Sentiment Analysis Summary</FormLabel>
+                      <FormLabel>Candidate Name</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="e.g., Voters feel the candidate is out of touch with economic issues but appreciate their stance on healthcare..." {...field} />
+                        <Input placeholder="e.g., William Ruto" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -96,7 +99,20 @@ export default function CampaignAdvicePage() {
                     <FormItem>
                       <FormLabel>Candidate's Current Stance</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="e.g., The candidate proposes a 5-point plan to tackle inflation and has promised to create 1 million jobs for the youth..." {...field} />
+                        <Textarea placeholder="e.g., The candidate proposes a 5-point plan to tackle inflation..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="userSentimentAnalysis"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Your Sentiment Analysis Summary</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="e.g., My analysis shows voters are concerned about economic issues but support the healthcare stance..." {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
