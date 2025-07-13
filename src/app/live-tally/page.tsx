@@ -287,6 +287,14 @@ export default function LiveTallyPage() {
     setFilterValue(null);
   }
 
+  const handlePoliticianFilterChange = (value: string) => {
+    if (value === 'all') {
+      setFilterPolitician(null);
+    } else {
+      setFilterPolitician(value);
+    }
+  };
+
   const getOverviewTitle = () => {
     if(filterPolitician && filterValue) return `Tally for ${presidentialCandidates.find(c=>c.id === filterPolitician)?.name} in ${filterValue}`;
     if(filterPolitician) return `National Tally for ${presidentialCandidates.find(c=>c.id === filterPolitician)?.name}`;
@@ -321,10 +329,10 @@ export default function LiveTallyPage() {
                         {getFilterLocationOptions().map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
                     </SelectContent>
                  </Select>
-                 <Select value={filterPolitician || ""} onValueChange={(v) => setFilterPolitician(v)}>
+                 <Select value={filterPolitician || "all"} onValueChange={handlePoliticianFilterChange}>
                     <SelectTrigger><SelectValue placeholder="Track Politician (All)" /></SelectTrigger>
                     <SelectContent>
-                         <SelectItem value="">All Politicians</SelectItem>
+                         <SelectItem value="all">All Politicians</SelectItem>
                         {presidentialCandidates.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                     </SelectContent>
                  </Select>
