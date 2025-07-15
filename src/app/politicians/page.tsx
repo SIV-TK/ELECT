@@ -1,4 +1,7 @@
-import { politicians } from "@/lib/data";
+// src/app/politicians/page.tsx
+"use client";
+
+import { usePoliticianStore } from "@/hooks/use-politician-store";
 import { PoliticianCard } from "@/components/politicians/politician-card";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,6 +9,8 @@ import Link from "next/link";
 import { GraduationCap } from "lucide-react";
 
 export default function PoliticiansPage() {
+  const { politicians } = usePoliticianStore();
+
   return (
     <div className="space-y-6">
       <Card>

@@ -14,6 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Shield, PlusCircle, Trash2 } from "lucide-react";
 import type { Politician } from "@/types";
+import { usePoliticianStore } from "@/hooks/use-politician-store";
 
 const formSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters."),
@@ -25,10 +26,10 @@ const formSchema = z.object({
   imageUrl: z.string().url("Must be a valid URL.").optional().or(z.literal('')),
   bio: z.string().min(20, "Bio should be at least 20 characters."),
   trackRecord: z.object({
-    workHistory: z.array(z.object({ value: z.string() })).nonempty("At least one work history item is required."),
-    promisesKept: z.array(z.object({ value: z.string() })).nonempty("At least one promise kept is required."),
-    promisesBroken: z.array(z.object({ value: z.string() })).nonempty("At least one promise broken is required."),
-    contributions: z.array(z.object({ value: z.string() })).nonempty("At least one contribution is required."),
+    workHistory: z.array(z.object({ value: z.string().min(1, "Cannot be empty.") })).nonempty("At least one work history item is required."),
+    promisesKept: z.array(z.object({ value: z.string().min(1, "Cannot be empty.") })).nonempty("At least one promise kept is required."),
+    promisesBroken: z.array(z.object({ value: z.string().min(1, "Cannot be empty.") })).nonempty("At least one promise broken is required."),
+    contributions: z.array(z.object({ value: z.string().min(1, "Cannot be empty.") })).nonempty("At least one contribution is required."),
   }),
   legalOversight: z.object({
     courtCases: z.array(z.object({ value: z.string() })),
@@ -75,6 +76,7 @@ const FieldArrayInput = ({ control, name, label, placeholder }: { control: any; 
 
 export default function AddPoliticianPage() {
   const { toast } = useToast();
+  const { addPolitician } = usePoliticianStore();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -109,10 +111,39 @@ export default function AddPoliticianPage() {
   const selectedLevel = form.watch("level");
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log("New Politician Data:", values);
+    const newPolitician: Politician = {
+        id: values.name.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now(),
+        name: values.name,
+        party: values.party,
+        level: values.level,
+        county: values.county,
+        constituency: values.constituency,
+        ward: values.ward,
+        imageUrl: values.imageUrl || 'https://placehold.co/400x400.png',
+        bio: values.bio,
+        trackRecord: {
+            workHistory: values.trackRecord.workHistory.map(item => item.value),
+            promisesKept: values.trackRecord.promisesKept.map(item => item.value),
+            promisesBroken: values.trackRecord.promisesBroken.map(item => item.value),
+            contributions: values.trackRecord.contributions.map(item => item.value),
+        },
+        legalOversight: {
+            courtCases: values.legalOversight.courtCases.map(item => item.value),
+            hasAdverseFindings: values.legalOversight.hasAdverseFindings,
+        },
+        academicLife: {
+            primarySchool: values.academicLife.primarySchool,
+            highSchool: values.academicLife.highSchool,
+            university: values.academicLife.university,
+            notableAchievements: values.academicLife.notableAchievements.map(item => item.value),
+        }
+    };
+
+    addPolitician(newPolitician);
+
     toast({
-      title: "Politician Profile Submitted",
-      description: `Data for ${values.name} has been successfully submitted for review. (This is a prototype, data is logged to console).`,
+      title: "Politician Profile Added",
+      description: `Data for ${values.name} has been successfully added to the directory.`,
     });
     form.reset();
   }
