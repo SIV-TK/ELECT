@@ -46,6 +46,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     const exactMatch = navItems.find(item => item.href === pathname);
     if (exactMatch) return exactMatch.label;
     // Then check for partial match for nested pages
+    if (pathname.startsWith('/politicians/')) return "Politicians";
     const partialMatch = navItems.find(item => item.href !== '/' && pathname.startsWith(item.href));
     if (partialMatch) return partialMatch.label;
     // Default fallback
