@@ -23,10 +23,12 @@ import {
   Landmark,
   UsersRound,
   GalleryVertical,
+  LayoutDashboard
 } from "lucide-react";
 
 const navItems = [
-  { href: "/", icon: Home, label: "Dashboard" },
+  { href: "/", icon: Home, label: "Home" },
+  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/politicians", icon: Users, label: "Politicians" },
   { href: "/demo-voting", icon: Vote, label: "Demo Voting" },
   { href: "/sentiment-analysis", icon: BotMessageSquare, label: "Sentiment Analysis" },
@@ -65,7 +67,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <SidebarMenuItem key={item.href}>
                 <Link href={item.href}>
                   <SidebarMenuButton
-                    isActive={pathname.startsWith(item.href) && (item.href !== '/' || pathname === '/')}
+                    isActive={pathname === item.href || (pathname.startsWith(item.href) && item.href !== '/')}
                     tooltip={item.label}
                   >
                     <item.icon />
