@@ -4,7 +4,9 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import Image from "next/image";
 import { presidentialCandidates } from "@/lib/data";
-import type { Candidate, LiveTally, TallyAnalysisState } from "@/types";
+import { pollingStations } from "@/types";
+import type { LiveTally } from "@/types";
+import { useLiveTallyStore } from "@/hooks/use-live-tally-store";
 import { analyzeTallyAnomaly } from "@/ai/flows/analyze-tally-anomaly";
 import { summarizeForm34a } from "@/ai/flows/summarize-form-34a";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -111,16 +113,6 @@ const Form34AViewer = ({ tally }: { tally: LiveTally }) => {
   );
 };
 
-const pollingStations = [
-  { name: "KICC", registeredVoters: 2500, county: "Nairobi", subCounty: "Starehe", ward: "Nairobi Central" },
-  { name: "Moi Avenue Primary", registeredVoters: 1800, county: "Mombasa", subCounty: "Mvita", ward: "Mji wa Kale" },
-  { name: "Kisumu Social Hall", registeredVoters: 2200, county: "Kisumu", subCounty: "Kisumu Central", ward: "Market Milimani" },
-  { name: "Eldoret Town Hall", registeredVoters: 2800, county: "Uasin Gishu", subCounty: "Kapseret", ward: "Kapseret" },
-  { name: "Nyeri Primary", registeredVoters: 1500, county: "Nyeri", subCounty: "Nyeri Town", ward: "Kiganjo/Mathari" },
-  { name: "Uhuru Park", registeredVoters: 3500, county: "Nairobi", subCounty: "Starehe", ward: "Nairobi Central" },
-  { name: "Likoni Ferry", registeredVoters: 2100, county: "Mombasa", subCounty: "Likoni", ward: "Likoni" },
-  { name: "Jomo Kenyatta Grounds", registeredVoters: 2600, county: "Kisumu", subCounty: "Kisumu Central", ward: "Shaurimoyo" },
-];
 
 const counties = [...new Set(pollingStations.map(p => p.county))];
 const subCounties = [...new Set(pollingStations.map(p => p.subCounty))];
@@ -137,9 +129,8 @@ function generateMockId(length: number) {
 }
 
 export default function LiveTallyPage() {
-  const [allTallies, setAllTallies] = useState<LiveTally[]>([]);
+  const { tallies, analyses, addTally, verifyTally, setAnalysisStatus, setAnalysisResult } = useLiveTallyStore();
   const { toast } = useToast();
-  const [tallyAnalyses, setTallyAnalyses] = useState<Record<string, TallyAnalysisState>>({});
   
   // Filter state
   const [filterLevel, setFilterLevel] = useState<string>("national");
@@ -172,13 +163,13 @@ export default function LiveTallyPage() {
       ...station
     };
 
-    setAllTallies(prev => [newTally, ...prev]);
+    addTally(newTally);
 
     toast({
       title: "New Tally Received",
       description: `From ${newTally.pollingStation} by Officer ${newTally.officerId}.`,
     });
-  }, [toast]);
+  }, [toast, addTally]);
   
   useEffect(() => {
     const interval = setInterval(addNewTally, 7000);
@@ -186,19 +177,15 @@ export default function LiveTallyPage() {
   }, [addNewTally]);
 
   const handleVerification = (tallyId: string) => {
-    setAllTallies(prev => 
-      prev.map(t => 
-        t.id === tallyId ? { ...t, verifications: t.verifications + 1 } : t
-      )
-    );
+    verifyTally(tallyId);
   };
   
   const handleAnalysis = async (tally: LiveTally) => {
-    setTallyAnalyses(prev => ({ ...prev, [tally.id]: { status: 'loading' } }));
+    setAnalysisStatus(tally.id, 'loading');
     
     const totalTallyVotes = tally.voteDistribution.reduce((sum, v) => sum + v.votes, 0);
-    const allReportedVotes = allTallies.flatMap(t => t.voteDistribution).reduce((sum, v) => sum + v.votes, 0);
-    const averageTallySize = allTallies.length > 0 ? allReportedVotes / allTallies.length : totalTallyVotes;
+    const allReportedVotes = tallies.flatMap(t => t.voteDistribution).reduce((sum, v) => sum + v.votes, 0);
+    const averageTallySize = tallies.length > 0 ? allReportedVotes / tallies.length : totalTallyVotes;
   
     try {
       const result = await analyzeTallyAnomaly({
@@ -207,28 +194,28 @@ export default function LiveTallyPage() {
         reportedVotes: tally.voteDistribution.map(v => `${presidentialCandidates.find(c=>c.id === v.id)?.name}: ${v.votes} votes`).join(', '),
         previousTallyAverage: averageTallySize,
       });
-      setTallyAnalyses(prev => ({ ...prev, [tally.id]: { status: 'complete', result } }));
+      setAnalysisResult(tally.id, result);
     } catch (error) {
       console.error("Error analyzing tally:", error);
       toast({ variant: "destructive", title: "Analysis Failed", description: "The AI could not process this tally." });
-      setTallyAnalyses(prev => ({ ...prev, [tally.id]: { status: 'error' } }));
+      setAnalysisStatus(tally.id, 'error');
     }
   };
 
   const filteredTallies = useMemo(() => {
-    if (filterLevel === 'national' || !filterValue) return allTallies;
-    return allTallies.filter(tally => {
+    if (filterLevel === 'national' || !filterValue) return tallies;
+    return tallies.filter(tally => {
       if (filterLevel === 'county') return tally.county === filterValue;
       if (filterLevel === 'subCounty') return tally.subCounty === filterValue;
       if (filterLevel === 'ward') return tally.ward === filterValue;
       return true;
     });
-  }, [allTallies, filterLevel, filterValue]);
+  }, [tallies, filterLevel, filterValue]);
   
   const displayTallies = useMemo(() => filteredTallies.slice(0, 5), [filteredTallies]);
 
   const totalVotes = useMemo(() => {
-    const talliesToSum = filterValue ? filteredTallies : allTallies;
+    const talliesToSum = filterValue ? filteredTallies : tallies;
     let votes = 0;
     for(const tally of talliesToSum) {
         for(const dist of tally.voteDistribution) {
@@ -238,10 +225,10 @@ export default function LiveTallyPage() {
         }
     }
     return votes;
-  }, [allTallies, filteredTallies, filterValue, filterPolitician]);
+  }, [tallies, filteredTallies, filterValue, filterPolitician]);
   
   const chartData = useMemo(() => {
-    const talliesToSum = filterValue ? filteredTallies : allTallies;
+    const talliesToSum = filterValue ? filteredTallies : tallies;
     const voteMap = new Map<string, number>();
 
     for(const tally of talliesToSum) {
@@ -264,7 +251,7 @@ export default function LiveTallyPage() {
     
     return candidatesData.sort((a,b) => b.value - a.value);
 
-  }, [allTallies, filteredTallies, filterValue, filterPolitician]);
+  }, [tallies, filteredTallies, filterValue, filterPolitician]);
 
   const chartConfig = useMemo(() => presidentialCandidates.reduce((acc, candidate, index) => {
     const key = candidate.name.split(' ').join('');
@@ -327,9 +314,10 @@ export default function LiveTallyPage() {
                         <SelectItem value="ward">Ward</SelectItem>
                     </SelectContent>
                  </Select>
-                 <Select value={filterValue || ""} onValueChange={handleLocationFilterChange} disabled={filterLevel === 'national'}>
+                 <Select value={filterValue || "all"} onValueChange={handleLocationFilterChange} disabled={filterLevel === 'national'}>
                     <SelectTrigger><SelectValue placeholder="Select Location" /></SelectTrigger>
                     <SelectContent>
+                        <SelectItem value="all">All Locations</SelectItem>
                         {getFilterLocationOptions().map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
                     </SelectContent>
                  </Select>
@@ -405,7 +393,7 @@ export default function LiveTallyPage() {
                 </div>
               )}
             {displayTallies.map((tally) => {
-              const analysis = tallyAnalyses[tally.id];
+              const analysis = analyses[tally.id];
               const isAnomaly = analysis?.status === 'complete' && analysis.result?.isAnomaly;
               const isCredible = analysis?.status === 'complete' && !analysis.result?.isAnomaly;
               

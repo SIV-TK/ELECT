@@ -13,6 +13,8 @@ import {
   SidebarMenuButton,
   SidebarInset,
   SidebarTrigger,
+  SidebarGroup,
+  SidebarGroupLabel,
 } from "@/components/ui/sidebar";
 import {
   Home,
@@ -25,6 +27,7 @@ import {
   GalleryVertical,
   LayoutDashboard,
   Shield,
+  ListChecks
 } from "lucide-react";
 
 const navItems = [
@@ -37,21 +40,28 @@ const navItems = [
   { href: "/crowd-sourced-intel", icon: UsersRound, label: "Crowd Sourced Intel" },
   { href: "/verification-gallery", icon: GalleryVertical, label: "Verification Gallery" },
   { href: "/live-tally", icon: Landmark, label: "Live Tally" },
-  { href: "/admin/add-politician", icon: Shield, label: "Add Politician" },
+];
+
+const adminNavItems = [
+    { href: "/admin/add-politician", icon: Shield, label: "Add Politician" },
+    { href: "/admin/submit-tally", icon: ListChecks, label: "Submit Tally" },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   const getPageTitle = () => {
+    const allItems = [...navItems, ...adminNavItems];
     // Exact match first
-    const exactMatch = navItems.find(item => item.href === pathname);
+    const exactMatch = allItems.find(item => item.href === pathname);
     if (exactMatch) return exactMatch.label;
+    
     // Then check for partial match for nested pages
     if (pathname.startsWith('/politicians/')) return "Politicians";
     if (pathname.startsWith('/admin/')) return "Admin";
-    const partialMatch = navItems.find(item => item.href !== '/' && pathname.startsWith(item.href));
+    const partialMatch = allItems.find(item => item.href !== '/' && pathname.startsWith(item.href));
     if (partialMatch) return partialMatch.label;
+    
     // Default fallback
     return "Sauti Ya Watu";
   }
@@ -81,6 +91,24 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </SidebarMenuItem>
             ))}
           </SidebarMenu>
+          <SidebarGroup>
+            <SidebarGroupLabel>Admin</SidebarGroupLabel>
+            <SidebarMenu>
+                {adminNavItems.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                    <Link href={item.href}>
+                    <SidebarMenuButton
+                        isActive={pathname.startsWith(item.href)}
+                        tooltip={item.label}
+                    >
+                        <item.icon />
+                        <span>{item.label}</span>
+                    </SidebarMenuButton>
+                    </Link>
+                </SidebarMenuItem>
+                ))}
+            </SidebarMenu>
+          </SidebarGroup>
         </SidebarContent>
       </Sidebar>
       <SidebarInset>

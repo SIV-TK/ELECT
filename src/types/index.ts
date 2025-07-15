@@ -61,9 +61,21 @@ export interface LiveTally {
   county: string;
   subCounty: string;
   ward: string;
+  formUrl?: string; // Optional URL to the form image
 }
 
 export type TallyAnalysisState = {
   status: 'loading' | 'complete' | 'error';
   result?: TallyAnomalyOutput;
 };
+
+export const pollingStations = [
+  { name: "KICC", registeredVoters: 2500, county: "Nairobi", subCounty: "Starehe", ward: "Nairobi Central" },
+  { name: "Moi Avenue Primary", registeredVoters: 1800, county: "Mombasa", subCounty: "Mvita", ward: "Mji wa Kale" },
+  { name: "Kisumu Social Hall", registeredVoters: 2200, county: "Kisumu", subCounty: "Kisumu Central", ward: "Market Milimani" },
+  { name: "Eldoret Town Hall", registeredVoters: 2800, county: "Uasin Gishu", subCounty: "Kapseret", ward: "Kapseret" },
+  { name: "Nyeri Primary", registeredVoters: 1500, county: "Nyeri", subCounty: "Nyeri Town", ward: "Kiganjo/Mathari" },
+  { name: "Uhuru Park", registeredVoters: 3500, county: "Nairobi", subCounty: "Starehe", ward: "Nairobi Central" },
+  { name: "Likoni Ferry", registeredVoters: 2100, county: "Mombasa", subCounty: "Likoni", ward: "Likoni" },
+  { name: "Jomo Kenyatta Grounds", registeredVoters: 2600, county: "Kisumu", subCounty: "Kisumu Central", ward: "Shaurimoyo" },
+];
