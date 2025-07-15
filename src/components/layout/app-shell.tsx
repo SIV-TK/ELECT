@@ -23,7 +23,8 @@ import {
   Landmark,
   UsersRound,
   GalleryVertical,
-  LayoutDashboard
+  LayoutDashboard,
+  Shield,
 } from "lucide-react";
 
 const navItems = [
@@ -36,6 +37,7 @@ const navItems = [
   { href: "/crowd-sourced-intel", icon: UsersRound, label: "Crowd Sourced Intel" },
   { href: "/verification-gallery", icon: GalleryVertical, label: "Verification Gallery" },
   { href: "/live-tally", icon: Landmark, label: "Live Tally" },
+  { href: "/admin/add-politician", icon: Shield, label: "Add Politician" },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -47,6 +49,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     if (exactMatch) return exactMatch.label;
     // Then check for partial match for nested pages
     if (pathname.startsWith('/politicians/')) return "Politicians";
+    if (pathname.startsWith('/admin/')) return "Admin";
     const partialMatch = navItems.find(item => item.href !== '/' && pathname.startsWith(item.href));
     if (partialMatch) return partialMatch.label;
     // Default fallback
