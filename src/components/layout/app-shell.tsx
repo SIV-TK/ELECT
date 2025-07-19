@@ -3,7 +3,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   SidebarProvider,
   Sidebar,
@@ -30,9 +30,14 @@ import {
   Shield,
   ListChecks,
   LogIn,
-  UserPlus
+  UserPlus,
+  LogOut,
+  User as UserIcon,
 } from "lucide-react";
 import { Button } from "../ui/button";
+import { useAuthStore } from "@/hooks/use-auth-store";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
 
 const navItems = [
   { href: "/", icon: Home, label: "Home" },
@@ -58,6 +63,13 @@ const authNavItems = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { isAuthenticated, user, logout } = useAuthStore();
+
+  const handleLogout = () => {
+    logout();
+    router.push('/login');
+  };
 
   const getPageTitle = () => {
     const allItems = [...navItems, ...adminNavItems, ...authNavItems];
@@ -121,7 +133,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
            <SidebarGroup>
             <SidebarGroupLabel>Account</SidebarGroupLabel>
             <SidebarMenu>
-                {authNavItems.map((item) => (
+                {!isAuthenticated ? authNavItems.map((item) => (
                 <SidebarMenuItem key={item.href}>
                     <Link href={item.href}>
                     <SidebarMenuButton
@@ -133,7 +145,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     </SidebarMenuButton>
                     </Link>
                 </SidebarMenuItem>
-                ))}
+                )) : (
+                  <SidebarMenuItem>
+                     <SidebarMenuButton onClick={handleLogout} tooltip="Logout">
+                       <LogOut />
+                       <span>Logout</span>
+                     </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
             </SidebarMenu>
           </SidebarGroup>
         </SidebarContent>
@@ -146,16 +165,44 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                {getPageTitle()}
              </h1>
            </div>
-           {!isAuthPage && (
-            <div className="hidden md:flex items-center gap-2">
-                <Link href="/login" passHref>
-                    <Button variant="outline">Login</Button>
-                </Link>
-                <Link href="/signup" passHref>
-                    <Button>Sign Up</Button>
-                </Link>
-            </div>
-           )}
+           <div className="flex items-center gap-2">
+            {isAuthenticated ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                       <Avatar className="h-8 w-8">
+                         <AvatarImage src={`https://placehold.co/100x100.png`} alt={user?.fullName} data-ai-hint="user avatar" />
+                         <AvatarFallback>{user?.fullName?.charAt(0).toUpperCase()}</AvatarFallback>
+                       </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                     <DropdownMenuLabel className="font-normal">
+                       <div className="flex flex-col space-y-1">
+                         <p className="text-sm font-medium leading-none">{user?.fullName}</p>
+                         <p className="text-xs leading-none text-muted-foreground">
+                           {user?.email}
+                         </p>
+                       </div>
+                     </DropdownMenuLabel>
+                     <DropdownMenuSeparator />
+                     <DropdownMenuItem onClick={handleLogout}>
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Log out</span>
+                     </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+            ) : !isAuthPage ? (
+                <div className="hidden md:flex items-center gap-2">
+                    <Link href="/login" passHref>
+                        <Button variant="outline">Login</Button>
+                    </Link>
+                    <Link href="/signup" passHref>
+                        <Button>Sign Up</Button>
+                    </Link>
+                </div>
+           ) : null}
+           </div>
         </header>
         <main className="flex-1 p-4 md:p-6">{children}</main>
         <footer className="border-t py-4 px-6 text-center text-sm text-muted-foreground">

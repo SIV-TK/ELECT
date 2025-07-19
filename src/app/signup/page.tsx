@@ -12,6 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/hooks/use-auth-store";
 
 const formSchema = z.object({
   fullName: z.string().min(3, "Full name must be at least 3 characters."),
@@ -22,6 +23,7 @@ const formSchema = z.object({
 export default function SignupPage() {
   const { toast } = useToast();
   const router = useRouter();
+  const { login } = useAuthStore();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -33,12 +35,14 @@ export default function SignupPage() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // This is a mock signup. In a real app, you'd call your auth API.
-    console.log("Signup attempt with:", values);
+    // This is a mock signup.
+    login({ fullName: values.fullName });
+    
     toast({
       title: "Account Created!",
       description: "Welcome! We're redirecting you to the dashboard.",
     });
+
     // Redirect to dashboard after a short delay
     setTimeout(() => {
         router.push('/dashboard');

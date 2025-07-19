@@ -12,6 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LogIn } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/hooks/use-auth-store";
 
 const formSchema = z.object({
   email: z.string().email("Invalid email address."),
@@ -21,6 +22,7 @@ const formSchema = z.object({
 export default function LoginPage() {
   const { toast } = useToast();
   const router = useRouter();
+  const { login } = useAuthStore();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -31,12 +33,15 @@ export default function LoginPage() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // This is a mock login. In a real app, you'd call your auth API.
-    console.log("Login attempt with:", values);
+    // This is a mock login.
+    const mockUserName = values.email.split('@')[0];
+    login({ fullName: mockUserName });
+
     toast({
       title: "Login Successful",
       description: "Welcome back! Redirecting you to the dashboard.",
     });
+
     // Redirect to dashboard after a short delay
     setTimeout(() => {
         router.push('/dashboard');

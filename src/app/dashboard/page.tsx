@@ -1,6 +1,13 @@
+// src/app/dashboard/page.tsx
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/hooks/use-auth-store";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { BarChart, Lightbulb, Users, BotMessageSquare, Vote, UsersRound, GalleryVertical, Landmark } from "lucide-react";
 import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const featureCards = [
   {
@@ -55,13 +62,50 @@ const featureCards = [
 ];
 
 export default function DashboardPage() {
+  const { isAuthenticated, user, isLoading } = useAuthStore();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push('/login');
+    }
+  }, [isLoading, isAuthenticated, router]);
+
+  if (isLoading || !isAuthenticated) {
+    return (
+        <div className="space-y-6">
+            <Card>
+                <CardHeader>
+                    <Skeleton className="h-8 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                </CardHeader>
+                <CardContent>
+                    <Skeleton className="h-4 w-full" />
+                </CardContent>
+            </Card>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {[...Array(6)].map((_, i) => (
+                    <Card key={i} className="h-[120px]">
+                        <CardHeader>
+                            <Skeleton className="h-6 w-3/4" />
+                        </CardHeader>
+                        <CardContent>
+                            <Skeleton className="h-4 w-full" />
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+        </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <Card>
         <CardHeader>
           <CardTitle className="font-headline text-3xl">Sauti Ya Watu Dashboard</CardTitle>
           <CardDescription>
-            The Voice of the People. Your one-stop platform for transparent and insightful Kenyan election data.
+            Welcome, {user?.fullName}! This is your one-stop platform for transparent and insightful Kenyan election data.
           </CardDescription>
         </CardHeader>
         <CardContent>
