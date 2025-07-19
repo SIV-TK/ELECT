@@ -1,3 +1,4 @@
+// src/components/layout/app-shell.tsx
 "use client";
 
 import * as React from "react";
@@ -27,8 +28,11 @@ import {
   GalleryVertical,
   LayoutDashboard,
   Shield,
-  ListChecks
+  ListChecks,
+  LogIn,
+  UserPlus
 } from "lucide-react";
+import { Button } from "../ui/button";
 
 const navItems = [
   { href: "/", icon: Home, label: "Home" },
@@ -47,24 +51,29 @@ const adminNavItems = [
     { href: "/admin/submit-tally", icon: ListChecks, label: "Submit Tally" },
 ];
 
+const authNavItems = [
+    { href: "/login", icon: LogIn, label: "Login" },
+    { href: "/signup", icon: UserPlus, label: "Sign Up" },
+]
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   const getPageTitle = () => {
-    const allItems = [...navItems, ...adminNavItems];
-    // Exact match first
+    const allItems = [...navItems, ...adminNavItems, ...authNavItems];
     const exactMatch = allItems.find(item => item.href === pathname);
     if (exactMatch) return exactMatch.label;
     
-    // Then check for partial match for nested pages
-    if (pathname.startsWith('/politicians/')) return "Politicians";
-    if (pathname.startsWith('/admin/')) return "Admin";
-    const partialMatch = allItems.find(item => item.href !== '/' && pathname.startsWith(item.href));
-    if (partialMatch) return partialMatch.label;
+    if (pathname.startsWith('/politicians/')) return "Politician Profile";
+    if (pathname.startsWith('/admin/')) return "Admin Tools";
     
-    // Default fallback
+    const rootMatch = allItems.find(item => item.href !== '/' && pathname.startsWith(item.href));
+    if (rootMatch) return rootMatch.label;
+    
     return "Sauti Ya Watu";
   }
+
+  const isAuthPage = pathname === '/login' || pathname === '/signup';
 
   return (
     <SidebarProvider>
@@ -81,7 +90,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <SidebarMenuItem key={item.href}>
                 <Link href={item.href}>
                   <SidebarMenuButton
-                    isActive={pathname === item.href || (pathname.startsWith(item.href) && item.href !== '/')}
+                    isActive={pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))}
                     tooltip={item.label}
                   >
                     <item.icon />
@@ -109,6 +118,24 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 ))}
             </SidebarMenu>
           </SidebarGroup>
+           <SidebarGroup>
+            <SidebarGroupLabel>Account</SidebarGroupLabel>
+            <SidebarMenu>
+                {authNavItems.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                    <Link href={item.href}>
+                    <SidebarMenuButton
+                        isActive={pathname.startsWith(item.href)}
+                        tooltip={item.label}
+                    >
+                        <item.icon />
+                        <span>{item.label}</span>
+                    </SidebarMenuButton>
+                    </Link>
+                </SidebarMenuItem>
+                ))}
+            </SidebarMenu>
+          </SidebarGroup>
         </SidebarContent>
       </Sidebar>
       <SidebarInset>
@@ -119,6 +146,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                {getPageTitle()}
              </h1>
            </div>
+           {!isAuthPage && (
+            <div className="hidden md:flex items-center gap-2">
+                <Link href="/login" passHref>
+                    <Button variant="outline">Login</Button>
+                </Link>
+                <Link href="/signup" passHref>
+                    <Button>Sign Up</Button>
+                </Link>
+            </div>
+           )}
         </header>
         <main className="flex-1 p-4 md:p-6">{children}</main>
         <footer className="border-t py-4 px-6 text-center text-sm text-muted-foreground">
