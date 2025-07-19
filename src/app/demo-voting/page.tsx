@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { pollingStations } from "@/types";
 import Image from "next/image";
 import { predictElectionOutcome } from "@/ai/flows/predict-election-outcome";
 import type { PredictElectionOutcomeOutput } from "@/ai/flows/predict-election-outcome";
@@ -34,12 +35,27 @@ type VotedState = {
   [key: string]: string | null;
 };
 
-const elections = [
-  { id: 'presidential', title: 'Presidential', data: presidentialCandidates },
-  { id: 'gubernatorial', title: 'Gubernatorial (Nairobi)', data: gubernatorialCandidates },
-  { id: 'senatorial', title: 'Senatorial (Nairobi)', data: senatorialCandidates },
-  { id: 'womenrep', title: 'Women Rep (Nairobi)', data: womenRepCandidates },
-  { id: 'mca', title: 'MCA (Karen Ward)', data: mcaCandidates },
+const AREA_TABS = [
+  { id: 'national', label: 'National' },
+  { id: 'county', label: 'County' },
+  { id: 'ward', label: 'Ward' },
+];
+
+const COUNTY_LIST = [
+  ...new Set([
+    ...gubernatorialCandidates.map(c => c.county),
+    ...senatorialCandidates.map(c => c.county),
+    ...womenRepCandidates.map(c => c.county),
+    ...mcaCandidates.map(c => c.county),
+    ...pollingStations.map(p => p.county),
+  ].filter(Boolean)),
+];
+
+const WARD_LIST = [
+  ...new Set([
+    ...mcaCandidates.map(c => c.ward),
+    ...pollingStations.map(p => p.ward),
+  ].filter(Boolean)),
 ];
 
 const chartConfig = {
@@ -149,6 +165,7 @@ const ElectionTabContent = ({
   );
 };
 
+
 export default function DemoVotingPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [prediction, setPrediction] = useState<PredictElectionOutcomeOutput | null>(null);
@@ -166,6 +183,9 @@ export default function DemoVotingPage() {
     womenrep: null,
     mca: null,
   });
+  const [areaTab, setAreaTab] = useState('national');
+  const [selectedCounty, setSelectedCounty] = useState(COUNTY_LIST[0] || 'Nairobi');
+  const [selectedWard, setSelectedWard] = useState(WARD_LIST[0] || 'Karen');
   const { toast } = useToast();
 
   const handleVote = (electionType: string, candidateId: string) => {
@@ -220,6 +240,25 @@ export default function DemoVotingPage() {
 
   const totalPresidentialVotes = useMemo(() => candidateState.presidential.reduce((acc, c) => acc + c.votes, 0), [candidateState.presidential]);
 
+  // Filter posts/candidates based on area selection
+  type ElectionTab = { id: string; title: string; data: Candidate[] };
+  let filteredElections: ElectionTab[] = [];
+  if (areaTab === 'national') {
+    filteredElections = [
+      { id: 'presidential', title: 'Presidential', data: candidateState.presidential },
+    ];
+  } else if (areaTab === 'county') {
+    filteredElections = [
+      { id: 'gubernatorial', title: `Gubernatorial (${selectedCounty})`, data: candidateState.gubernatorial.filter((c: Candidate) => c.county === selectedCounty) },
+      { id: 'senatorial', title: `Senatorial (${selectedCounty})`, data: candidateState.senatorial.filter((c: Candidate) => c.county === selectedCounty) },
+      { id: 'womenrep', title: `Women Rep (${selectedCounty})`, data: candidateState.womenrep.filter((c: Candidate) => c.county === selectedCounty) },
+    ];
+  } else if (areaTab === 'ward') {
+    filteredElections = [
+      { id: 'mca', title: `MCA (${selectedWard})`, data: candidateState.mca.filter((c: Candidate) => c.ward === selectedWard) },
+    ];
+  }
+
   return (
     <div className="grid lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 space-y-6">
@@ -227,27 +266,67 @@ export default function DemoVotingPage() {
           <CardHeader>
             <CardTitle className="font-headline text-2xl">Demo Voting Booth</CardTitle>
             <CardDescription>
-              Select an election race and cast your vote. Your vote contributes to the live tally for that race.
+              Select your area and post, then cast your vote. Your vote contributes to the live tally for that race.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="presidential" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-5 h-auto">
-                {elections.map(e => <TabsTrigger key={e.id} value={e.id}>{e.title}</TabsTrigger>)}
+            {/* Area selection tabs */}
+            <Tabs value={areaTab} onValueChange={setAreaTab} className="mb-4">
+              <TabsList className="grid w-full grid-cols-3 h-auto mb-2">
+                {AREA_TABS.map(tab => (
+                  <TabsTrigger key={tab.id} value={tab.id}>{tab.label}</TabsTrigger>
+                ))}
               </TabsList>
-              {elections.map(e => {
-                const totalVotes = candidateState[e.id].reduce((sum, c) => sum + c.votes, 0);
+            </Tabs>
+
+            {/* County/Ward dropdowns */}
+            {areaTab === 'county' && (
+              <div className="mb-4">
+                <label className="block mb-1 font-semibold">Select County:</label>
+                <select
+                  value={selectedCounty}
+                  onChange={e => setSelectedCounty(e.target.value)}
+                  className="border rounded px-2 py-1 w-full"
+                >
+                  {COUNTY_LIST.map(county => (
+                    <option key={county} value={county}>{county}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {areaTab === 'ward' && (
+              <div className="mb-4">
+                <label className="block mb-1 font-semibold">Select Ward:</label>
+                <select
+                  value={selectedWard}
+                  onChange={e => setSelectedWard(e.target.value)}
+                  className="border rounded px-2 py-1 w-full"
+                >
+                  {WARD_LIST.map(ward => (
+                    <option key={ward} value={ward}>{ward}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Election posts and candidates */}
+            <Tabs defaultValue={filteredElections[0]?.id} className="w-full">
+              <TabsList className={`grid w-full grid-cols-${filteredElections.length} h-auto`}>
+                {filteredElections.map((e: ElectionTab) => <TabsTrigger key={e.id} value={e.id}>{e.title}</TabsTrigger>)}
+              </TabsList>
+              {filteredElections.map((e: ElectionTab) => {
+                const totalVotes = e.data.reduce((sum: number, c: Candidate) => sum + c.votes, 0);
                 return (
                   <TabsContent key={e.id} value={e.id} className="mt-6">
                     <ElectionTabContent
                       electionType={e.id}
-                      candidates={candidateState[e.id]}
+                      candidates={e.data}
                       onVote={handleVote}
                       votedCandidateId={votedState[e.id]}
                       totalVotes={totalVotes}
                     />
                   </TabsContent>
-                )
+                );
               })}
             </Tabs>
           </CardContent>

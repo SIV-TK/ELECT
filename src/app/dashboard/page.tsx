@@ -1,7 +1,7 @@
 // src/app/dashboard/page.tsx
 "use client";
 
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/hooks/use-auth-store";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -73,29 +73,29 @@ export default function DashboardPage() {
 
   if (isLoading || !isAuthenticated) {
     return (
-        <div className="space-y-6">
-            <Card>
-                <CardHeader>
-                    <Skeleton className="h-8 w-3/4" />
-                    <Skeleton className="h-4 w-1/2" />
-                </CardHeader>
-                <CardContent>
-                    <Skeleton className="h-4 w-full" />
-                </CardContent>
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-8 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-4 w-full" />
+          </CardContent>
+        </Card>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[...Array(6)].map((_, i) => (
+            <Card key={i} className="h-[120px]">
+              <CardHeader>
+                <Skeleton className="h-6 w-3/4" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-4 w-full" />
+              </CardContent>
             </Card>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {[...Array(6)].map((_, i) => (
-                    <Card key={i} className="h-[120px]">
-                        <CardHeader>
-                            <Skeleton className="h-6 w-3/4" />
-                        </CardHeader>
-                        <CardContent>
-                            <Skeleton className="h-4 w-full" />
-                        </CardContent>
-                    </Card>
-                ))}
-            </div>
+          ))}
         </div>
+      </div>
     );
   }
 
@@ -114,7 +114,7 @@ export default function DashboardPage() {
           </p>
         </CardContent>
       </Card>
-      
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {featureCards.map((feature) => (
           <Link href={feature.href} key={feature.title} className="block hover:scale-[1.02] transition-transform duration-200">
@@ -130,6 +130,8 @@ export default function DashboardPage() {
           </Link>
         ))}
       </div>
+
+
 
       <Card>
         <CardHeader>

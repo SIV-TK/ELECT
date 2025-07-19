@@ -1,0 +1,95 @@
+import { Fragment } from 'react';
+
+export default function LandingPage() {
+  return (
+    <div className="flex flex-col min-h-screen">
+      <main className="flex-1">
+        {/* Hero Section */}
+        <section className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-background" />
+          <div className="absolute inset-0 opacity-30 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIxIiBmaWxsPSIjZTBlN2ZmIi8+PC9zdmc+')] bg-[length:40px_40px]" />
+          <div className="container relative mx-auto px-4 py-32 sm:px-6 lg:flex lg:h-screen lg:items-center lg:px-8">
+            <div className="max-w-3xl">
+              <div className="inline-flex items-center gap-2 rounded-full bg-primary/20 px-4 py-2 text-sm text-primary transition-colors hover:bg-primary/30">
+                <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                For the People, By the People
+              </div>
+
+              <h1 className="mt-6 font-headline text-4xl font-bold sm:text-6xl md:text-7xl lg:text-8xl [text-wrap:balance] bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary to-accent animate-gradient">
+                Your Voice, <br />
+                Amplified.
+              </h1>
+
+              <p className="mt-8 text-lg sm:text-xl text-muted-foreground max-w-xl leading-relaxed">
+                Sauti Ya Watu brings transparency and accountability to the Kenyan political landscape. Experience democracy enhanced by cutting-edge AI technology.
+              </p>
+
+              <div className="mt-12 flex flex-wrap gap-4">
+                <a href="/login" className="transform rounded-lg bg-primary px-8 py-4 text-sm font-medium text-white transition-all hover:scale-105 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+                  Get Started
+                </a>
+                <a href="https://github.com/ElECT-AI/peoples" target="_blank" rel="noopener noreferrer" className="transform rounded-lg border border-primary/20 bg-background/50 backdrop-blur-sm px-8 py-4 text-sm font-medium text-primary transition-all hover:scale-105 hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+                  View on GitHub
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Features Section */}
+        <section className="py-20 bg-gradient-to-b from-background via-background/90 to-background">
+          <div className="container mx-auto px-4 text-center">
+            <h2 className="text-3xl font-bold mb-12">Empowering Democracy with AI</h2>
+          <div className="container mx-auto px-4 text-center">
+            <h2 className="text-3xl font-bold mb-12">Empowering Democracy with AI</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                {
+                  title: "Transparent Voting",
+                  description: "Experience secure, verifiable voting with real-time results and AI-powered verification.",
+                  icon: (
+                    <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  )
+                },
+                {
+                  title: "AI-Powered Insights",
+                  description: "Get deep insights into political sentiment and trends through advanced AI analysis.",
+                  icon: (
+                    <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  )
+                },
+                {
+                  title: "Community Driven",
+                  description: "Join a vibrant community of citizens working together for a more transparent democracy.",
+                  icon: (
+                    <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  )
+                }
+              ].map((feature, index) => (
+                <div key={index} className="p-6 rounded-xl bg-card hover:bg-card/80 transition-colors">
+                  <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
+                    {feature.icon}
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                  <p className="text-muted-foreground">{feature.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}

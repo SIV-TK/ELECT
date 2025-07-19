@@ -1,7 +1,8 @@
-// src/app/live-tally/page.tsx
 "use client";
+import React, { useState, useEffect } from "react";
+import { analyzeCandidateSentiment } from '@/ai/flows/analyze-candidate-sentiment';
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useMemo, useCallback } from "react";
 import Image from "next/image";
 import { presidentialCandidates } from "@/lib/data";
 import { pollingStations } from "@/types";
@@ -156,7 +157,6 @@ export default function LiveTallyPage() {
       id: `tally-${generateMockId(8)}`,
       officerId: `officer-${generateMockId(4)}`,
       pollingStation: `${station.name}, ${station.ward}`,
-      registeredVoters: station.registeredVoters,
       voteDistribution,
       timestamp: new Date(),
       verifications: Math.floor(Math.random() * 5),
@@ -193,6 +193,9 @@ export default function LiveTallyPage() {
         registeredVoters: tally.registeredVoters,
         reportedVotes: tally.voteDistribution.map(v => `${presidentialCandidates.find(c=>c.id === v.id)?.name}: ${v.votes} votes`).join(', '),
         previousTallyAverage: averageTallySize,
+        historicalFraudRisk: 0.05, // Example value, replace with real data if available
+        socialMediaSignal: 'neutral', // Example value, replace with real data if available
+        crowdIntel: 'none', // Example value, replace with real data if available
       });
       setAnalysisResult(tally.id, result);
     } catch (error) {
@@ -293,14 +296,57 @@ export default function LiveTallyPage() {
     return "National Tally Overview";
   }
 
+  // ...existing code...
+  // Mock sentiment data for demonstration (replace with real AI call)
+  const [sentimentData, setSentimentData] = useState<Array<{ name: string; sentimentScore: number; sentimentSummary: string; positiveKeywords: string[]; negativeKeywords: string[] }>>([]);
+  const [loadingSentiment, setLoadingSentiment] = useState(true);
+  useEffect(() => {
+    async function fetchSentiment() {
+      setLoadingSentiment(true);
+      const countyPaths = require('@/components/maps/county-paths').countyPaths as Array<{ id: string; name: string; d: string }>;
+      const counties: string[] = countyPaths.map((c: { name: string }) => c.name);
+      const candidateName = require('@/lib/data').presidentialCandidates[0]?.name || 'Candidate';
+      const topic = 'election';
+      const results = await Promise.all(counties.map(async county => {
+        try {
+          const sentiment = await analyzeCandidateSentiment({ candidateName, topic });
+          return { name: county, sentimentScore: sentiment.sentimentScore, sentimentSummary: sentiment.sentimentSummary, positiveKeywords: sentiment.positiveKeywords, negativeKeywords: sentiment.negativeKeywords };
+        } catch {
+          return { name: county, sentimentScore: 0, sentimentSummary: 'No data', positiveKeywords: [], negativeKeywords: [] };
+        }
+      }));
+      setSentimentData(results);
+      setLoadingSentiment(false);
+    }
+    fetchSentiment();
+  }, []);
+
   return (
-    <div className="grid lg:grid-cols-3 gap-6">
+    <div className="grid lg:grid-cols-3 gap-6 animate-in fade-in-50">
       <div className="lg:col-span-2 space-y-6">
-        <Card>
+        <Card className="rounded-xl shadow-lg">
           <CardHeader>
-            <CardTitle className="font-headline text-2xl flex items-center gap-2">{getOverviewTitle()}</CardTitle>
+            <CardTitle className="font-headline text-2xl flex items-center gap-2 animate-in fade-in-50 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{getOverviewTitle()}</CardTitle>
             <CardDescription>
-              Live presidential results. Total Votes Tallied: <span className="font-bold">{totalVotes.toLocaleString()}</span>
+              {(() => {
+                let areaLabel = '';
+                if (filterLevel === 'national' || !filterValue) {
+                  areaLabel = 'National';
+                } else if (filterLevel === 'county') {
+                  areaLabel = `County: ${filterValue}`;
+                } else if (filterLevel === 'subCounty') {
+                  areaLabel = `Sub-County: ${filterValue}`;
+                } else if (filterLevel === 'ward') {
+                  areaLabel = `Ward: ${filterValue}`;
+                }
+                let postLabel = 'Presidential';
+                if (filterPolitician) {
+                  const pol = presidentialCandidates.find(c => c.id === filterPolitician);
+                  postLabel = pol ? pol.name : 'Presidential';
+                }
+                return `Live ${postLabel} results for ${areaLabel}. Total Votes Tallied: `;
+              })()}
+              <span className="font-bold">{totalVotes.toLocaleString()}</span>
             </CardDescription>
           </CardHeader>
            <CardContent>
@@ -339,6 +385,7 @@ export default function LiveTallyPage() {
               </div>
               <TabsContent value="bar">
                  {totalVotes > 0 ? (
+                  <>
                   <ChartContainer config={chartConfig} className="min-h-[400px] w-full">
                     <RechartsBarChart data={chartData} accessibilityLayer layout="vertical" margin={{ left: 20 }}>
                       <CartesianGrid horizontal={false} />
@@ -350,14 +397,29 @@ export default function LiveTallyPage() {
                       </Bar>
                     </RechartsBarChart>
                   </ChartContainer>
+                  {/* Legend below chart */}
+                  <div className="mt-6 flex flex-wrap gap-4 justify-center">
+                    {chartData.map(entry => {
+                      const percent = totalVotes > 0 ? ((entry.value / totalVotes) * 100).toFixed(1) : '0.0';
+                      return (
+                        <div key={entry.id} className="flex items-center gap-2 px-3 py-1 rounded bg-muted text-sm shadow">
+                          <span className="inline-block w-3 h-3 rounded-full" style={{ background: entry.fill }}></span>
+                          <span className="font-semibold">{entry.name}</span>
+                          <span className="text-xs text-muted-foreground">{percent}%</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  </>
                 ) : (
-                  <div className="text-center text-muted-foreground py-16">
+                  <div className="text-center text-muted-foreground py-16 animate-in fade-in-50">
                     <p>Waiting for polling stations to report...</p>
                   </div>
                 )}
               </TabsContent>
                <TabsContent value="pie">
                  {totalVotes > 0 ? (
+                  <>
                     <ChartContainer config={chartConfig} className="min-h-[400px] w-full">
                        <RechartsPieChart>
                           <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
@@ -368,8 +430,22 @@ export default function LiveTallyPage() {
                           </Pie>
                        </RechartsPieChart>
                     </ChartContainer>
+                    {/* Legend below chart */}
+                    <div className="mt-6 flex flex-wrap gap-4 justify-center">
+                      {chartData.map(entry => {
+                        const percent = totalVotes > 0 ? ((entry.value / totalVotes) * 100).toFixed(1) : '0.0';
+                        return (
+                          <div key={entry.id} className="flex items-center gap-2 px-3 py-1 rounded bg-muted text-sm shadow">
+                            <span className="inline-block w-3 h-3 rounded-full" style={{ background: entry.fill }}></span>
+                            <span className="font-semibold">{entry.name}</span>
+                            <span className="text-xs text-muted-foreground">{percent}%</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
                  ) : (
-                   <div className="text-center text-muted-foreground py-16">
+                   <div className="text-center text-muted-foreground py-16 animate-in fade-in-50">
                      <p>Waiting for polling stations to report...</p>
                    </div>
                  )}
@@ -379,16 +455,16 @@ export default function LiveTallyPage() {
         </Card>
       </div>
       <div className="space-y-6">
-        <Card className="sticky top-20">
+        <Card className="sticky top-20 rounded-xl shadow-lg animate-in fade-in-50">
           <CardHeader>
-            <CardTitle className="font-headline flex items-center gap-2"><Landmark/>Live Verification Feed</CardTitle>
+            <CardTitle className="font-headline flex items-center gap-2 animate-in fade-in-50 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"><Landmark/>Live Verification Feed</CardTitle>
             <CardDescription>
               New tallies from polling stations appear here. Feed updates every 7 seconds.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
              {displayTallies.length === 0 && (
-                <div className="text-center text-muted-foreground py-8">
+                <div className="text-center text-muted-foreground py-8 animate-in fade-in-50">
                   <p>Awaiting incoming data for this location...</p>
                 </div>
               )}
@@ -397,8 +473,9 @@ export default function LiveTallyPage() {
               const isAnomaly = analysis?.status === 'complete' && analysis.result?.isAnomaly;
               const isCredible = analysis?.status === 'complete' && !analysis.result?.isAnomaly;
               
+              // ...existing code...
               return (
-                <div key={tally.id} className="border rounded-lg p-3 space-y-2 animate-in fade-in-50">
+                <div key={tally.id} className="border rounded-xl shadow p-3 space-y-2 animate-in fade-in-50 bg-card">
                   <div className="flex justify-between items-start">
                      <div className="text-xs text-muted-foreground">
                         <div className="flex items-center gap-2">
@@ -426,14 +503,29 @@ export default function LiveTallyPage() {
                        )
                     })}
                   </div>
+                  {/* AI Insights Section */}
                   {analysis?.status === 'complete' && analysis.result && (
-                     <Alert variant={analysis.result.isAnomaly ? "destructive" : "default"} className="mt-2">
+                     <Alert variant={analysis.result.isAnomaly ? "destructive" : "default"} className="mt-2 animate-in fade-in-50">
                         {analysis.result.isAnomaly ? <ShieldAlert className="h-4 w-4" /> : <ShieldCheck className="h-4 w-4" />}
-                        <AlertTitle>
+                        <AlertTitle className="font-headline bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                            AI Analysis: {analysis.result.isAnomaly ? "Anomaly Detected" : "All Clear"}
                         </AlertTitle>
                         <AlertDescription>{analysis.result.reason}</AlertDescription>
-                     </Alert>
+                        {analysis.result.explainability && (
+                          <div className="mt-2 text-xs text-muted-foreground">
+                            <strong>Explainability:</strong> {analysis.result.explainability}
+                          </div>
+                        )}
+                        {typeof analysis.result.fraudRiskScore === 'number' && (
+                          <div className="mt-2 text-xs text-muted-foreground">
+                            <strong>Fraud Risk Score:</strong> {(analysis.result.fraudRiskScore * 100).toFixed(1)}%
+                          </div>
+                        )}
+                        {/* Turnout prediction placeholder (to be replaced with real AI call) */}
+                        <div className="mt-2 text-xs text-muted-foreground">
+                          <strong>Turnout Prediction:</strong> <span className="font-semibold">AI estimates turnout at 72% (based on historical, weather, and social signals)</span>
+                        </div>
+                      </Alert>
                   )}
                   <div className="grid grid-cols-2 gap-2 pt-2">
                      <Button size="sm" variant="outline" onClick={() => handleVerification(tally.id)}>

@@ -31,7 +31,7 @@ export default function PoliticiansPage() {
           </div>
         </CardHeader>
       </Card>
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {politicians.map((politician) => (
           <PoliticianCard key={politician.id} politician={politician} />
         ))}

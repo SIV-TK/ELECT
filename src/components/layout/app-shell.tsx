@@ -40,7 +40,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
 
 const navItems = [
-  { href: "/", icon: Home, label: "Home" },
+// Removed Home from dashboard sidebar navigation
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/politicians", icon: Users, label: "Politicians" },
   { href: "/demo-voting", icon: Vote, label: "Demo Voting" },
@@ -65,6 +65,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { isAuthenticated, user, logout } = useAuthStore();
+  
+  // Don't render shell for home and login pages
+  if (pathname === '/' || pathname === '/login') {
+    return <>{children}</>;
+  }
 
   const handleLogout = () => {
     logout();

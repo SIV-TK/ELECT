@@ -1,42 +1,44 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Space+Grotesk:wght@700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 94%;
-    --foreground: 0 0% 3.9%;
+    --background: 220 60% 98%; /* Soft blue background */
+    --foreground: 222 47% 11%; /* Deep navy foreground */
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 291 64% 42%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 180 100% 25%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 291 64% 42%;
-    --chart-1: 291 64% 42%;
-    --chart-2: 180 100% 25%;
-    --chart-3: 45 90% 50%;
-    --chart-4: 210 80% 55%;
-    --chart-5: 0 75% 55%;
-    --radius: 0.5rem;
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 0 0% 3.9%;
-    --sidebar-primary: 291 64% 42%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 0 0% 94%;
-    --sidebar-accent-foreground: 0 0% 9%;
-    --sidebar-border: 0 0% 89.8%;
-    --sidebar-ring: 291 64% 42%;
+    --card-foreground: 222 47% 11%;
+    --popover: 210 40% 98%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 245 100% 60%; /* Vibrant blue */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 162 100% 40%; /* Fresh green */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 210 16% 93%;
+    --muted-foreground: 222 47% 40%;
+    --accent: 36 100% 50%; /* Orange accent */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 245 100% 60%;
+    --chart-1: 245 100% 60%;
+    --chart-2: 162 100% 40%;
+    --chart-3: 36 100% 50%;
+    --chart-4: 291 64% 42%;
+    --chart-5: 0 84% 60%;
+    --radius: 0.75rem;
+    --sidebar-background: 220 60% 98%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 245 100% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 162 100% 40%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 245 100% 60%;
   }
 
   .dark {
@@ -80,11 +82,34 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+    font-family: 'Inter', 'sans-serif';
+    font-size: 1.1rem;
+    letter-spacing: 0.01em;
+    line-height: 1.7;
+    animation: fadeIn 0.8s ease;
+    background-image: linear-gradient(120deg, hsl(var(--primary)/0.08) 0%, hsl(var(--background)) 100%), url('data:image/svg+xml;utf8,<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="1" fill="%23e0e7ff"/></svg>');
+    background-size: cover, 40px 40px;
+    background-repeat: repeat;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', 'Inter', 'sans-serif';
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    animation: fadeIn 1s ease;
+    background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
   }
 }
 
 @layer utilities {
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
   .blinking-indicator {
     animation: blink 1.5s infinite ease-in-out;
   }
