@@ -187,4 +187,40 @@
   .dark .prose {
     @apply text-foreground;
   }
+  
+  /* Mobile-specific improvements */
+  @media (max-width: 768px) {
+    .container {
+      @apply px-4;
+    }
+    
+    /* Improve touch targets */
+    button, a {
+      min-height: 44px;
+      min-width: 44px;
+    }
+    
+    /* Better mobile scrolling */
+    body {
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Prevent zoom on input focus */
+    input, select, textarea {
+      font-size: 16px;
+    }
+  }
+  
+  /* Touch-friendly hover states */
+  @media (hover: hover) {
+    .hover\:scale-105:hover {
+      transform: scale(1.05);
+    }
+  }
+  
+  @media (hover: none) {
+    .hover\:scale-105:active {
+      transform: scale(0.95);
+    }
+  }
 }

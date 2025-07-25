@@ -38,6 +38,7 @@ import { Button } from "../ui/button";
 import { useAuthStore } from "@/hooks/use-auth-store";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { Chatbot } from "../ui/chatbot";
 
 const navItems = [
 // Removed Home from dashboard sidebar navigation
@@ -66,6 +67,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { isAuthenticated, user, logout } = useAuthStore();
+  const [mounted, setMounted] = React.useState(false);
+  
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
   
   // Don't render shell for home and login pages
   if (pathname === '/' || pathname === '/login') {
@@ -78,12 +84,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   };
 
   const getPageTitle = () => {
+    if (!mounted) return "Sauti Ya Watu";
+    
     const allItems = [...navItems, ...adminNavItems, ...authNavItems];
     const exactMatch = allItems.find(item => item.href === pathname);
     if (exactMatch) return exactMatch.label;
     
     if (pathname.startsWith('/politicians/')) return "Politician Profile";
     if (pathname.startsWith('/admin/')) return "Admin Tools";
+    if (pathname.startsWith('/profile')) return "User Profile";
     
     const rootMatch = allItems.find(item => item.href !== '/' && pathname.startsWith(item.href));
     if (rootMatch) return rootMatch.label;
@@ -108,7 +117,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <SidebarMenuItem key={item.href}>
                 <Link href={item.href}>
                   <SidebarMenuButton
-                    isActive={pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))}
+                    isActive={mounted && (pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href)))}
                     tooltip={item.label}
                   >
                     <item.icon />
@@ -165,14 +174,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </Sidebar>
       <SidebarInset>
         <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:h-16 sm:px-6">
-           <SidebarTrigger className="md:hidden" />
+           <SidebarTrigger className="lg:hidden" />
            <div className="flex-1">
-             <h1 className="text-xl font-semibold font-headline">
+             <h1 className="text-lg sm:text-xl font-semibold font-headline truncate">
                {getPageTitle()}
              </h1>
            </div>
            <div className="flex items-center gap-2">
-            {isAuthenticated ? (
+            {isAuthenticated && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-8 w-8 rounded-full">
@@ -198,22 +207,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                      </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-            ) : !isAuthPage ? (
-                <div className="hidden md:flex items-center gap-2">
-                    <Link href="/login" passHref>
-                        <Button variant="outline">Login</Button>
-                    </Link>
-                    <Link href="/signup" passHref>
-                        <Button>Sign Up</Button>
-                    </Link>
-                </div>
-           ) : null}
+            )}
            </div>
         </header>
-        <main className="flex-1 p-4 md:p-6">{children}</main>
-        <footer className="border-t py-4 px-6 text-center text-sm text-muted-foreground">
+        <main className="flex-1 p-3 sm:p-4 lg:p-6">{children}</main>
+        <footer className="border-t py-3 sm:py-4 px-4 sm:px-6 text-center text-xs sm:text-sm text-muted-foreground">
           Developed by Kariuki James Kariuki 0792698424
         </footer>
+        <Chatbot />
       </SidebarInset>
     </SidebarProvider>
   );

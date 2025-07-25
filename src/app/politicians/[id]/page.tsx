@@ -19,6 +19,11 @@ export default function PoliticianProfilePage() {
   const [politician, setPolitician] = useState<Politician | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [summary, setSummary] = useState<string | null>(null);
+  const [realTimeData, setRealTimeData] = useState<any>(null);
+  const [academicNarrative, setAcademicNarrative] = useState<string | null>(null);
+  const [loadingAcademic, setLoadingAcademic] = useState(false);
+  const [academicLastUpdated, setAcademicLastUpdated] = useState<string>('');
+  const [academicDataPoints, setAcademicDataPoints] = useState<number>(0);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -28,22 +33,71 @@ export default function PoliticianProfilePage() {
     }
   }, [params.id]);
 
-  const handleGenerateSummary = async () => {
+  const handleGenerateComprehensiveAnalysis = async () => {
     if (!politician) return;
     setIsLoading(true);
     setSummary(null);
+    setRealTimeData(null);
     try {
-      const result = await summarizePolitician(politician);
-      setSummary(result.summary);
+      // Get real-time data first
+      const response = await fetch('/api/politician-analysis', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ politicianName: politician.name }),
+      });
+      
+      const realTimeResult = await response.json();
+      
+      if (realTimeResult.success) {
+        setRealTimeData(realTimeResult.data);
+        
+        // Generate AI summary with real-time context
+        const aiResult = await summarizePolitician(politician);
+        setSummary(aiResult.summary);
+      } else {
+        throw new Error(realTimeResult.error);
+      }
     } catch (error) {
-      console.error("Error generating summary:", error);
+      console.error("Error generating comprehensive analysis:", error);
       toast({
         variant: "destructive",
-        title: "Summary Generation Failed",
-        description: "Could not generate an AI summary. Please try again.",
+        title: "Analysis Failed",
+        description: "Could not generate comprehensive analysis. Please try again.",
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGenerateAcademicNarrative = async () => {
+    if (!politician) return;
+    setLoadingAcademic(true);
+    setAcademicNarrative(null);
+    try {
+      const response = await fetch('/api/politician-academic', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ politicianName: politician.name }),
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        setAcademicNarrative(result.data.narrative);
+        setAcademicLastUpdated(new Date(result.data.lastUpdated).toLocaleString());
+        setAcademicDataPoints(result.data.dataPoints);
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error("Error generating academic narrative:", error);
+      toast({
+        variant: "destructive",
+        title: "Analysis Failed",
+        description: "Could not generate academic narrative. Please try again.",
+      });
+    } finally {
+      setLoadingAcademic(false);
     }
   };
 
@@ -139,6 +193,29 @@ export default function PoliticianProfilePage() {
                       <p className="text-muted-foreground">{politician.academicLife.university}</p>
                   </div>
               </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full mt-3" 
+                onClick={handleGenerateAcademicNarrative} 
+                disabled={loadingAcademic}
+              >
+                {loadingAcademic ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Analyzing...</>
+                ) : (
+                  "Generate AI Academic Narrative"
+                )}
+              </Button>
+              {academicNarrative && (
+                <div className="mt-3 p-3 bg-muted/50 rounded-md animate-in fade-in-50">
+                  <h4 className="font-semibold mb-2 text-xs">AI Academic Analysis</h4>
+                  <p className="text-xs text-muted-foreground">{academicNarrative}</p>
+                  <div className="text-xs text-muted-foreground mt-2 pt-2 border-t">
+                    <p>Data Sources: {academicDataPoints} online sources analyzed</p>
+                    <p>Analysis Generated: {academicLastUpdated}</p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -169,20 +246,47 @@ export default function PoliticianProfilePage() {
       
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline flex items-center gap-2"><BotMessageSquare />AI Summary</CardTitle>
-          <CardDescription>Click the button to generate an AI-powered summary of this politician's profile.</CardDescription>
+          <CardTitle className="font-headline flex items-center gap-2"><BotMessageSquare />Comprehensive AI Analysis</CardTitle>
+          <CardDescription>Generate an AI-powered analysis combining profile data with real-time internet data and public sentiment.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button onClick={handleGenerateSummary} disabled={isLoading} className="mb-4">
+          <Button onClick={handleGenerateComprehensiveAnalysis} disabled={isLoading} className="mb-4">
             {isLoading ? (
-              <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...</>
+              <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Analyzing...</>
             ) : (
-              "Generate AI Summary"
+              "Generate Comprehensive Analysis"
             )}
           </Button>
+          
+          {realTimeData && (
+            <div className="mb-4 p-4 bg-muted/50 rounded-lg animate-in fade-in-50">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <h4 className="font-semibold mb-2">Trending Topics</h4>
+                  <div className="flex flex-wrap gap-1">
+                    {realTimeData.trendingTopics.map((topic: string, i: number) => (
+                      <Badge key={i} variant="secondary" className="text-xs">{topic}</Badge>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-2">Recent News</h4>
+                  <ul className="text-sm space-y-1">
+                    {realTimeData.recentNews.slice(0, 3).map((news: any, i: number) => (
+                      <li key={i} className="text-muted-foreground">• {news.title}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+              <div className="text-xs text-muted-foreground mt-2">
+                Real-time data updated: {new Date(realTimeData.lastUpdated).toLocaleString()}
+              </div>
+            </div>
+          )}
+          
           {summary && (
             <Alert className="animate-in fade-in-50">
-              <AlertTitle>Generated Summary</AlertTitle>
+              <AlertTitle>AI Analysis Summary</AlertTitle>
               <AlertDescription className="prose prose-sm max-w-none dark:prose-invert">
                 {summary.split('\n').map((paragraph, index) => (
                   paragraph.trim() && <p key={index}>{paragraph}</p>

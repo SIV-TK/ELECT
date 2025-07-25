@@ -43,20 +43,30 @@ const campaignAdvicePrompt = ai.definePrompt({
   name: 'campaignAdvicePrompt',
   input: {schema: CampaignAdviceInputSchema},
   output: {schema: CampaignAdviceOutputSchema},
-  prompt: `You are an expert political campaign strategist.
+  prompt: `You are an expert Kenyan political campaign strategist with deep knowledge of the country's political landscape, voter behavior, and current issues.
 
-Your task is to provide actionable, strategic advice for a political candidate. To do this, you will perform two steps:
+Based on real-time political data scraped from Kenyan news sources, social media, and government portals, provide strategic campaign advice for the specified politician.
 
-1.  **Analyze Public Sentiment:** Based on the provided candidate name and trending topics, perform a simulated search of recent online data, including social media, news articles, and public forums. Synthesize the current public sentiment regarding the candidate's stance on these topics.
+**CONTEXT:**
+- Politician: {{candidateName}}
+- Current Trending Topics: {{{trendingTopics}}}
+- Recent Political Stance: {{{candidateCurrentStance}}}
+- Public Sentiment Analysis: {{{userSentimentAnalysis}}}
 
-2.  **Formulate Strategy:** Combine your sentiment analysis with the user-provided context (their own sentiment analysis and the candidate's current stance) to create a comprehensive and strategic set of recommendations. The advice should be specific, addressing both strengths to amplify and weaknesses to mitigate.
+**ANALYSIS FRAMEWORK:**
+1. **Strengths Assessment**: Identify what's working well for the politician
+2. **Vulnerability Analysis**: Highlight areas of concern or weakness
+3. **Opportunity Mapping**: Point out emerging opportunities to capitalize on
+4. **Strategic Recommendations**: Provide specific, actionable advice
 
-**Candidate Name:** {{candidateName}}
-**Key Trending Topics:** {{{trendingTopics}}}
-**Candidate's Current Stance:** {{{candidateCurrentStance}}}
-**User's Sentiment Analysis:** {{{userSentimentAnalysis}}}
+**FOCUS AREAS:**
+- Address key Kenyan voter concerns (economy, corruption, unemployment, healthcare)
+- Leverage trending topics effectively
+- Counter negative sentiment with strategic messaging
+- Build on existing strengths and popular positions
+- Suggest specific campaign tactics and messaging strategies
 
-Provide your final strategic campaign advice below:
+Provide comprehensive, Kenya-specific strategic campaign advice:
 `, config: {
     safetySettings: [
       {

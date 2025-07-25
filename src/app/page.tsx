@@ -1,6 +1,22 @@
-import { Fragment } from 'react';
+"use client";
+import { Fragment, useEffect } from 'react';
 
 export default function LandingPage() {
+  useEffect(() => {
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    
+    const toggleMobileMenu = () => {
+      mobileMenu?.classList.toggle('hidden');
+    };
+    
+    mobileMenuBtn?.addEventListener('click', toggleMobileMenu);
+    
+    return () => {
+      mobileMenuBtn?.removeEventListener('click', toggleMobileMenu);
+    };
+  }, []);
+  
   return (
     <div className="flex flex-col min-h-screen">
       {/* Header */}
@@ -19,9 +35,28 @@ export default function LandingPage() {
               <a href="/sentiment-analysis" className="text-sm hover:text-primary transition-colors">Sentiment Analysis</a>
               <a href="/crowd-sourced-intel" className="text-sm hover:text-primary transition-colors">Intelligence</a>
             </nav>
-            <div className="flex items-center gap-4">
+            <div className="hidden md:flex items-center gap-4">
               <a href="/login" className="text-sm hover:text-primary transition-colors">Log in</a>
               <a href="/signup" className="text-sm bg-primary text-white px-4 py-2 rounded-lg hover:opacity-90 transition-colors">Sign up</a>
+            </div>
+            {/* Mobile menu button */}
+            <button className="md:hidden p-2 rounded-lg hover:bg-primary/10 transition-colors" id="mobile-menu-btn">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        {/* Mobile menu */}
+        <div className="md:hidden hidden bg-background/95 backdrop-blur-sm border-t border-primary/10" id="mobile-menu">
+          <div className="px-4 py-4 space-y-4">
+            <a href="/politicians" className="block text-sm hover:text-primary transition-colors py-2">Politicians</a>
+            <a href="/live-tally" className="block text-sm hover:text-primary transition-colors py-2">Live Tally</a>
+            <a href="/sentiment-analysis" className="block text-sm hover:text-primary transition-colors py-2">Sentiment Analysis</a>
+            <a href="/crowd-sourced-intel" className="block text-sm hover:text-primary transition-colors py-2">Intelligence</a>
+            <div className="pt-4 border-t border-primary/10 space-y-2">
+              <a href="/login" className="block text-sm hover:text-primary transition-colors py-2">Log in</a>
+              <a href="/signup" className="block text-sm bg-primary text-white px-4 py-2 rounded-lg hover:opacity-90 transition-colors text-center">Sign up</a>
             </div>
           </div>
         </div>
@@ -32,27 +67,27 @@ export default function LandingPage() {
         <section className="relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-background" />
           <div className="absolute inset-0 opacity-30 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIxIiBmaWxsPSIjZTBlN2ZmIi8+PC9zdmc+')] bg-[length:40px_40px]" />
-          <div className="container relative mx-auto px-4 py-32 sm:px-6 lg:flex lg:h-screen lg:items-center lg:px-8">
+          <div className="container relative mx-auto px-4 py-16 sm:py-24 lg:py-32 sm:px-6 lg:flex lg:h-screen lg:items-center lg:px-8">
             <div className="max-w-3xl mx-auto text-center">
-              <div className="inline-flex items-center gap-2 rounded-full bg-primary/20 px-4 py-2 text-sm text-primary transition-colors hover:bg-primary/30">
-                <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+              <div className="inline-flex items-center gap-2 rounded-full bg-primary/20 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm text-primary transition-colors hover:bg-primary/30">
+                <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-primary animate-pulse" />
                 For the People, By the People
               </div>
 
-              <h1 className="mt-6 font-headline text-4xl font-bold sm:text-6xl md:text-7xl lg:text-8xl [text-wrap:balance] bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary to-accent animate-gradient">
-                Your Voice, <br />
-                Amplified.
+              <h1 className="mt-4 sm:mt-6 font-headline text-3xl font-bold sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl [text-wrap:balance] bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary to-accent animate-gradient leading-tight">
+                Your Voice, <br className="hidden sm:block" />
+                <span className="sm:hidden"> </span>Amplified.
               </h1>
 
-              <p className="mt-8 text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed">
+              <p className="mt-6 sm:mt-8 text-base sm:text-lg lg:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed px-4 sm:px-0">
                 Sauti Ya Watu brings transparency and accountability to the Kenyan political landscape. Experience democracy enhanced by cutting-edge AI technology.
               </p>
 
-              <div className="mt-12 flex flex-wrap gap-4 justify-center">
-                <a href="/login" className="transform rounded-lg bg-primary px-8 py-4 text-sm font-medium text-white transition-all hover:scale-105 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+              <div className="mt-8 sm:mt-12 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0">
+                <a href="/login" className="transform rounded-lg bg-primary px-6 sm:px-8 py-3 sm:py-4 text-sm font-medium text-white transition-all hover:scale-105 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-center">
                   Get Started
                 </a>
-                <a href="https://github.com/ElECT-AI/peoples" target="_blank" rel="noopener noreferrer" className="transform rounded-lg border border-primary/20 bg-background/50 backdrop-blur-sm px-8 py-4 text-sm font-medium text-primary transition-all hover:scale-105 hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+                <a href="https://github.com/ElECT-AI/peoples" target="_blank" rel="noopener noreferrer" className="transform rounded-lg border border-primary/20 bg-background/50 backdrop-blur-sm px-6 sm:px-8 py-3 sm:py-4 text-sm font-medium text-primary transition-all hover:scale-105 hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-center">
                   View on GitHub
                 </a>
               </div>
@@ -61,10 +96,10 @@ export default function LandingPage() {
         </section>
 
         {/* Features Section */}
-        <section className="py-20 bg-gradient-to-b from-background via-background/90 to-background">
+        <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-background via-background/90 to-background">
           <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl font-bold mb-12">Empowering Democracy with AI</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-8 sm:mb-12">Empowering Democracy with AI</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
               {[
                 {
                   title: "Transparent Voting",
@@ -94,12 +129,12 @@ export default function LandingPage() {
                   )
                 }
               ].map((feature, index) => (
-                <div key={index} className="p-6 rounded-xl bg-card hover:bg-card/80 transition-colors">
-                  <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
+                <div key={index} className="p-4 sm:p-6 rounded-xl bg-card hover:bg-card/80 transition-colors">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 rounded-full bg-primary/20 flex items-center justify-center">
                     {feature.icon}
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-muted-foreground">{feature.description}</p>
+                  <h3 className="text-lg sm:text-xl font-semibold mb-2">{feature.title}</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground">{feature.description}</p>
                 </div>
               ))}
             </div>
@@ -107,10 +142,10 @@ export default function LandingPage() {
         </section>
 
         {/* How It Works Section */}
-        <section className="py-20 bg-gradient-to-b from-background to-background/90">
+        <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-background to-background/90">
           <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center mb-16">How Sauti Ya Watu Works</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-center mb-12 sm:mb-16">How Sauti Ya Watu Works</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
               {[
                 {
                   step: "1",
@@ -133,10 +168,10 @@ export default function LandingPage() {
                   description: "Your verified voice helps shape policies and ensures transparent democratic processes."
                 }
               ].map((step, index) => (
-                <div key={index} className="relative p-6">
-                  <div className="text-4xl font-bold text-primary/20 absolute top-0 left-0">{step.step}</div>
-                  <h3 className="text-xl font-semibold mb-2 mt-8">{step.title}</h3>
-                  <p className="text-muted-foreground">{step.description}</p>
+                <div key={index} className="relative p-4 sm:p-6">
+                  <div className="text-3xl sm:text-4xl font-bold text-primary/20 absolute top-0 left-0">{step.step}</div>
+                  <h3 className="text-lg sm:text-xl font-semibold mb-2 mt-6 sm:mt-8">{step.title}</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground">{step.description}</p>
                 </div>
               ))}
             </div>
@@ -144,9 +179,9 @@ export default function LandingPage() {
         </section>
 
         {/* Stats Section */}
-        <section className="py-20 bg-gradient-to-b from-background/90 to-background relative overflow-hidden">
+        <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-background/90 to-background relative overflow-hidden">
           <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
               {[
                 {
                   value: "1M+",
@@ -169,10 +204,10 @@ export default function LandingPage() {
                   description: "Round-the-clock democratic engagement"
                 }
               ].map((stat, index) => (
-                <div key={index} className="text-center p-6 rounded-xl bg-card/50 backdrop-blur-sm">
-                  <div className="text-3xl font-bold text-primary mb-2">{stat.value}</div>
-                  <div className="font-semibold mb-1">{stat.label}</div>
-                  <p className="text-sm text-muted-foreground">{stat.description}</p>
+                <div key={index} className="text-center p-4 sm:p-6 rounded-xl bg-card/50 backdrop-blur-sm">
+                  <div className="text-2xl sm:text-3xl font-bold text-primary mb-1 sm:mb-2">{stat.value}</div>
+                  <div className="text-sm sm:text-base font-semibold mb-1">{stat.label}</div>
+                  <p className="text-xs sm:text-sm text-muted-foreground">{stat.description}</p>
                 </div>
               ))}
             </div>
@@ -180,10 +215,10 @@ export default function LandingPage() {
         </section>
 
         {/* Testimonials Section */}
-        <section className="py-20 bg-gradient-to-b from-background to-background/90">
+        <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-background to-background/90">
           <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center mb-16">Trusted by Leaders & Citizens</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-center mb-12 sm:mb-16">Trusted by Leaders & Citizens</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
               {[
                 {
                   quote: "Sauti Ya Watu has revolutionized how we engage with our constituents. The AI-powered insights are invaluable.",
@@ -201,15 +236,15 @@ export default function LandingPage() {
                   role: "County Election Officer"
                 }
               ].map((testimonial, index) => (
-                <div key={index} className="p-6 rounded-xl bg-card">
-                  <div className="mb-4">
-                    <svg className="w-8 h-8 text-primary/20" fill="currentColor" viewBox="0 0 24 24">
+                <div key={index} className="p-4 sm:p-6 rounded-xl bg-card">
+                  <div className="mb-3 sm:mb-4">
+                    <svg className="w-6 h-6 sm:w-8 sm:h-8 text-primary/20" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
                     </svg>
                   </div>
-                  <p className="text-lg mb-4 text-muted-foreground">{testimonial.quote}</p>
-                  <div className="font-semibold">{testimonial.author}</div>
-                  <div className="text-sm text-muted-foreground">{testimonial.role}</div>
+                  <p className="text-base sm:text-lg mb-3 sm:mb-4 text-muted-foreground">{testimonial.quote}</p>
+                  <div className="text-sm sm:text-base font-semibold">{testimonial.author}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">{testimonial.role}</div>
                 </div>
               ))}
             </div>
@@ -217,17 +252,17 @@ export default function LandingPage() {
         </section>
 
         {/* Final CTA Section */}
-        <section className="py-20 bg-gradient-to-b from-background/90 to-background">
+        <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-background/90 to-background">
           <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl font-bold mb-6">Ready to Make Your Voice Heard?</h2>
-            <p className="text-lg text-muted-foreground mb-12 max-w-2xl mx-auto">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">Ready to Make Your Voice Heard?</h2>
+            <p className="text-base sm:text-lg text-muted-foreground mb-8 sm:mb-12 max-w-2xl mx-auto px-4 sm:px-0">
               Join thousands of Kenyans who are already using Sauti Ya Watu to participate in shaping the future of our democracy.
             </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <a href="/signup" className="transform rounded-lg bg-primary px-8 py-4 text-sm font-medium text-white transition-all hover:scale-105 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+            <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 px-4 sm:px-0">
+              <a href="/signup" className="transform rounded-lg bg-primary px-6 sm:px-8 py-3 sm:py-4 text-sm font-medium text-white transition-all hover:scale-105 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-center">
                 Create Free Account
               </a>
-              <a href="/demo-voting" className="transform rounded-lg border border-primary/20 bg-background/50 backdrop-blur-sm px-8 py-4 text-sm font-medium text-primary transition-all hover:scale-105 hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+              <a href="/demo-voting" className="transform rounded-lg border border-primary/20 bg-background/50 backdrop-blur-sm px-6 sm:px-8 py-3 sm:py-4 text-sm font-medium text-primary transition-all hover:scale-105 hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-center">
                 Try Demo
               </a>
             </div>
@@ -237,8 +272,8 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="border-t border-primary/10 bg-background/80 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="container mx-auto px-4 py-8 sm:py-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
             {/* Brand Section */}
             <div className="space-y-4">
               <div className="flex items-center gap-2">
@@ -303,15 +338,15 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="mt-12 pt-8 border-t border-primary/10">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-              <p className="text-sm text-muted-foreground">
+          <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-primary/10">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+              <p className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
                 © 2025 Sauti Ya Watu. All rights reserved.
               </p>
-              <div className="flex items-center gap-4">
-                <a href="/contact" className="text-sm text-muted-foreground hover:text-primary">Contact</a>
-                <a href="/help" className="text-sm text-muted-foreground hover:text-primary">Help Center</a>
-                <select className="text-sm bg-transparent border-none text-muted-foreground hover:text-primary cursor-pointer">
+              <div className="flex flex-wrap items-center justify-center gap-4">
+                <a href="/contact" className="text-xs sm:text-sm text-muted-foreground hover:text-primary">Contact</a>
+                <a href="/help" className="text-xs sm:text-sm text-muted-foreground hover:text-primary">Help Center</a>
+                <select className="text-xs sm:text-sm bg-transparent border-none text-muted-foreground hover:text-primary cursor-pointer">
                   <option value="en">English</option>
                   <option value="sw">Kiswahili</option>
                 </select>
