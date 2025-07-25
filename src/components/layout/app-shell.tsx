@@ -49,6 +49,7 @@ const navItems = [
   { href: "/crowd-sourced-intel", icon: UsersRound, label: "Crowd Sourced Intel" },
   { href: "/verification-gallery", icon: GalleryVertical, label: "Verification Gallery" },
   { href: "/live-tally", icon: Landmark, label: "Live Tally" },
+  { href: "/political-chat", icon: BotMessageSquare, label: "Political ChatBot" },
 ];
 
 const adminNavItems = [
