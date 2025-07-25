@@ -92,20 +92,19 @@ export default function SentimentAnalysisPage() {
     try {
       let sentimentResult;
       
-      if (useRealTimeData) {
-        // Use real-time web scraping API
-        const response = await fetch('/api/realtime-sentiment', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(values)
-        });
-        
-        if (!response.ok) throw new Error('Real-time analysis failed');
-        sentimentResult = await response.json();
-      } else {
-        // Use standard AI analysis
-        sentimentResult = await analyzeCandidateSentiment(values);
-      }
+      // Always use real-time AI analysis
+      const response = await fetch('/api/integrated-ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'comprehensive_analysis',
+          data: values
+        })
+      });
+      
+      if (!response.ok) throw new Error('Real-time AI analysis failed');
+      const aiResult = await response.json();
+      sentimentResult = aiResult.sentiment;
       
       setResult({ sentiment: sentimentResult });
       
@@ -114,12 +113,8 @@ export default function SentimentAnalysisPage() {
       setAnalysisCount(newCount);
       localStorage.setItem('sentiment-analysis-count', newCount.toString());
 
-      // Now, trigger the prediction flow
-      const predictionResult = await predictVoteDistribution({
-        candidateName: values.candidateName,
-        topic: 'general political sentiment',
-        sentimentScore: sentimentResult.sentimentScore,
-      });
+      // Use AI prediction from integrated response
+      const predictionResult = { regions: aiResult.voteDistribution };
 
       // Generate AI-based prediction outcome
       const aiPrediction = generateAIPrediction(values.candidateName, sentimentResult.sentimentScore, predictionResult.regions);

@@ -30,10 +30,17 @@ export default function LandingPage() {
               <span className="text-xl font-bold">Sauti Ya Watu</span>
             </div>
             <nav className="hidden md:flex items-center gap-6">
+              <a href="/dashboard" className="text-sm hover:text-primary transition-colors font-medium">AI Dashboard</a>
+              <a href="/sentiment-analysis" className="text-sm hover:text-primary transition-colors">Sentiment AI</a>
+              <a href="/live-tally" className="text-sm hover:text-primary transition-colors">Live Results</a>
+              <a href="/media-bias" className="text-sm hover:text-primary transition-colors">Media Bias</a>
+              <a href="/fact-check" className="text-sm hover:text-primary transition-colors">Fact Check</a>
+              <a href="/voter-education" className="text-sm hover:text-primary transition-colors">Education</a>
+              <a href="/constituency-map" className="text-sm hover:text-primary transition-colors">Constituencies</a>
+              <a href="/voter-registration" className="text-sm hover:text-primary transition-colors">Register</a>
+              <a href="/influence-network" className="text-sm hover:text-primary transition-colors">Networks</a>
+              <a href="/corruption-risk" className="text-sm hover:text-primary transition-colors">Risk Analysis</a>
               <a href="/politicians" className="text-sm hover:text-primary transition-colors">Politicians</a>
-              <a href="/live-tally" className="text-sm hover:text-primary transition-colors">Live Tally</a>
-              <a href="/sentiment-analysis" className="text-sm hover:text-primary transition-colors">Sentiment Analysis</a>
-              <a href="/crowd-sourced-intel" className="text-sm hover:text-primary transition-colors">Intelligence</a>
             </nav>
             <div className="hidden md:flex items-center gap-4">
               <a href="/login" className="text-sm hover:text-primary transition-colors">Log in</a>
@@ -75,20 +82,20 @@ export default function LandingPage() {
               </div>
 
               <h1 className="mt-4 sm:mt-6 font-headline text-3xl font-bold sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl [text-wrap:balance] bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary to-accent animate-gradient leading-tight">
-                Your Voice, <br className="hidden sm:block" />
-                <span className="sm:hidden"> </span>Amplified.
+                AI-Powered <br className="hidden sm:block" />
+                <span className="sm:hidden"> </span>Democracy.
               </h1>
 
               <p className="mt-6 sm:mt-8 text-base sm:text-lg lg:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed px-4 sm:px-0">
-                Sauti Ya Watu brings transparency and accountability to the Kenyan political landscape. Experience democracy enhanced by cutting-edge AI technology.
+                The most advanced AI political platform in Africa. Real-time sentiment analysis, predictive modeling, and intelligent insights for Kenya's democracy.
               </p>
 
               <div className="mt-8 sm:mt-12 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0">
-                <a href="/login" className="transform rounded-lg bg-primary px-6 sm:px-8 py-3 sm:py-4 text-sm font-medium text-white transition-all hover:scale-105 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-center">
-                  Get Started
+                <a href="/dashboard" className="transform rounded-lg bg-primary px-6 sm:px-8 py-3 sm:py-4 text-sm font-medium text-white transition-all hover:scale-105 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-center">
+                  Launch AI Dashboard
                 </a>
-                <a href="https://github.com/ElECT-AI/peoples" target="_blank" rel="noopener noreferrer" className="transform rounded-lg border border-primary/20 bg-background/50 backdrop-blur-sm px-6 sm:px-8 py-3 sm:py-4 text-sm font-medium text-primary transition-all hover:scale-105 hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-center">
-                  View on GitHub
+                <a href="/sentiment-analysis" className="transform rounded-lg border border-primary/20 bg-background/50 backdrop-blur-sm px-6 sm:px-8 py-3 sm:py-4 text-sm font-medium text-primary transition-all hover:scale-105 hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-center">
+                  Try AI Analysis
                 </a>
               </div>
             </div>
