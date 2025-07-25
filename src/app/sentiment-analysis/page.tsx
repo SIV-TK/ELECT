@@ -1,7 +1,7 @@
 // src/app/sentiment-analysis/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -16,11 +16,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { ThumbsUp, ThumbsDown, Loader2, Check, ChevronsUpDown, Trophy, Map } from "lucide-react";
+import { ThumbsUp, ThumbsDown, Loader2, Check, ChevronsUpDown, Trophy, Map, BarChart3, TrendingUp, AlertCircle, Sparkles } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
-import { KenyaMap } from "@/components/maps/kenya-map";
+import FixedKenyaMap from "@/components/maps/fixed-kenya-map";
 
 const suggestedTopics = [
   { value: "The Economy", label: "The Economy" },
@@ -33,18 +33,33 @@ const suggestedTopics = [
   { value: "Cost of living", label: "Cost of living" },
   { value: "Corruption", label: "Corruption" },
   { value: "National Security", label: "National Security" },
+  { value: "Climate Change", label: "Climate Change" },
+  { value: "Tax Policy", label: "Tax Policy" },
+  { value: "Youth Empowerment", label: "Youth Empowerment" },
+];
+
+const suggestedCandidates = [
+  "William Ruto",
+  "Raila Odinga",
+  "Martha Karua",
+  "Kalonzo Musyoka",
+  "Rigathi Gachagua",
+  "Musalia Mudavadi",
+  "Moses Wetangula",
+  "Anne Waiguru",
+  "Johnson Sakaja",
+  "Gladys Wanga",
 ];
 
 const formSchema = z.object({
   candidateName: z.string().min(2, "Candidate name is required."),
-  topic: z.string().min(2, "Topic is required."),
 });
 
 type ResultState = {
   sentiment: AnalyzeCandidateSentimentOutput;
   prediction?: {
     regions: VoteDistribution[];
-    predictedWinner: string;
+    aiPrediction: string;
   };
 } | null;
 
@@ -54,10 +69,20 @@ export default function SentimentAnalysisPage() {
   const [result, setResult] = useState<ResultState>(null);
   const { toast } = useToast();
   const [popoverOpen, setPopoverOpen] = useState(false);
+  const [candidateSuggestions, setCandidateSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [analysisCount, setAnalysisCount] = useState(0);
+  const [useRealTimeData, setUseRealTimeData] = useState(false);
+  
+  useEffect(() => {
+    // Get real analysis count from localStorage or API
+    const storedCount = localStorage.getItem('sentiment-analysis-count');
+    setAnalysisCount(storedCount ? parseInt(storedCount) : 0);
+  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: { candidateName: "", topic: "" },
+    defaultValues: { candidateName: "" },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -65,26 +90,45 @@ export default function SentimentAnalysisPage() {
     setIsLoadingPrediction(true);
     setResult(null);
     try {
-      const sentimentResult = await analyzeCandidateSentiment(values);
+      let sentimentResult;
+      
+      if (useRealTimeData) {
+        // Use real-time web scraping API
+        const response = await fetch('/api/realtime-sentiment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(values)
+        });
+        
+        if (!response.ok) throw new Error('Real-time analysis failed');
+        sentimentResult = await response.json();
+      } else {
+        // Use standard AI analysis
+        sentimentResult = await analyzeCandidateSentiment(values);
+      }
+      
       setResult({ sentiment: sentimentResult });
+      
+      // Increment real analysis count
+      const newCount = analysisCount + 1;
+      setAnalysisCount(newCount);
+      localStorage.setItem('sentiment-analysis-count', newCount.toString());
 
       // Now, trigger the prediction flow
       const predictionResult = await predictVoteDistribution({
         candidateName: values.candidateName,
-        topic: values.topic,
+        topic: 'general political sentiment',
         sentimentScore: sentimentResult.sentimentScore,
       });
 
-      // Find the winner
-      const winner = predictionResult.regions.reduce((prev, current) => {
-        return (prev.predictedVoteShare > current.predictedVoteShare) ? prev : current
-      });
+      // Generate AI-based prediction outcome
+      const aiPrediction = generateAIPrediction(values.candidateName, sentimentResult.sentimentScore, predictionResult.regions);
 
       setResult(prev => prev ? {
         ...prev,
         prediction: {
           regions: predictionResult.regions,
-          predictedWinner: `${values.candidateName} is predicted to win in ${winner.name}.`
+          aiPrediction
         }
        } : null);
 
@@ -102,190 +146,304 @@ export default function SentimentAnalysisPage() {
   }
 
   const sentimentPercentage = result ? (result.sentiment.sentimentScore + 1) * 50 : 0;
+  
+  const handleCandidateInput = (value: string) => {
+    if (value.length > 2) {
+      const filtered = suggestedCandidates.filter(name => 
+        name.toLowerCase().includes(value.toLowerCase())
+      );
+      setCandidateSuggestions(filtered);
+      setShowSuggestions(filtered.length > 0);
+    } else {
+      setShowSuggestions(false);
+    }
+  };
+
+  const generateAIPrediction = (candidateName: string, sentimentScore: number, regions: any[]) => {
+    const avgVoteShare = regions.reduce((sum, region) => sum + region.predictedVoteShare, 0) / regions.length;
+    const topRegions = regions.sort((a, b) => b.predictedVoteShare - a.predictedVoteShare).slice(0, 3);
+    
+    let prediction = `Based on current sentiment analysis (score: ${sentimentScore.toFixed(2)}), `;
+    
+    if (sentimentScore > 0.3) {
+      prediction += `${candidateName} shows strong positive momentum with an average predicted vote share of ${avgVoteShare.toFixed(1)}%. `;
+      prediction += `Strongest support expected in ${topRegions.map(r => r.name).join(', ')}. `;
+      prediction += "Current trends suggest favorable electoral prospects.";
+    } else if (sentimentScore > -0.3) {
+      prediction += `${candidateName} maintains moderate public standing with mixed sentiment across regions. `;
+      prediction += `Performance varies significantly, with better prospects in ${topRegions[0].name} (${topRegions[0].predictedVoteShare.toFixed(1)}%). `;
+      prediction += "Electoral outcome will depend on campaign effectiveness and current events.";
+    } else {
+      prediction += `${candidateName} faces challenging public sentiment with an average predicted vote share of ${avgVoteShare.toFixed(1)}%. `;
+      prediction += `Even in stronger regions like ${topRegions[0].name}, support remains limited. `;
+      prediction += "Significant campaign efforts needed to improve electoral prospects.";
+    }
+    
+    return prediction;
+  };
 
   return (
-    <div className="grid lg:grid-cols-2 gap-6">
-      <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-headline text-2xl">Public Sentiment &amp; Election Prediction</CardTitle>
-            <CardDescription>
-              Use AI to gauge public opinion, then predict election outcomes based on that sentiment, visualized on a map of Kenya.
-            </CardDescription>
-          </CardHeader>
+    <div className="space-y-6">
+      <Card className="border-primary/10 shadow-md overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b border-primary/10">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <BarChart3 className="h-5 w-5 text-primary" />
+            </div>
+            <CardTitle className="font-headline text-2xl">Public Sentiment Analysis</CardTitle>
+          </div>
+          <CardDescription className="text-base">
+            Use AI to gauge public opinion on political topics, then predict election outcomes based on sentiment analysis.
+          </CardDescription>
+          <div className="flex items-center justify-between mt-2">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Sparkles className="h-3 w-3 text-primary" />
+              <span>{analysisCount.toLocaleString()} analyses performed</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="realtime-toggle"
+                checked={useRealTimeData}
+                onChange={(e) => setUseRealTimeData(e.target.checked)}
+                className="rounded"
+              />
+              <label htmlFor="realtime-toggle" className="text-xs text-muted-foreground cursor-pointer">
+                Use Real-time Data
+              </label>
+            </div>
+          </div>
+        </CardHeader>
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="candidateName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Candidate Name</FormLabel>
+                <FormField
+                  control={form.control}
+                  name="candidateName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Candidate Name</FormLabel>
+                      <div className="relative">
                         <FormControl>
-                          <Input placeholder="e.g., William Ruto" {...field} />
+                          <Input 
+                            placeholder="e.g., William Ruto" 
+                            {...field} 
+                            onChange={(e) => {
+                              field.onChange(e);
+                              handleCandidateInput(e.target.value);
+                            }}
+                            className="pr-8"
+                          />
                         </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="topic"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-col">
-                        <FormLabel>Topic</FormLabel>
-                        <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant="outline"
-                                role="combobox"
-                                className={cn(
-                                  "w-full justify-between",
-                                  !field.value && "text-muted-foreground"
-                                )}
+                        {showSuggestions && (
+                          <div className="absolute z-10 w-full mt-1 bg-card border rounded-md shadow-lg py-1">
+                            {candidateSuggestions.map((name) => (
+                              <div 
+                                key={name} 
+                                className="px-3 py-1.5 hover:bg-primary/5 cursor-pointer text-sm"
+                                onClick={() => {
+                                  form.setValue("candidateName", name);
+                                  setShowSuggestions(false);
+                                }}
                               >
-                                {field.value
-                                  ? suggestedTopics.find(
-                                      (topic) => topic.value === field.value
-                                    )?.label
-                                  : "Select or type a topic..."}
-                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                            <Command>
-                              <CommandInput
-                                placeholder="Search topic..."
-                                onValueChange={(value) => field.onChange(value)}
-                              />
-                              <CommandList>
-                                <CommandEmpty>No topic found.</CommandEmpty>
-                                <CommandGroup>
-                                  {suggestedTopics.map((topic) => (
-                                    <CommandItem
-                                      value={topic.label}
-                                      key={topic.value}
-                                      onSelect={() => {
-                                        form.setValue("topic", topic.value);
-                                        setPopoverOpen(false);
-                                      }}
-                                    >
-                                      <Check
-                                        className={cn(
-                                          "mr-2 h-4 w-4",
-                                          topic.value === field.value
-                                            ? "opacity-100"
-                                            : "opacity-0"
-                                        )}
-                                      />
-                                      {topic.label}
-                                    </CommandItem>
-                                  ))}
-                                </CommandGroup>
-                              </CommandList>
-                            </Command>
-                          </PopoverContent>
-                        </Popover>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <Button type="submit" disabled={isLoading} className="w-full">
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Analyze and Predict
+                                {name}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button 
+                  type="submit" 
+                  disabled={isLoading} 
+                  className="w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 transition-all duration-300"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Analyze and Predict
+                    </>
+                  )}
                 </Button>
               </form>
             </Form>
           </CardContent>
+      </Card>
+
+      {isLoading && (
+        <Card className="border-primary/10 shadow-md overflow-hidden">
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center justify-center p-8 text-center">
+              <div className="relative mb-4">
+                <div className="h-16 w-16 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+                <Sparkles className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-6 w-6 text-primary" />
+              </div>
+              <p className="text-lg font-medium mb-2">AI Analysis in Progress</p>
+              <p className="text-muted-foreground">
+                {useRealTimeData 
+                  ? 'Scraping real-time data and analyzing sentiment...' 
+                  : 'Analyzing sentiment and predicting electoral outcomes...'
+                }
+              </p>
+            </div>
+          </CardContent>
         </Card>
+      )}
 
-        {isLoading && (
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-center p-8">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <p className="ml-4 text-lg">Analyzing sentiment... this may take a moment.</p>
+      {result?.sentiment && (
+        <Card className="animate-in fade-in-50 border-primary/10 shadow-md overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b border-primary/10">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <TrendingUp className="h-5 w-5 text-primary" />
               </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {result?.sentiment && (
-          <Card className="animate-in fade-in-50">
-            <CardHeader>
               <CardTitle className="font-headline">Analysis Results</CardTitle>
-              <CardDescription>
-                Sentiment for <span className="font-bold">{form.getValues("candidateName")}</span> on the topic of <span className="font-bold">{form.getValues("topic")}</span>.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold">Overall Sentiment Score: {result.sentiment.sentimentScore.toFixed(2)}</h3>
-                <Progress value={sentimentPercentage} className="w-full mt-2" />
-                <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                  <span>Very Negative</span>
-                  <span>Neutral</span>
-                  <span>Very Positive</span>
+            </div>
+            <CardDescription className="text-base">
+              {useRealTimeData ? 'Real-time' : 'AI-generated'} sentiment analysis for <span className="font-bold text-foreground">{form.getValues("candidateName")}</span>
+              {result.sentiment.dataFreshness && (
+                <div className="text-xs text-muted-foreground mt-1">
+                  Data updated: {new Date(result.sentiment.dataFreshness).toLocaleString()}
                 </div>
+              )}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6 pt-6">
+            <div className="bg-card/50 p-4 rounded-lg border border-primary/10">
+              <h3 className="text-lg font-semibold mb-3">Overall Sentiment Score: {result.sentiment.sentimentScore.toFixed(2)}</h3>
+              <Progress 
+                value={sentimentPercentage} 
+                className="w-full h-3 rounded-full" 
+                style={{
+                  background: 'linear-gradient(to right, #ef4444, #eab308, #22c55e)',
+                }}
+              />
+              <div className="flex justify-between text-xs text-muted-foreground mt-2">
+                <span className="flex items-center gap-1"><ThumbsDown className="h-3 w-3 text-red-500" /> Very Negative</span>
+                <span>Neutral</span>
+                <span className="flex items-center gap-1">Very Positive <ThumbsUp className="h-3 w-3 text-green-500" /></span>
               </div>
-              <div>
-                <h3 className="text-lg font-semibold">Summary</h3>
-                <p className="text-muted-foreground">{result.sentiment.sentimentSummary}</p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <h3 className="text-lg font-semibold mb-2 flex items-center gap-2"><ThumbsUp className="text-green-500" /> Positive Keywords</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {result.sentiment.positiveKeywords.map((kw) => <Badge key={kw} variant="outline" className="border-green-500 text-green-600">{kw}</Badge>)}
+            </div>
+            <div className="bg-card/50 p-4 rounded-lg border border-primary/10">
+              <h3 className="text-lg font-semibold mb-2">Summary</h3>
+              <p className="text-foreground">{result.sentiment.sentimentSummary}</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-card/50 p-4 rounded-lg border border-green-100/30">
+                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <div className="h-6 w-6 rounded-full bg-green-100/30 flex items-center justify-center">
+                    <ThumbsUp className="text-green-500 h-4 w-4" />
                   </div>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold mb-2 flex items-center gap-2"><ThumbsDown className="text-red-500" /> Negative Keywords</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {result.sentiment.negativeKeywords.map((kw) => <Badge key={kw} variant="outline" className="border-red-500 text-red-600">{kw}</Badge>)}
-                  </div>
+                  Positive Keywords
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {result.sentiment.positiveKeywords.map((kw) => (
+                    <Badge 
+                      key={kw} 
+                      variant="outline" 
+                      className="border-green-500/30 bg-green-50/30 text-green-600 hover:bg-green-100/30 transition-colors"
+                    >
+                      {kw}
+                    </Badge>
+                  ))}
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+              <div className="bg-card/50 p-4 rounded-lg border border-red-100/30">
+                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <div className="h-6 w-6 rounded-full bg-red-100/30 flex items-center justify-center">
+                    <ThumbsDown className="text-red-500 h-4 w-4" />
+                  </div>
+                  Negative Keywords
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {result.sentiment.negativeKeywords.map((kw) => (
+                    <Badge 
+                      key={kw} 
+                      variant="outline" 
+                      className="border-red-500/30 bg-red-50/30 text-red-600 hover:bg-red-100/30 transition-colors"
+                    >
+                      {kw}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-      <div className="space-y-6">
-         <Card className="min-h-[400px] sticky top-20">
-           <CardHeader>
-             <CardTitle className="font-headline flex items-center gap-2"><Map/> Vote Distribution Prediction</CardTitle>
-             <CardDescription>The AI's prediction of vote distribution across Kenya based on the sentiment analysis.</CardDescription>
-           </CardHeader>
-           <CardContent>
-              {isLoadingPrediction && (
-                 <div className="flex flex-col items-center justify-center p-8 text-center">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                    <p className="mt-4 text-muted-foreground">Generating prediction and map...</p>
+      <Card className="min-h-[600px] border-primary/10 shadow-md overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b border-primary/10">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <Map className="h-5 w-5 text-primary" />
+            </div>
+            <CardTitle className="font-headline">Vote Distribution Prediction</CardTitle>
+          </div>
+          <CardDescription className="text-base">
+            AI-powered prediction of vote distribution across Kenya based on sentiment analysis
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+           {isLoadingPrediction && (
+              <div className="flex flex-col items-center justify-center p-8 text-center">
+                 <div className="relative mb-4">
+                   <div className="h-16 w-16 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+                   <Map className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-6 w-6 text-primary" />
                  </div>
-              )}
-              {result?.prediction && (
-                <div className="space-y-4 animate-in fade-in-50">
-                   <div className="p-4 rounded-lg bg-accent/50 border">
-                     <h3 className="font-semibold flex items-center gap-2"><Trophy className="text-yellow-500"/> Predicted Outcome</h3>
-                     <p className="text-sm text-accent-foreground">{result.prediction.predictedWinner}</p>
-                   </div>
-                   <KenyaMap data={result.prediction.regions} />
-                </div>
-              )}
-              {!isLoading && !result && (
-                <div className="text-center text-muted-foreground py-8">
-                  <p>The prediction map will be shown here after analysis.</p>
-                </div>
-              )}
-           </CardContent>
-         </Card>
-      </div>
+                 <p className="text-lg font-medium mb-2">Generating Prediction</p>
+                 <p className="text-muted-foreground">Creating county-level vote distribution map...</p>
+              </div>
+           )}
+           {result?.prediction && (
+             <div className="space-y-4 animate-in fade-in-50">
+                <FixedKenyaMap data={result.prediction.regions} />
+             </div>
+           )}
+           {!isLoading && !result && (
+             <div className="text-center py-12 px-4">
+               <div className="mb-4 flex justify-center">
+                 <div className="h-16 w-16 rounded-full bg-primary/5 flex items-center justify-center">
+                   <AlertCircle className="h-8 w-8 text-primary/40" />
+                 </div>
+               </div>
+               <h3 className="text-lg font-medium mb-2">No Analysis Yet</h3>
+               <p className="text-muted-foreground max-w-md mx-auto">Complete the form above to generate an AI-powered sentiment analysis and vote distribution prediction.</p>
+             </div>
+           )}
+        </CardContent>
+      </Card>
+
+      {result?.prediction && (
+        <Card className="animate-in fade-in-50 border-primary/10 shadow-md overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-accent/5 to-transparent border-b border-accent/10">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="h-10 w-10 rounded-full bg-accent/10 flex items-center justify-center">
+                <Trophy className="h-5 w-5 text-accent" />
+              </div>
+              <CardTitle className="font-headline">AI Predicted Outcome</CardTitle>
+            </div>
+            <CardDescription className="text-base">
+              Based on sentiment analysis and political data for {form.getValues("candidateName")}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="p-4 rounded-lg bg-accent/10 border border-accent/20">
+              <p className="text-lg font-medium text-foreground">
+                {result.prediction.aiPrediction}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

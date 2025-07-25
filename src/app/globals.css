@@ -1,5 +1,6 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Space+Grotesk:wght@700&display=swap');
+@import 'leaflet/dist/leaflet.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -13,14 +14,18 @@
     --popover: 210 40% 98%;
     --popover-foreground: 222 47% 11%;
     --primary: 245 100% 60%; /* Vibrant blue */
+    --primary-rgb: 77, 77, 255; /* RGB values for primary */
     --primary-foreground: 0 0% 100%;
     --secondary: 162 100% 40%; /* Fresh green */
+    --secondary-rgb: 0, 204, 122; /* RGB values for secondary */
     --secondary-foreground: 0 0% 100%;
     --muted: 210 16% 93%;
     --muted-foreground: 222 47% 40%;
     --accent: 36 100% 50%; /* Orange accent */
+    --accent-rgb: 255, 153, 0; /* RGB values for accent */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
+    --destructive-rgb: 255, 51, 51; /* RGB values for destructive */
     --destructive-foreground: 0 0% 100%;
     --border: 220 13% 91%;
     --input: 220 13% 91%;
@@ -117,5 +122,69 @@
   @keyframes blink {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.3; }
+  }
+
+  .prose {
+    @apply text-foreground;
+  }
+  
+  .prose p {
+    @apply mb-4 leading-7;
+  }
+
+  .prose h1, .prose h2, .prose h3, .prose h4 {
+    @apply font-bold mb-4 mt-6;
+  }
+
+  .prose h1 {
+    @apply text-2xl;
+  }
+
+  .prose h2 {
+    @apply text-xl;
+  }
+
+  .prose h3 {
+    @apply text-lg;
+  }
+
+  .prose ul, .prose ol {
+    @apply mb-4 ml-4;
+  }
+
+  .prose li {
+    @apply mb-2;
+  }
+
+  .prose ul > li {
+    @apply list-disc;
+  }
+
+  .prose ol > li {
+    @apply list-decimal;
+  }
+
+  .prose code {
+    @apply bg-muted px-1.5 py-0.5 rounded text-sm font-mono;
+  }
+
+  .prose pre {
+    @apply bg-muted p-4 rounded-lg mb-4 overflow-x-auto;
+  }
+
+  .prose pre code {
+    @apply bg-transparent p-0;
+  }
+
+  .prose blockquote {
+    @apply border-l-4 border-muted pl-4 italic mb-4;
+  }
+
+  .prose a {
+    @apply text-primary underline hover:text-primary/80;
+  }
+
+  .dark .prose {
+    @apply text-foreground;
   }
 }

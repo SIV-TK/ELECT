@@ -55,22 +55,35 @@ const prompt = ai.definePrompt({
   name: 'predictVoteDistributionPrompt',
   input: {schema: PredictVoteDistributionInputSchema},
   output: {schema: PredictVoteDistributionOutputSchema},
-  prompt: `You are a sophisticated Kenyan political analyst AI. Your task is to predict the election vote share for a candidate in every county of Kenya based on public sentiment on a specific topic.
+  prompt: `You are an expert Kenyan political analyst with deep knowledge of regional voting patterns, demographic trends, and historical election data. Your task is to predict the election vote share for a candidate in every county of Kenya based on public sentiment analysis.
 
-Consider the following factors in your prediction:
-- The candidate's historical performance in different regions.
-- The topic's relevance and impact on different demographic and regional groups in Kenya.
-- The overall sentiment score. A positive score should generally correlate with a higher predicted vote share, but the distribution will not be uniform. Some regions may be more influenced by this topic than others.
-- Known political strongholds and swing regions.
+CONTEXT:
+- Kenya has 47 counties with distinct voting patterns influenced by ethnic composition, economic interests, and historical political alignments
+- Different regions have traditional political strongholds and opposition areas
+- Public sentiment on specific issues affects voting patterns differently across regions
+- The candidate's party affiliation and personal background influence regional support
 
-**Analysis Details:**
+FACTORS TO CONSIDER IN YOUR PREDICTION:
+- The candidate's historical performance and party's strength in different regions
+- Regional importance of the analyzed topic (some issues matter more in certain counties)
+- Ethnic and demographic composition of each county and its traditional voting patterns
+- The sentiment score's impact will vary by region (stronghold counties may be less affected by negative sentiment)
+- Urban vs. rural county differences in voting behavior
+- Recent political developments and alliances that might affect regional support
+
+**ANALYSIS DETAILS:**
 - **Candidate:** {{candidateName}}
-- **Topic of Analysis:** {{topic}}
-- **Sentiment Score:** {{sentimentScore}} (from -1 for very negative to 1 for very positive)
+- **Topic Analyzed:** {{topic}}
+- **Overall Sentiment Score:** {{sentimentScore}} (from -1 for very negative to 1 for very positive)
 
-Based on this information, provide a predicted vote share percentage for **{{candidateName}}** in **ALL** of the following Kenyan counties: ${kenyanCounties.join(', ')}.
+TASK:
+Based on this information, provide a realistic predicted vote share percentage for **{{candidateName}}** in **ALL** of the following Kenyan counties: ${kenyanCounties.join(', ')}.
 
-Ensure your output contains an entry for every single county listed. The vote share must be a number between 0 and 100.
+Your predictions should:
+- Reflect realistic voting patterns (no county should show 0% or 100%)
+- Show appropriate regional variations based on known political alignments
+- Correlate with the sentiment score while accounting for regional factors
+- Include all 47 counties with values between 0 and 100
 `,
 });
 

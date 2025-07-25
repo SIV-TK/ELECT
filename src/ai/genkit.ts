@@ -19,7 +19,13 @@ If asked about non-political topics, politely redirect the conversation to Kenya
 
 export const ai = genkit({
   plugins: [googleAI({
-    apiKey: process.env.GEMINI_API_KEY
+    apiKey: process.env.GEMINI_API_KEY || 'AIzaSyCx-ga-Ywvj8tk3BgleNd3qib5lLO8Bxss',
+    options: {
+      // Configure for public access
+      allowedOrigins: ['*'],
+      timeout: 60000, // Increase timeout for potentially slow public connections
+    }
   })],
   model: 'googleai/gemini-2.0-flash',
+  cache: true, // Enable caching to improve performance
 });

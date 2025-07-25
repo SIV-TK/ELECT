@@ -18,6 +18,32 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Allow public access
+  async headers() {
+    return [
+      {
+        source: '/api/:path*',
+        headers: [
+          { key: 'Access-Control-Allow-Credentials', value: 'true' },
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET,POST,OPTIONS' },
+          { key: 'Access-Control-Allow-Headers', value: 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version' },
+        ],
+      },
+    ];
+  },
+  // Ensure environment variables are available
+  env: {
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY || 'AIzaSyCx-ga-Ywvj8tk3BgleNd3qib5lLO8Bxss',
+  },
+  // Configure webpack for Leaflet
+  webpack: (config: any) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      'leaflet': require.resolve('leaflet'),
+    };
+    return config;
+  },
 };
 
 export default nextConfig;
