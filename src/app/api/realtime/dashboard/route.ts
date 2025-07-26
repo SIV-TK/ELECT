@@ -1,36 +1,39 @@
 import { NextResponse } from 'next/server';
 
-export async function GET() {
-  const data = {
-    activeCitizens: Math.floor(Math.random() * 100000) + 1200000,
-    sentimentAnalyses: Math.floor(Math.random() * 1000) + 45000,
-    livePolls: Math.floor(Math.random() * 10) + 20,
-    chatMessages: Math.floor(Math.random() * 5000) + 85000,
-    verifiedPoliticians: 1247,
-    trendingTopics: [
-      { 
-        topic: "Healthcare Reform", 
-        sentiment: (Math.random() - 0.5) * 2, 
-        mentions: Math.floor(Math.random() * 5000) + 10000,
-        growth: `${Math.random() > 0.5 ? '+' : '-'}${Math.floor(Math.random() * 20)}%`
-      },
-      { 
-        topic: "Economic Policy", 
-        sentiment: (Math.random() - 0.5) * 2, 
-        mentions: Math.floor(Math.random() * 3000) + 8000,
-        growth: `${Math.random() > 0.5 ? '+' : '-'}${Math.floor(Math.random() * 15)}%`
-      }
-    ],
-    recentActivity: [
-      {
-        type: "sentiment",
-        candidate: "William Ruto",
-        score: Math.random(),
-        time: `${Math.floor(Math.random() * 10) + 1} min ago`
-      }
-    ],
-    timestamp: new Date().toISOString()
+async function fetchRealTimeStats() {
+  // Mock real-time data - replace with actual APIs
+  const baseStats = {
+    activeCitizens: 1253000,
+    analyses: 892000,
+    livePolls: 24,
+    accuracy: 99.2
   };
+  
+  // Add realistic variations
+  return {
+    activeCitizens: baseStats.activeCitizens + Math.floor(Math.random() * 10000),
+    analyses: baseStats.analyses + Math.floor(Math.random() * 5000),
+    livePolls: baseStats.livePolls + Math.floor(Math.random() * 5) - 2,
+    accuracy: Math.max(95, Math.min(100, baseStats.accuracy + (Math.random() - 0.5) * 2))
+  };
+}
 
-  return NextResponse.json(data);
+export async function GET() {
+  try {
+    const stats = await fetchRealTimeStats();
+    
+    return NextResponse.json({
+      success: true,
+      activeCitizens: stats.activeCitizens,
+      analyses: stats.analyses,
+      livePolls: Math.max(0, stats.livePolls),
+      accuracy: Number(stats.accuracy.toFixed(1)),
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Failed to fetch real-time stats' },
+      { status: 500 }
+    );
+  }
 }

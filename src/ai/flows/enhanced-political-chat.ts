@@ -1,20 +1,22 @@
 import { ai } from '@/ai/genkit';
+import { generateWithModel, MODELS } from '@/ai/models';
 import { z } from 'zod';
 
 const inputSchema = z.object({
-  message: z.string().describe('User question about Kenyan politics')
+  message: z.string().describe('User question about Kenyan politics'),
+  useDeepSeek: z.boolean().optional().describe('Whether to use DeepSeek instead of Gemini')
 });
 
 const outputSchema = z.object({
-  response: z.string().describe('AI response about Kenyan politics')
+  response: z.string().describe('AI response about Kenyan politics'),
+  model: z.string().describe('Model used for the response')
 });
 
-export const chat = ai.defineFlow(
+export const enhancedChat = ai.defineFlow(
   {
-    name: 'chat',
+    name: 'enhancedChat',
     inputSchema: inputSchema,
     outputSchema: outputSchema,
-    model: 'deepseek/deepseek-chat',
   },
   async (input: z.infer<typeof inputSchema>) => {
     const prompt = `You are an expert on Kenyan politics and governance. Provide a detailed and accurate response to this question:
@@ -34,7 +36,12 @@ Format your response in markdown for better readability.
 
 Response:`;
 
-    const response = await ai.generate(prompt);
-    return { response: response.text };
+    const model = input.useDeepSeek ? 'DEEPSEEK_CHAT' : 'GEMINI';
+    const response = await generateWithModel(prompt, model);
+    
+    return { 
+      response, 
+      model: MODELS[model] 
+    };
   }
 );

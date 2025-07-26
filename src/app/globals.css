@@ -136,6 +136,22 @@
     50% { box-shadow: 0 0 20px rgba(var(--primary-rgb), 0.6), 0 0 30px rgba(var(--primary-rgb), 0.4); }
   }
   
+  @keyframes scroll {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-50%); }
+  }
+  
+  .animate-scroll {
+    animation: scroll 30s linear infinite;
+    will-change: transform;
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .animate-scroll {
+      animation: none;
+    }
+  }
+  
   .blinking-indicator {
     animation: blink 1.5s infinite ease-in-out;
   }
@@ -240,27 +256,48 @@
     @apply text-foreground;
   }
   
-  /* Mobile-specific improvements */
+  /* Mobile-first optimizations */
   @media (max-width: 768px) {
     .container {
-      @apply px-4;
+      @apply px-2;
     }
     
     /* Improve touch targets */
-    button, a {
+    button, a, [role="button"] {
       min-height: 44px;
       min-width: 44px;
+      touch-action: manipulation;
     }
     
     /* Better mobile scrolling */
     body {
       -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
     }
     
     /* Prevent zoom on input focus */
     input, select, textarea {
       font-size: 16px;
+      transform: translateZ(0);
     }
+    
+    /* Optimize animations for mobile */
+    .animate-scroll {
+      animation-duration: 20s;
+    }
+  }
+  
+  /* Performance optimizations */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  img {
+    content-visibility: auto;
+  }
+  
+  .card {
+    contain: layout style paint;
   }
   
   /* Touch-friendly hover states */

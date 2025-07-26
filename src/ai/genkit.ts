@@ -1,5 +1,6 @@
 import {genkit} from 'genkit';
 import {googleAI} from '@genkit-ai/googleai';
+import {deepseek} from 'genkitx-deepseek';
 
 // Define the base prompt for the political chatbot
 const politicalChatPrompt = `You are an expert on Kenyan politics and governance. Your responses should be:
@@ -18,14 +19,18 @@ const politicalChatPrompt = `You are an expert on Kenyan politics and governance
 If asked about non-political topics, politely redirect the conversation to Kenyan politics.`;
 
 export const ai = genkit({
-  plugins: [googleAI({
-    apiKey: process.env.GEMINI_API_KEY || 'AIzaSyCx-ga-Ywvj8tk3BgleNd3qib5lLO8Bxss',
-    options: {
-      // Configure for public access
-      allowedOrigins: ['*'],
-      timeout: 60000, // Increase timeout for potentially slow public connections
-    }
-  })],
-  model: 'googleai/gemini-2.0-flash',
-  cache: true, // Enable caching to improve performance
+  plugins: [
+    googleAI({
+      apiKey: process.env.GEMINI_API_KEY || 'AIzaSyCx-ga-Ywvj8tk3BgleNd3qib5lLO8Bxss',
+      options: {
+        allowedOrigins: ['*'],
+        timeout: 60000,
+      }
+    }),
+    deepseek({
+      apiKey: process.env.DEEPSEEK_API_KEY,
+    })
+  ],
+  model: 'googleai/gemini-2.0-flash', // Default model
+  cache: true,
 });

@@ -55,6 +55,7 @@ const predictElectionOutcomeFlow = ai.defineFlow(
     name: 'predictElectionOutcomeFlow',
     inputSchema: PredictElectionOutcomeInputSchema,
     outputSchema: PredictElectionOutcomeOutputSchema,
+    model: 'deepseek/deepseek-chat',
   },
   async input => {
     const {output} = await prompt(input);

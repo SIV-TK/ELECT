@@ -46,6 +46,7 @@ const summarizePoliticianFlow = ai.defineFlow(
     name: 'summarizePoliticianFlow',
     inputSchema: SummarizePoliticianInputSchema,
     outputSchema: SummarizePoliticianOutputSchema,
+    model: 'deepseek/deepseek-chat',
   },
   async (politician) => {
     // Convert the complex politician object into a string for the prompt

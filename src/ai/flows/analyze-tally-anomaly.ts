@@ -111,6 +111,7 @@ const predictTurnoutFlow = ai.defineFlow(
     name: 'predictTurnoutFlow',
     inputSchema: TurnoutPredictionInputSchema,
     outputSchema: TurnoutPredictionOutputSchema,
+    model: 'deepseek/deepseek-chat',
   },
   async (input) => {
     const {output} = await turnoutPrompt(input);
@@ -123,6 +124,7 @@ const analyzeTallyAnomalyFlow = ai.defineFlow(
     name: 'analyzeTallyAnomalyFlow',
     inputSchema: TallyAnomalyInputSchema,
     outputSchema: TallyAnomalyOutputSchema,
+    model: 'deepseek/deepseek-chat',
   },
   async (input) => {
     const {output} = await prompt(input);

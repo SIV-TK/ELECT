@@ -94,6 +94,7 @@ const getCampaignAdviceFlow = ai.defineFlow(
     name: 'getCampaignAdviceFlow',
     inputSchema: CampaignAdviceInputSchema,
     outputSchema: CampaignAdviceOutputSchema,
+    model: 'deepseek/deepseek-chat',
   },
   async input => {
     const {output} = await campaignAdvicePrompt(input);

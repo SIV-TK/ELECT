@@ -64,6 +64,7 @@ const analyzeIntelVeracityFlow = ai.defineFlow(
     name: 'analyzeIntelVeracityFlow',
     inputSchema: AnalyzeIntelVeracityInputSchema,
     outputSchema: AnalyzeIntelVeracityOutputSchema,
+    model: 'deepseek/deepseek-chat',
   },
   async (input) => {
     const {output} = await prompt(input);

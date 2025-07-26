@@ -92,6 +92,7 @@ const predictVoteDistributionFlow = ai.defineFlow(
     name: 'predictVoteDistributionFlow',
     inputSchema: PredictVoteDistributionInputSchema,
     outputSchema: PredictVoteDistributionOutputSchema,
+    model: 'deepseek/deepseek-chat',
   },
   async (input) => {
     const {output} = await prompt(input);

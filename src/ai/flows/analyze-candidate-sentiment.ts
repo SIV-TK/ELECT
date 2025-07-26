@@ -82,6 +82,7 @@ const analyzeCandidateSentimentFlow = ai.defineFlow(
     name: 'analyzeCandidateSentimentFlow',
     inputSchema: AnalyzeCandidateSentimentInputSchema,
     outputSchema: AnalyzeCandidateSentimentOutputSchema,
+    model: 'deepseek/deepseek-chat',
   },
   async input => {
     const {output} = await analyzeCandidateSentimentPrompt(input);

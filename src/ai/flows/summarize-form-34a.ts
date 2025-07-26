@@ -52,6 +52,7 @@ const summarizeForm34aFlow = ai.defineFlow(
     name: 'summarizeForm34aFlow',
     inputSchema: SummarizeForm34aInputSchema,
     outputSchema: SummarizeForm34aOutputSchema,
+    model: 'deepseek/deepseek-chat',
   },
   async (input) => {
     const {output} = await prompt(input);
