@@ -29,19 +29,7 @@ export default function LandingPage() {
               </svg>
               <span className="text-xl font-bold">Sauti Ya Watu</span>
             </div>
-            <nav className="hidden md:flex items-center gap-6">
-              <a href="/dashboard" className="text-sm hover:text-primary transition-colors font-medium">AI Dashboard</a>
-              <a href="/sentiment-analysis" className="text-sm hover:text-primary transition-colors">Sentiment AI</a>
-              <a href="/live-tally" className="text-sm hover:text-primary transition-colors">Live Results</a>
-              <a href="/media-bias" className="text-sm hover:text-primary transition-colors">Media Bias</a>
-              <a href="/fact-check" className="text-sm hover:text-primary transition-colors">Fact Check</a>
-              <a href="/voter-education" className="text-sm hover:text-primary transition-colors">Education</a>
-              <a href="/constituency-map" className="text-sm hover:text-primary transition-colors">Constituencies</a>
-              <a href="/voter-registration" className="text-sm hover:text-primary transition-colors">Register</a>
-              <a href="/influence-network" className="text-sm hover:text-primary transition-colors">Networks</a>
-              <a href="/corruption-risk" className="text-sm hover:text-primary transition-colors">Risk Analysis</a>
-              <a href="/politicians" className="text-sm hover:text-primary transition-colors">Politicians</a>
-            </nav>
+
             <div className="hidden md:flex items-center gap-4">
               <a href="/login" className="text-sm hover:text-primary transition-colors">Log in</a>
               <a href="/signup" className="text-sm bg-primary text-white px-4 py-2 rounded-lg hover:opacity-90 transition-colors">Sign up</a>
