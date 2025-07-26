@@ -17,41 +17,78 @@ export default function Dashboard() {
     accuracy: 99.2
   });
   
-  const [trendingTopics, setTrendingTopics] = useState([
-    { topic: "Economic Policy", mentions: 15420, sentiment: 0.65, trend: "up" },
-    { topic: "Healthcare Reform", mentions: 12890, sentiment: 0.42, trend: "up" },
-    { topic: "Education Funding", mentions: 9876, sentiment: -0.23, trend: "down" },
-    { topic: "Infrastructure", mentions: 8543, sentiment: 0.78, trend: "up" },
-    { topic: "Corruption Cases", mentions: 7234, sentiment: -0.56, trend: "down" }
-  ]);
+  const [trendingTopics, setTrendingTopics] = useState([]);
+  const [politicianSentiments, setPoliticianSentiments] = useState([]);
+  const [recentActivity, setRecentActivity] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const [politicianSentiments, setPoliticianSentiments] = useState([
-    { name: "William Ruto", sentiment: 0.72, mentions: 45230, party: "UDA", trend: "up" },
-    { name: "Raila Odinga", sentiment: 0.58, mentions: 38940, party: "ODM", trend: "stable" },
-    { name: "Martha Karua", sentiment: 0.64, mentions: 23450, party: "Narc-K", trend: "up" },
-    { name: "Rigathi Gachagua", sentiment: 0.41, mentions: 19870, party: "UDA", trend: "down" },
-    { name: "Kalonzo Musyoka", sentiment: 0.52, mentions: 15670, party: "Wiper", trend: "stable" }
-  ]);
+  // Fetch real-time dashboard data
+  const fetchDashboardData = async () => {
+    try {
+      const response = await fetch('/api/realtime/dashboard');
+      const data = await response.json();
+      
+      setRealTimeData({
+        activeCitizens: data.activeCitizens || 1247832,
+        analyses: data.analyses || 892456,
+        livePolls: data.livePolls || 12,
+        accuracy: data.accuracy || 99.2
+      });
+      
+      setTrendingTopics(data.trendingTopics || [
+        { topic: "Economic Policy", mentions: 15420, sentiment: 0.65, trend: "up" },
+        { topic: "Healthcare Reform", mentions: 12890, sentiment: 0.42, trend: "up" },
+        { topic: "Education Funding", mentions: 9876, sentiment: -0.23, trend: "down" },
+        { topic: "Infrastructure", mentions: 8543, sentiment: 0.78, trend: "up" },
+        { topic: "Corruption Cases", mentions: 7234, sentiment: -0.56, trend: "down" }
+      ]);
+      
+      setRecentActivity(data.userActivities || [
+        { action: "New sentiment analysis completed", time: "2 min ago", type: "analysis" },
+        { action: "Live poll started in Nairobi", time: "5 min ago", type: "poll" },
+        { action: "Fact check verified", time: "8 min ago", type: "verification" },
+        { action: "Media bias detected", time: "12 min ago", type: "bias" },
+        { action: "Corruption risk alert", time: "15 min ago", type: "alert" }
+      ]);
+      
+      setLoading(false);
+    } catch (error) {
+      console.error('Failed to fetch dashboard data:', error);
+      // Use fallback data on error
+      setLoading(false);
+    }
+  };
 
-  const [recentActivity, setRecentActivity] = useState([
-    { action: "New sentiment analysis completed", time: "2 min ago", type: "analysis" },
-    { action: "Live poll started in Nairobi", time: "5 min ago", type: "poll" },
-    { action: "Fact check verified", time: "8 min ago", type: "verification" },
-    { action: "Media bias detected", time: "12 min ago", type: "bias" },
-    { action: "Corruption risk alert", time: "15 min ago", type: "alert" }
-  ]);
+  // Fetch politician sentiments from AI
+  const fetchPoliticianSentiments = async () => {
+    try {
+      const response = await fetch('/api/politician-sentiment');
+      const data = await response.json();
+      
+      setPoliticianSentiments(data.politicians || [
+        { name: "William Ruto", sentiment: 0.72, mentions: 45230, party: "UDA", trend: "up" },
+        { name: "Raila Odinga", sentiment: 0.58, mentions: 38940, party: "ODM", trend: "stable" },
+        { name: "Martha Karua", sentiment: 0.64, mentions: 23450, party: "Narc-K", trend: "up" },
+        { name: "Rigathi Gachagua", sentiment: 0.41, mentions: 19870, party: "UDA", trend: "down" },
+        { name: "Kalonzo Musyoka", sentiment: 0.52, mentions: 15670, party: "Wiper", trend: "stable" }
+      ]);
+    } catch (error) {
+      console.error('Failed to fetch politician sentiments:', error);
+    }
+  };
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setRealTimeData(prev => ({
-        activeCitizens: prev.activeCitizens + Math.floor(Math.random() * 50),
-        analyses: prev.analyses + Math.floor(Math.random() * 25),
-        livePolls: prev.livePolls + (Math.random() > 0.8 ? 1 : 0),
-        accuracy: 99.2 + (Math.random() * 0.6 - 0.3)
-      }));
-    }, 3000);
-
-    return () => clearInterval(interval);
+    fetchDashboardData();
+    fetchPoliticianSentiments();
+    
+    // Set up real-time updates
+    const dashboardInterval = setInterval(fetchDashboardData, 30000); // Every 30 seconds
+    const sentimentInterval = setInterval(fetchPoliticianSentiments, 60000); // Every minute
+    
+    return () => {
+      clearInterval(dashboardInterval);
+      clearInterval(sentimentInterval);
+    };
   }, []);
 
   return (
@@ -72,7 +109,9 @@ export default function Dashboard() {
                 <Users className="h-6 w-6 text-blue-600" />
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
               </div>
-              <div className="text-xl font-bold text-blue-900">{realTimeData.activeCitizens.toLocaleString()}</div>
+              <div className="text-xl font-bold text-blue-900">
+                {loading ? '...' : realTimeData.activeCitizens.toLocaleString()}
+              </div>
               <div className="text-sm text-blue-700">Active Citizens</div>
             </CardContent>
           </Card>
@@ -83,7 +122,9 @@ export default function Dashboard() {
                 <Brain className="h-6 w-6 text-green-600" />
                 <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
               </div>
-              <div className="text-xl font-bold text-green-900">{realTimeData.analyses.toLocaleString()}</div>
+              <div className="text-xl font-bold text-green-900">
+                {loading ? '...' : realTimeData.analyses.toLocaleString()}
+              </div>
               <div className="text-sm text-green-700">AI Analyses</div>
             </CardContent>
           </Card>
@@ -91,7 +132,9 @@ export default function Dashboard() {
           <Card className="bg-purple-50 border-purple-200">
             <CardContent className="p-4 text-center">
               <Vote className="h-6 w-6 text-purple-600 mx-auto mb-2" />
-              <div className="text-xl font-bold text-purple-900">{realTimeData.livePolls}</div>
+              <div className="text-xl font-bold text-purple-900">
+                {loading ? '...' : realTimeData.livePolls}
+              </div>
               <div className="text-sm text-purple-700">Live Polls</div>
             </CardContent>
           </Card>
@@ -99,7 +142,9 @@ export default function Dashboard() {
           <Card className="bg-orange-50 border-orange-200">
             <CardContent className="p-4 text-center">
               <Shield className="h-6 w-6 text-orange-600 mx-auto mb-2" />
-              <div className="text-xl font-bold text-orange-900">{realTimeData.accuracy.toFixed(1)}%</div>
+              <div className="text-xl font-bold text-orange-900">
+                {loading ? '...' : realTimeData.accuracy.toFixed(1)}%
+              </div>
               <div className="text-sm text-orange-700">AI Accuracy</div>
             </CardContent>
           </Card>
