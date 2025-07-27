@@ -304,16 +304,16 @@ export default function SentimentAnalysisPage() {
             </div>
             <CardDescription className="text-base">
               {useRealTimeData ? 'Real-time' : 'AI-generated'} sentiment analysis for <span className="font-bold text-foreground">{form.getValues("candidateName")}</span>
-              {result.sentiment.dataFreshness && (
+              {(result.sentiment as any).dataFreshness && (
                 <div className="text-xs text-muted-foreground mt-1">
-                  Data updated: {new Date(result.sentiment.dataFreshness).toLocaleString()}
+                  Data updated: {new Date((result.sentiment as any).dataFreshness).toLocaleString()}
                 </div>
               )}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6 pt-6">
             <div className="bg-card/50 p-4 rounded-lg border border-primary/10">
-              <h3 className="text-lg font-semibold mb-3">Overall Sentiment Score: {result.sentiment.sentimentScore.toFixed(2)}</h3>
+              <h3 className="text-lg font-semibold mb-3">Overall Sentiment Score: {result.sentiment.sentimentScore.toFixed(2)} (47 Counties)</h3>
               <Progress 
                 value={sentimentPercentage} 
                 className="w-full h-3 rounded-full" 
@@ -330,6 +330,9 @@ export default function SentimentAnalysisPage() {
             <div className="bg-card/50 p-4 rounded-lg border border-primary/10">
               <h3 className="text-lg font-semibold mb-2">Summary</h3>
               <p className="text-foreground">{result.sentiment.sentimentSummary}</p>
+              {(result.sentiment as any).countyBreakdown && (
+                <p className="text-sm text-muted-foreground mt-2">{(result.sentiment as any).countyBreakdown}</p>
+              )}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-card/50 p-4 rounded-lg border border-green-100/30">
@@ -340,7 +343,7 @@ export default function SentimentAnalysisPage() {
                   Positive Keywords
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  {result.sentiment.positiveKeywords.map((kw) => (
+                  {result.sentiment.positiveKeywords.map((kw: string) => (
                     <Badge 
                       key={kw} 
                       variant="outline" 
@@ -359,7 +362,7 @@ export default function SentimentAnalysisPage() {
                   Negative Keywords
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  {result.sentiment.negativeKeywords.map((kw) => (
+                  {result.sentiment.negativeKeywords.map((kw: string) => (
                     <Badge 
                       key={kw} 
                       variant="outline" 

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import Image from 'next/image';
 import { politicians } from '@/lib/data';
 import type { Politician } from '@/types';
 import { summarizePolitician } from '@/ai/flows/summarize-politician';
@@ -11,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, BotMessageSquare, GraduationCap, School, University, Trophy, CheckCircle, XCircle, Briefcase, FileText, Gavel, User } from 'lucide-react';
+import { Loader2, MessageSquare, GraduationCap, School, BookOpen, Trophy, CheckCircle, XCircle, Briefcase, FileText, Gavel, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function PoliticianProfilePage() {
@@ -52,8 +51,16 @@ export default function PoliticianProfilePage() {
         setRealTimeData(realTimeResult.data);
         
         // Generate AI summary with real-time context
-        const aiResult = await summarizePolitician(politician);
-        setSummary(aiResult.summary);
+        const summaryResponse = await fetch('/api/politician-summary', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ politician }),
+        });
+        
+        const summaryResult = await summaryResponse.json();
+        if (summaryResult.success) {
+          setSummary(summaryResult.data.summary);
+        }
       } else {
         throw new Error(realTimeResult.error);
       }
@@ -117,14 +124,11 @@ export default function PoliticianProfilePage() {
     <div className="space-y-6">
       <Card>
         <CardHeader className="flex flex-col md:flex-row items-start gap-6">
-          <Image
-            src={politician.imageUrl}
-            alt={`Photo of ${politician.name}`}
-            width={150}
-            height={150}
-            className="rounded-lg border-4 border-primary/20 object-cover"
-            data-ai-hint="politician portrait"
-          />
+          <div className="w-[150px] h-[150px] rounded-lg border-4 border-primary/20 bg-gray-200 flex items-center justify-center">
+            <span className="text-gray-500 text-2xl font-bold">
+              {politician.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
+            </span>
+          </div>
           <div className="flex-1">
             <CardTitle className="font-headline text-3xl">{politician.name}</CardTitle>
             <CardDescription className="text-lg">{politician.party}</CardDescription>
@@ -187,7 +191,7 @@ export default function PoliticianProfilePage() {
                   </div>
               </div>
               <div className="flex items-start gap-3">
-                  <University className="h-5 w-5 mt-1 text-muted-foreground" />
+                  <BookOpen className="h-5 w-5 mt-1 text-muted-foreground" />
                   <div>
                       <h4 className="font-semibold">University</h4>
                       <p className="text-muted-foreground">{politician.academicLife.university}</p>
@@ -246,7 +250,7 @@ export default function PoliticianProfilePage() {
       
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline flex items-center gap-2"><BotMessageSquare />Comprehensive AI Analysis</CardTitle>
+          <CardTitle className="font-headline flex items-center gap-2"><MessageSquare />Comprehensive AI Analysis</CardTitle>
           <CardDescription>Generate an AI-powered analysis combining profile data with real-time internet data and public sentiment.</CardDescription>
         </CardHeader>
         <CardContent>

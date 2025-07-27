@@ -73,7 +73,8 @@ Provide your response in this exact JSON format:
     let parsedResult;
     try {
       // Try to parse as JSON first
-      const jsonMatch = response.text.match(/\{[\s\S]*\}/);
+      const responseText = response.text || response.content?.[0]?.text || '';
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         parsedResult = JSON.parse(jsonMatch[0]);
       } else {
@@ -81,10 +82,11 @@ Provide your response in this exact JSON format:
       }
     } catch {
       // Fallback to text parsing
-      const sentimentScore = extractSentimentScore(response.text);
-      const summary = extractSummary(response.text);
-      const positiveKeywords = extractKeywords(response.text, 'positive');
-      const negativeKeywords = extractKeywords(response.text, 'negative');
+      const responseText = response.text || response.content?.[0]?.text || '';
+      const sentimentScore = extractSentimentScore(responseText);
+      const summary = extractSummary(responseText);
+      const positiveKeywords = extractKeywords(responseText, 'positive');
+      const negativeKeywords = extractKeywords(responseText, 'negative');
       
       parsedResult = {
         sentimentScore,

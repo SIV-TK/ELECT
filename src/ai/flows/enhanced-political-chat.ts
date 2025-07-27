@@ -1,47 +1,84 @@
+// src/ai/flows/enhanced-political-chat.ts
+'use server';
+
 import { ai } from '@/ai/genkit';
-import { generateWithModel, MODELS } from '@/ai/models';
-import { z } from 'zod';
+import { MODELS } from '@/ai/models';
+import { WebScraper } from '@/lib/web-scraper';
+import { KenyaPoliticalDataService } from '@/lib/kenya-political-data';
 
-const inputSchema = z.object({
-  message: z.string().describe('User question about Kenyan politics'),
-  useDeepSeek: z.boolean().optional().describe('Whether to use DeepSeek instead of Gemini')
-});
+export interface EnhancedPoliticalChatInput {
+  message: string;
+  useDeepSeek?: boolean;
+}
 
-const outputSchema = z.object({
-  response: z.string().describe('AI response about Kenyan politics'),
-  model: z.string().describe('Model used for the response')
-});
+export interface EnhancedPoliticalChatOutput {
+  response: string;
+  model: string;
+}
 
-export const enhancedChat = ai.defineFlow(
-  {
-    name: 'enhancedChat',
-    inputSchema: inputSchema,
-    outputSchema: outputSchema,
-  },
-  async (input: z.infer<typeof inputSchema>) => {
-    const prompt = `You are an expert on Kenyan politics and governance. Provide a detailed and accurate response to this question:
+export async function enhancedPoliticalChat(
+  input: EnhancedPoliticalChatInput
+): Promise<EnhancedPoliticalChatOutput> {
+  try {
+    // Get real-time political context
+    const [politicalTrends, publicConcerns] = await Promise.all([
+      KenyaPoliticalDataService.getKenyanPoliticalTrends(),
+      KenyaPoliticalDataService.compilePublicConcerns()
+    ]);
 
-Question: "${input.message}"
-
-Your response should:
-1. Focus exclusively on Kenyan politics, governance, and electoral matters
-2. Maintain strict factual accuracy and political neutrality
-3. Include relevant historical context and key events when applicable
-4. Cite specific laws, policies, and regulations where relevant
-5. Explain complex concepts in clear, accessible language
-6. Address any misconceptions present in the question
-7. Respect all political viewpoints while staying factual
-
-Format your response in markdown for better readability.
-
-Response:`;
-
-    const model = input.useDeepSeek ? 'DEEPSEEK_CHAT' : 'GEMINI';
-    const response = await generateWithModel(prompt, model);
+    const selectedModel = input.useDeepSeek !== false ? MODELS.DEEPSEEK_CHAT : MODELS.GEMINI;
     
-    return { 
-      response, 
-      model: MODELS[model] 
+    const enhancedPrompt = `
+You are an expert on Kenyan politics with access to real-time political data. Provide comprehensive, factual responses about Kenyan political matters.
+
+CURRENT POLITICAL TRENDS: ${politicalTrends.join(', ')}
+MAJOR PUBLIC CONCERNS: ${publicConcerns.slice(0, 5).join(', ')}
+
+USER MESSAGE: ${input.message}
+
+Guidelines:
+1. Focus exclusively on Kenyan political matters
+2. Use current political context in your response
+3. Be factual, non-partisan, and educational
+4. Reference current trends and concerns when relevant
+5. Provide actionable information for citizens
+6. Maintain respect for all political viewpoints
+
+Provide a comprehensive response that incorporates current political context.
+    `;
+
+    const response = await ai.generate({
+      model: selectedModel,
+      prompt: enhancedPrompt,
+      config: {
+        temperature: 0.4,
+        maxOutputTokens: 700
+      }
+    });
+
+    return {
+      response: response.text || response.content?.[0]?.text || "" || 'I can help you understand current Kenyan political developments. What specific aspect would you like to explore?',
+      model: selectedModel
+    };
+
+  } catch (error) {
+    console.error('Error in enhanced political chat:', error);
+    
+    // Fallback to basic political chat
+    const message = input.message.toLowerCase();
+    let response = '';
+    
+    if (message.includes('current') || message.includes('recent')) {
+      response = 'Current Kenyan political discussions focus on economic policies, cost of living, youth unemployment, and governance reforms. Key issues include healthcare, education funding, and infrastructure development.';
+    } else if (message.includes('trend') || message.includes('popular')) {
+      response = 'Popular political topics in Kenya include #CostOfLiving, #YouthUnemployment, #CorruptionFight, #HealthcareReform, and #EducationFunding. These reflect major citizen concerns.';
+    } else {
+      response = 'I can provide insights on current Kenyan political trends, government policies, and citizen concerns. What specific topic interests you?';
+    }
+    
+    return {
+      response,
+      model: input.useDeepSeek ? 'deepseek-fallback' : 'gemini-fallback'
     };
   }
-);
+}

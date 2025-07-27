@@ -7,10 +7,17 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Scale, BookOpen, Loader2, MessageCircle } from 'lucide-react';
 
+interface ConstitutionExplanation {
+  explanation: string;
+  relevantArticles: string[];
+  practicalExample: string;
+  citizenRights: string[];
+}
+
 export default function ConstitutionPage() {
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [explanation, setExplanation] = useState(null);
+  const [explanation, setExplanation] = useState<ConstitutionExplanation | null>(null);
 
   const askAI = async () => {
     if (!query.trim()) return;
@@ -104,13 +111,13 @@ export default function ConstitutionPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="prose max-w-none">
-                <p className="text-gray-800">{explanation.explanation}</p>
+                <p className="text-gray-800">{explanation?.explanation}</p>
               </div>
 
               <div>
                 <h4 className="font-semibold mb-2">Relevant Articles</h4>
                 <div className="flex flex-wrap gap-2">
-                  {explanation.relevantArticles.map((article, index) => (
+                  {explanation?.relevantArticles?.map((article, index) => (
                     <Badge key={index} variant="outline">{article}</Badge>
                   ))}
                 </div>
@@ -119,14 +126,14 @@ export default function ConstitutionPage() {
               <div>
                 <h4 className="font-semibold mb-2">Practical Example</h4>
                 <p className="text-sm text-gray-700 bg-blue-50 p-3 rounded-lg">
-                  {explanation.practicalExample}
+                  {explanation?.practicalExample}
                 </p>
               </div>
 
               <div>
                 <h4 className="font-semibold mb-2">Your Rights</h4>
                 <ul className="space-y-1">
-                  {explanation.citizenRights.map((right, index) => (
+                  {explanation?.citizenRights?.map((right, index) => (
                     <li key={index} className="flex items-start gap-2 text-sm">
                       <span className="text-green-600">•</span>
                       {right}

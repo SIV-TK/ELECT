@@ -1,6 +1,8 @@
 import type { AnalyzeIntelVeracityOutput } from "@/ai/flows/analyze-intel-veracity";
 import type { TallyAnomalyOutput } from "@/ai/flows/analyze-tally-anomaly";
 
+export type { AnalyzeIntelVeracityOutput, TallyAnomalyOutput };
+
 export interface Politician {
   id: string;
   name: string;

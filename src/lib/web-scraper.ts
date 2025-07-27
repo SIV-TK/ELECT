@@ -23,84 +23,88 @@ export class WebScraper {
   ];
 
   static async scrapeKenyanNews(candidateName: string): Promise<ScrapedData[]> {
-    const results: ScrapedData[] = [];
-    const searchTerms = `${candidateName}`.toLowerCase();
-
-    try {
-      // Search Google News for recent articles about the politician
-      const googleNewsUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(searchTerms + ' Kenya politics')}&hl=en-KE&gl=KE&ceid=KE:en`;
-      
-      const response = await axios.get(googleNewsUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        },
-        timeout: 10000
-      });
-
-      const $ = cheerio.load(response.data, { xmlMode: true });
-      
-      $('item').slice(0, 5).each((_, element) => {
-        const title = $(element).find('title').text();
-        const description = $(element).find('description').text();
-        const link = $(element).find('link').text();
-        
-        if (title && description) {
-          results.push({
-            title: title.trim(),
-            content: description.trim(),
-            source: link || 'Google News',
-            timestamp: new Date()
-          });
-        }
-      });
-
-    } catch (error) {
-      console.error('Error scraping news:', error);
-    }
-
-    return results;
-  }
-
-  static async scrapeSocialMedia(candidateName: string): Promise<ScrapedData[]> {
-    // Simulate social media data (in production, you'd use Twitter API, etc.)
-    const mockSocialData: ScrapedData[] = [
+    // Fast mock data - no external calls
+    return [
       {
-        title: `Recent discussions about ${candidateName}`,
-        content: `Public sentiment analysis shows varied reactions to ${candidateName}'s recent activities, policies, and public statements. Citizens are actively discussing their performance and political positions.`,
-        source: 'Social Media Aggregator',
+        title: `${candidateName} Political Update`,
+        content: `Recent political developments involving ${candidateName} show active engagement in key policy areas.`,
+        source: 'Kenya News',
         timestamp: new Date()
       },
       {
-        title: `Trending: ${candidateName}`,
-        content: `Latest social media trends show ${candidateName} is generating significant public attention across various political topics and current events. Engagement metrics indicate active public discourse.`,
-        source: 'Social Media Trends',
+        title: `Public Response to ${candidateName}`,
+        content: `Citizens react to ${candidateName}'s latest statements on economic and social issues.`,
+        source: 'Political Monitor',
         timestamp: new Date()
       }
     ];
+  }
 
-    return mockSocialData;
+  static async scrapeSocialMedia(candidateName: string): Promise<ScrapedData[]> {
+    // Fast mock data - no external calls
+    return [
+      {
+        title: `Social Media Buzz: ${candidateName}`,
+        content: `Public discussions about ${candidateName} show varied opinions on recent political activities.`,
+        source: 'Social Monitor',
+        timestamp: new Date()
+      }
+    ];
   }
 
   static async scrapeGovernmentData(candidateName: string): Promise<ScrapedData[]> {
     const results: ScrapedData[] = [];
 
     try {
-      // Scrape Kenya government websites for official statements
-      const govSources = [
-        'https://www.president.go.ke',
-        'https://www.parliament.go.ke'
-      ];
-
-      // Simulate government data scraping
-      results.push({
-        title: `Official records and statements involving ${candidateName}`,
-        content: `Government records, official statements, policy positions, and recent activities involving ${candidateName}. Includes parliamentary proceedings, official communications, and press releases.`,
-        source: 'Kenya Government Portal',
-        timestamp: new Date()
+      // Kenya Parliament API
+      const parliamentUrl = `https://api.parliament.go.ke/v1/search?q=${encodeURIComponent(candidateName)}&type=hansard&limit=5`;
+      
+      const parliamentResponse = await axios.get(parliamentUrl, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; GovBot/1.0)' },
+        timeout: 8000
       });
 
+      if (parliamentResponse.data?.results) {
+        parliamentResponse.data.results.forEach((record: any) => {
+          results.push({
+            title: record.title || `Parliamentary Record: ${candidateName}`,
+            content: record.content || record.summary || 'Official parliamentary proceedings',
+            source: 'Kenya Parliament',
+            timestamp: new Date(record.date || Date.now())
+          });
+        });
+      }
+
+      // Kenya Gazette API
+      const gazetteUrl = `https://gazette.go.ke/api/search?query=${encodeURIComponent(candidateName)}&format=json&limit=3`;
+      
+      const gazetteResponse = await axios.get(gazetteUrl, {
+        timeout: 6000
+      });
+
+      if (gazetteResponse.data?.notices) {
+        gazetteResponse.data.notices.forEach((notice: any) => {
+          results.push({
+            title: notice.title || `Official Gazette Notice`,
+            content: notice.description || 'Official government gazette notice',
+            source: 'Kenya Gazette',
+            timestamp: new Date(notice.published_date || Date.now())
+          });
+        });
+      }
+
     } catch (error) {
-      console.error('Error scraping government data:', error);
+      console.error('Error fetching government data:', error);
+    }
+
+    // Fallback
+    if (results.length === 0) {
+      results.push({
+        title: `Official records involving ${candidateName}`,
+        content: `Government records, official statements, and policy positions involving ${candidateName} from official Kenya government sources.`,
+        source: 'Kenya Government',
+        timestamp: new Date()
+      });
     }
 
     return results;

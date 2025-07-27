@@ -37,15 +37,15 @@ export default function Dashboard() {
     accuracy: 99.2
   });
   
-  const [trendingTopics, setTrendingTopics] = useState([]);
-  const [politicianSentiments, setPoliticianSentiments] = useState([]);
+  const [trendingTopics, setTrendingTopics] = useState<any[]>([]);
+  const [politicianSentiments, setPoliticianSentiments] = useState<any[]>([]);
   const [govPopularity, setGovPopularity] = useState({ approve: 30, disapprove: 25, neutral: 45, overall: 58 });
   const [loading, setLoading] = useState(true);
   const [constitutionQuery, setConstitutionQuery] = useState('');
   const [isConstitutionLoading, setIsConstitutionLoading] = useState(false);
   const [showConstitutionModal, setShowConstitutionModal] = useState(false);
-  const [constitutionAnswer, setConstitutionAnswer] = useState(null);
-  const [recentAmendments, setRecentAmendments] = useState([]);
+  const [constitutionAnswer, setConstitutionAnswer] = useState<any>(null);
+  const [recentAmendments, setRecentAmendments] = useState<any[]>([]);
 
   // Fetch real-time dashboard data
   const fetchDashboardData = async () => {
@@ -148,7 +148,7 @@ export default function Dashboard() {
         explanation: '<h3>Recent Constitutional Amendments</h3><p>Here are the latest constitutional changes and proposed amendments from Parliament and KLRC:</p>',
         relevantArticles: ['Recent Changes'],
         practicalExample: 'These amendments affect how government operates and your rights as a citizen.',
-        citizenRights: data.data.map(a => `${a.title} - ${a.source}`)
+        citizenRights: data.data.map((a: any) => `${a.title} - ${a.source}`)
       });
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
@@ -460,7 +460,7 @@ export default function Dashboard() {
                     <div>
                       <h4 className="font-medium mb-2">Relevant Articles</h4>
                       <div className="flex flex-wrap gap-2">
-                        {constitutionAnswer.relevantArticles.map((article, i) => (
+                        {constitutionAnswer.relevantArticles.map((article: string, i: number) => (
                           <Badge key={i} variant="outline">{article}</Badge>
                         ))}
                       </div>
@@ -483,7 +483,7 @@ export default function Dashboard() {
                         </div>
                       ) : (
                         <ul className="space-y-1">
-                          {constitutionAnswer.citizenRights.map((right, i) => (
+                          {constitutionAnswer.citizenRights.map((right: string, i: number) => (
                             <li key={i} className="flex items-start gap-2 text-sm">
                               <span className="text-green-600">•</span>{right}
                             </li>

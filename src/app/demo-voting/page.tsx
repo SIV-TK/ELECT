@@ -149,7 +149,7 @@ const ElectionTabContent = ({
                 <YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} width={120} interval={0} />
                 <XAxis type="number" dataKey="votes" hide/>
                 <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-                <Bar dataKey="votes" radius={5} layout="vertical">
+                <Bar dataKey="votes" radius={5}>
                   <LabelList dataKey="votes" position="right" offset={8} className="fill-foreground font-semibold" />
                 </Bar>
               </RechartsBarChart>

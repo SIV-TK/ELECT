@@ -1,40 +1,80 @@
+// src/ai/flows/political-chat.ts
+'use server';
+
 import { ai } from '@/ai/genkit';
-import { z } from 'zod';
+import { MODELS } from '@/ai/models';
 
-const inputSchema = z.object({
-  message: z.string().describe('User question about Kenyan politics')
-});
+export interface PoliticalChatInput {
+  message: string;
+}
 
-const outputSchema = z.object({
-  response: z.string().describe('AI response about Kenyan politics')
-});
+export interface PoliticalChatOutput {
+  response: string;
+}
 
-export const chat = ai.defineFlow(
-  {
-    name: 'chat',
-    inputSchema: inputSchema,
-    outputSchema: outputSchema,
-    model: 'deepseek/deepseek-chat',
-  },
-  async (input: z.infer<typeof inputSchema>) => {
-    const prompt = `You are an expert on Kenyan politics and governance. Provide a detailed and accurate response to this question:
+export async function politicalChat(
+  input: PoliticalChatInput
+): Promise<PoliticalChatOutput> {
+  try {
+    const chatPrompt = `
+You are an expert on Kenyan politics and governance. Your responses should be:
+1. Focused exclusively on Kenyan political matters
+2. Factual and non-partisan
+3. Based on verifiable information
+4. Respectful of all political viewpoints
+5. Clear and easy to understand
+6. Aimed at educating about:
+   - The Kenyan political system
+   - Electoral processes
+   - Government structure
+   - Political history
+   - Current political landscape
+   - Constitutional matters
 
-Question: "${input.message}"
+USER MESSAGE: ${input.message}
 
-Your response should:
-1. Focus exclusively on Kenyan politics, governance, and electoral matters
-2. Maintain strict factual accuracy and political neutrality
-3. Include relevant historical context and key events when applicable
-4. Cite specific laws, policies, and regulations where relevant
-5. Explain complex concepts in clear, accessible language
-6. Address any misconceptions present in the question
-7. Respect all political viewpoints while staying factual
+Provide a helpful, informative response about Kenyan politics. If asked about non-political topics, politely redirect the conversation to Kenyan politics.
 
-Format your response in markdown for better readability.
+Keep your response concise but informative, suitable for citizens seeking to understand their political system better.
+    `;
 
-Response:`;
+    const response = await ai.generate({
+      model: MODELS.DEEPSEEK_CHAT,
+      prompt: chatPrompt,
+      config: {
+        temperature: 0.3,
+        maxOutputTokens: 500
+      }
+    });
 
-    const response = await ai.generate(prompt);
-    return { response: response.text };
+    const responseText = response.text || response.content?.[0]?.text || "" || response.content?.[0]?.text || 'I can help you understand Kenyan politics, government structure, elections, and constitutional matters. What specific topic would you like to know about?';
+    
+    return {
+      response: responseText
+    };
+
+  } catch (error) {
+    console.error('Error in political chat:', error);
+    
+    // Fallback response based on message analysis
+    const message = input.message.toLowerCase();
+    
+    let response = '';
+    
+    if (message.includes('president') || message.includes('ruto')) {
+      response = 'The President of Kenya is the head of state and government, elected for a five-year term. The current president is William Ruto, who took office in September 2022. The president leads the executive branch and implements government policies.';
+    } else if (message.includes('parliament') || message.includes('mp')) {
+      response = 'The Kenyan Parliament consists of the National Assembly and the Senate. MPs are elected to represent constituencies, while Senators represent counties in the bicameral system. Parliament makes laws and oversees government operations.';
+    } else if (message.includes('county') || message.includes('governor')) {
+      response = 'Kenya has 47 counties, each led by an elected Governor. Counties handle devolved functions like healthcare, agriculture, and local infrastructure development under the 2010 Constitution.';
+    } else if (message.includes('election') || message.includes('vote')) {
+      response = 'Kenya holds general elections every five years. Citizens vote for President, MPs, Senators, Governors, and MCAs. The next general election is scheduled for 2027. Elections are managed by the Independent Electoral and Boundaries Commission (IEBC).';
+    } else if (message.includes('constitution')) {
+      response = 'The 2010 Constitution of Kenya established a new governance structure with devolved government, expanded bill of rights, and stronger institutions for accountability. It replaced the independence constitution.';
+    } else {
+      response = 'I can help you understand Kenyan politics, government structure, elections, and constitutional matters. What specific topic would you like to know about?';
+    }
+    
+    return { response };
   }
-);
+}

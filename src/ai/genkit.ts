@@ -21,16 +21,10 @@ If asked about non-political topics, politely redirect the conversation to Kenya
 export const ai = genkit({
   plugins: [
     googleAI({
-      apiKey: process.env.GEMINI_API_KEY || 'AIzaSyCx-ga-Ywvj8tk3BgleNd3qib5lLO8Bxss',
-      options: {
-        allowedOrigins: ['*'],
-        timeout: 60000,
-      }
+      apiKey: process.env.GEMINI_API_KEY || 'AIzaSyCx-ga-Ywvj8tk3BgleNd3qib5lLO8Bxss'
     }),
     deepseek({
-      apiKey: process.env.DEEPSEEK_API_KEY,
+      apiKey: process.env.DEEPSEEK_API_KEY || 'sk-3cd6995fe396452b801d4fc7721a0e6c',
     })
-  ],
-  model: 'googleai/gemini-2.0-flash', // Default model
-  cache: true,
+  ]
 });

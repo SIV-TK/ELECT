@@ -422,8 +422,8 @@ export default function LiveTallyPage() {
                       <YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} width={120} interval={0} />
                       <XAxis type="number" dataKey="value" hide/>
                       <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-                      <Bar dataKey="value" radius={5} layout="vertical">
-                        <LabelList dataKey="value" position="right" offset={8} className="fill-foreground font-semibold" formatter={(value: number) => value.toLocaleString()} />
+                      <Bar dataKey="value" radius={5}>
+                        <LabelList dataKey="value" position="right" offset={8} className="fill-foreground font-semibold" />
                       </Bar>
                     </RechartsBarChart>
                   </ChartContainer>
@@ -453,7 +453,7 @@ export default function LiveTallyPage() {
                     <ChartContainer config={chartConfig} className="min-h-[400px] w-full">
                        <RechartsPieChart>
                           <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-                          <Pie data={chartData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={120} labelLine={false} label={({ percent }) => `${(percent * 100).toFixed(0)}%`}>
+                          <Pie data={chartData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={120} labelLine={false} label={({ percent }: { percent?: number }) => `${((percent || 0) * 100).toFixed(0)}%`}>
                              {chartData.map((entry) => (
                                <Cell key={`cell-${entry.name}`} fill={entry.fill} />
                              ))}

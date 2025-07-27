@@ -1,111 +1,190 @@
+// src/ai/flows/generate-education-content.ts
+'use server';
+
 import { ai } from '@/ai/genkit';
-import { z } from 'zod';
+import { MODELS } from '@/ai/models';
+import { KenyaPoliticalDataService } from '@/lib/kenya-political-data';
 
-const inputSchema = z.object({
-  topic: z.string().describe('Educational topic or custom question'),
-  currentEvents: z.string().optional().describe('Recent political events in Kenya')
-});
+export interface GenerateEducationContentInput {
+  topic: string;
+  currentEvents?: string;
+}
 
-const outputSchema = z.object({
-  topic: z.string(),
-  level: z.enum(['beginner', 'intermediate', 'advanced']),
-  content: z.string(),
-  keyPoints: z.array(z.string()),
-  quiz: z.array(z.object({
-    question: z.string(),
-    options: z.array(z.string()),
-    correct: z.number()
-  })),
-  resources: z.array(z.string())
-});
+export interface QuizQuestion {
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation: string;
+}
 
-export const generateEducationContent = ai.defineFlow(
-  {
-    name: 'generateEducationContent',
-    inputSchema,
-    outputSchema,
-    model: 'deepseek/deepseek-chat',
-  },
-  async (input) => {
-    const prompt = `Create educational content about: "${input.topic}"
+export interface Resource {
+  title: string;
+  type: 'article' | 'video' | 'document' | 'website';
+  url: string;
+  description: string;
+}
 
-Context: ${input.currentEvents || 'Current Kenyan political landscape'}
+export interface GenerateEducationContentOutput {
+  topic: string;
+  level: 'beginner' | 'intermediate' | 'advanced';
+  content: string;
+  keyPoints: string[];
+  quiz: QuizQuestion[];
+  resources: Resource[];
+}
 
-Provide well-structured educational content with:
-1. Use **bold text** for important terms and concepts
-2. Break down complex ideas into digestible parts
-3. Include specific examples from Kenya
-4. Make it engaging and easy to understand
+export async function generateEducationContent(
+  input: GenerateEducationContentInput
+): Promise<GenerateEducationContentOutput> {
+  try {
+    // Get current political context
+    const [voterExpectations, publicConcerns] = await Promise.all([
+      KenyaPoliticalDataService.getVoterExpectations(),
+      KenyaPoliticalDataService.compilePublicConcerns()
+    ]);
 
-Format the response to be educational and well-organized.`;
+    const educationPrompt = `
+You are an expert civic educator specializing in Kenyan politics and governance. Create comprehensive educational content about the requested topic.
 
-    const response = await ai.generate(prompt);
+TOPIC: ${input.topic}
+${input.currentEvents ? `CURRENT EVENTS CONTEXT: ${input.currentEvents}` : ''}
+
+VOTER EXPECTATIONS: ${voterExpectations.slice(0, 5).join(', ')}
+PUBLIC CONCERNS: ${publicConcerns.slice(0, 5).join(', ')}
+
+TASK: Create educational content in JSON format:
+
+{
+  "topic": "${input.topic}",
+  "level": "<beginner|intermediate|advanced>",
+  "content": "<comprehensive educational content>",
+  "keyPoints": ["<point1>", "<point2>", "<point3>", "<point4>", "<point5>"],
+  "quiz": [
+    {
+      "question": "<question>",
+      "options": ["<option1>", "<option2>", "<option3>", "<option4>"],
+      "correctAnswer": <0-3>,
+      "explanation": "<explanation>"
+    }
+  ],
+  "resources": [
+    {
+      "title": "<resource title>",
+      "type": "<article|video|document|website>",
+      "url": "<url>",
+      "description": "<description>"
+    }
+  ]
+}
+
+Guidelines:
+1. Make content accessible to ordinary Kenyan citizens
+2. Use simple language and practical examples
+3. Include current Kenyan political context
+4. Create 3-5 quiz questions to test understanding
+5. Suggest relevant resources for further learning
+6. Focus on civic education and democratic participation
+7. Be factual, non-partisan, and educational
+
+Ensure content helps citizens understand their role in Kenyan democracy.
+    `;
+
+    const response = await ai.generate({
+      model: MODELS.DEEPSEEK_CHAT,
+      prompt: educationPrompt,
+      config: {
+        temperature: 0.3,
+        maxOutputTokens: 2000
+      }
+    });
+
+    try {
+      const result = JSON.parse(response.text || response.content?.[0]?.text || "");
+      return {
+        topic: result.topic || input.topic,
+        level: result.level || 'beginner',
+        content: result.content || `Educational content about ${input.topic} in the context of Kenyan politics and governance.`,
+        keyPoints: result.keyPoints || [
+          `Understanding ${input.topic} in Kenya`,
+          'Historical context and development',
+          'Current implementation and challenges',
+          'Citizen rights and responsibilities',
+          'Future prospects and reforms'
+        ],
+        quiz: result.quiz || [
+          {
+            question: `What is the main purpose of ${input.topic} in Kenya?`,
+            options: ['Option A', 'Option B', 'Option C', 'Option D'],
+            correctAnswer: 0,
+            explanation: `This relates to how ${input.topic} functions in the Kenyan context.`
+          }
+        ],
+        resources: result.resources || [
+          {
+            title: 'Kenya Constitution 2010',
+            type: 'document',
+            url: 'https://www.klrc.go.ke/index.php/constitution-of-kenya',
+            description: 'Official constitutional document'
+          }
+        ]
+      };
+    } catch (parseError) {
+      // Fallback educational content
+      return {
+        topic: input.topic,
+        level: 'beginner',
+        content: `${input.topic} is an important aspect of Kenyan governance and democracy. Understanding this topic helps citizens participate more effectively in democratic processes and hold leaders accountable. In the Kenyan context, this involves understanding constitutional provisions, government structures, and citizen rights and responsibilities.`,
+        keyPoints: [
+          `Basic understanding of ${input.topic}`,
+          'Constitutional framework in Kenya',
+          'Practical applications for citizens',
+          'Rights and responsibilities',
+          'How to get involved and participate'
+        ],
+        quiz: [
+          {
+            question: `Why is understanding ${input.topic} important for Kenyan citizens?`,
+            options: [
+              'It helps in democratic participation',
+              'It is required by law',
+              'It improves job prospects',
+              'It is part of school curriculum'
+            ],
+            correctAnswer: 0,
+            explanation: 'Understanding civic topics helps citizens participate effectively in democracy and hold leaders accountable.'
+          }
+        ],
+        resources: [
+          {
+            title: 'Kenya Constitution 2010',
+            type: 'document',
+            url: 'https://www.klrc.go.ke/index.php/constitution-of-kenya',
+            description: 'The supreme law of Kenya containing fundamental principles of governance'
+          },
+          {
+            title: 'IEBC Voter Education',
+            type: 'website',
+            url: 'https://www.iebc.or.ke',
+            description: 'Official electoral commission resources for voter education'
+          }
+        ]
+      };
+    }
+
+  } catch (error) {
+    console.error('Error generating education content:', error);
     
     return {
       topic: input.topic,
-      level: determineLevel(input.topic),
-      content: formatEducationContent(response.text),
-      keyPoints: generateKeyPoints(input.topic),
-      quiz: generateQuiz(input.topic),
-      resources: generateResources(input.topic)
+      level: 'beginner',
+      content: `Educational content about ${input.topic} will help you understand this important aspect of Kenyan governance and your role as a citizen.`,
+      keyPoints: [
+        'Basic concepts and definitions',
+        'Kenyan context and applications',
+        'Citizen participation opportunities'
+      ],
+      quiz: [],
+      resources: []
     };
   }
-);
-
-function formatEducationContent(text: string): string {
-  return text
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\n\n/g, '</p><p>')
-    .replace(/^/, '<p>')
-    .replace(/$/, '</p>')
-    .replace(/\n/g, '<br>');
-}
-
-function determineLevel(topic: string): 'beginner' | 'intermediate' | 'advanced' {
-  const beginnerTopics = ['voting process', 'citizen rights', 'basic civics'];
-  const advancedTopics = ['constitution', 'government structure', 'electoral system'];
-  
-  const lowerTopic = topic.toLowerCase();
-  if (beginnerTopics.some(t => lowerTopic.includes(t))) return 'beginner';
-  if (advancedTopics.some(t => lowerTopic.includes(t))) return 'advanced';
-  return 'intermediate';
-}
-
-function generateKeyPoints(topic: string): string[] {
-  return [
-    `**${topic}** is essential for informed civic participation`,
-    'Kenya\'s **Constitution 2010** provides the legal framework',
-    '**Citizens** have both rights and responsibilities in democracy',
-    '**Democratic processes** require active citizen engagement',
-    '**Civic education** strengthens democratic institutions'
-  ];
-}
-
-function generateQuiz(topic: string): Array<{question: string, options: string[], correct: number}> {
-  return [
-    {
-      question: `What is the primary importance of understanding ${topic}?`,
-      options: ['Entertainment value', 'Informed citizenship', 'Personal benefit', 'Social status'],
-      correct: 1
-    },
-    {
-      question: 'Which document governs Kenya\'s democratic processes?',
-      options: ['Parliamentary Act', 'Constitution 2010', 'Presidential Order', 'Court Decision'],
-      correct: 1
-    },
-    {
-      question: 'What strengthens democratic institutions?',
-      options: ['Wealth accumulation', 'Civic education', 'Political connections', 'Social media'],
-      correct: 1
-    }
-  ];
-}
-
-function generateResources(topic: string): string[] {
-  return [
-    'Kenya Constitution 2010 - Official Document',
-    'IEBC Civic Education Materials',
-    'Parliamentary Hansard Records',
-    'Kenya Law Reform Commission Reports'
-  ];
 }

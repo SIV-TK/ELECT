@@ -25,11 +25,11 @@ export async function POST(request: NextRequest) {
     console.error('Education content generation failed:', error);
     
     const fallback = {
-      topic,
+      topic: 'Civic Education',
       level: 'beginner' as const,
-      content: `Learn about ${topic} in the context of Kenyan governance and electoral processes. This topic covers essential civic knowledge that every Kenyan citizen should understand to participate effectively in democratic processes.`,
+      content: `Learn about civic education in the context of Kenyan governance and electoral processes. This topic covers essential civic knowledge that every Kenyan citizen should understand to participate effectively in democratic processes.`,
       keyPoints: [
-        `Understanding ${topic} is crucial for informed citizenship`,
+        `Understanding civic education is crucial for informed citizenship`,
         'Kenya\'s constitution provides the framework for civic participation',
         'Citizens have both rights and responsibilities in democratic processes',
         'Electoral knowledge empowers voters to make informed decisions',
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
       ],
       quiz: [
         {
-          question: `What is the primary importance of understanding ${topic}?`,
+          question: `What is the primary importance of understanding civic education?`,
           options: ['Entertainment', 'Informed citizenship', 'Personal gain', 'Social status'],
           correct: 1
         },

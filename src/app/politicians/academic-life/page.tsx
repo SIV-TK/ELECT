@@ -6,7 +6,7 @@ import type { Politician } from "@/types";
 import { summarizePolitician } from "@/ai/flows/summarize-politician";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import Image from "next/image";
-import { GraduationCap, School, University, Trophy, Loader2, Bot, FileText } from "lucide-react";
+import { GraduationCap, School, BookOpen, Trophy, Loader2, Bot, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
@@ -59,7 +59,7 @@ const PoliticianAcademicCard = ({ politician }: { politician: Politician }) => {
               </div>
           </div>
           <div className="flex items-start gap-3">
-              <University className="h-5 w-5 mt-1 text-muted-foreground" />
+              <BookOpen className="h-5 w-5 mt-1 text-muted-foreground" />
               <div>
                   <h4 className="font-semibold">University Education</h4>
                   <p className="text-muted-foreground">{politician.academicLife.university}</p>

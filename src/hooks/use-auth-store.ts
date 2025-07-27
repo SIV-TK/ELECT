@@ -27,7 +27,7 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'auth-storage',
       storage: createJSONStorage(() => sessionStorage), // or localStorage
-      onRehydrate: () => (state) => {
+      onRehydrateStorage: () => (state) => {
         if (state) {
             state.isLoading = false;
         }
@@ -41,8 +41,7 @@ const unsub = useAuthStore.subscribe(
   (state) => {
     if (state.isLoading) {
       useAuthStore.setState({ isLoading: false });
+      unsub(); // Unsubscribe after the first run
     }
-    unsub(); // Unsubscribe after the first run
-  },
-  (state) => state.isLoading
+  }
 );

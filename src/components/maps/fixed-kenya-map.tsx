@@ -38,6 +38,8 @@ export default function FixedKenyaMap({ data, sentimentMode = false }: FixedKeny
           delete (container as any)._leaflet_id;
         }
 
+        if (!container) return;
+        
         const map = L.map(container, {
           center: [-0.5, 37.5],
           zoom: 6.5,

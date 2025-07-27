@@ -46,7 +46,7 @@ export function SimpleKenyaMap({ data, sentimentMode = false }: SimpleKenyaMapPr
 
       // Clear the container completely
       mapRef.current.innerHTML = '';
-      mapRef.current._leaflet_id = null;
+      (mapRef.current as any)._leaflet_id = null;
 
       // Create new map
       const map = L.map(mapRef.current).setView([-0.0236, 37.9062], 6);
@@ -143,7 +143,7 @@ export function SimpleKenyaMap({ data, sentimentMode = false }: SimpleKenyaMapPr
       }
       if (mapRef.current) {
         mapRef.current.innerHTML = '';
-        mapRef.current._leaflet_id = null;
+        (mapRef.current as any)._leaflet_id = null;
       }
     };
   }, [data, sentimentMode]);

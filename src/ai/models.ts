@@ -10,7 +10,7 @@ export const MODELS = {
 // Helper function to generate responses with different models
 export async function generateWithModel(
   prompt: string, 
-  model: keyof typeof MODELS = 'GEMINI',
+  model: keyof typeof MODELS = 'DEEPSEEK_CHAT',
   options?: any
 ) {
   const response = await ai.generate({
@@ -24,10 +24,13 @@ export async function generateWithModel(
 
 // Specialized functions for different use cases
 export const generatePoliticalAdvice = (query: string) => 
-  generateWithModel(query, 'GEMINI');
+  generateWithModel(query, 'DEEPSEEK_CHAT');
 
 export const generateCodeSolution = (query: string) => 
   generateWithModel(query, 'DEEPSEEK_CODER');
 
 export const generateGeneralChat = (query: string) => 
+  generateWithModel(query, 'DEEPSEEK_CHAT');
+
+export const generateAnalysis = (query: string) => 
   generateWithModel(query, 'DEEPSEEK_CHAT');

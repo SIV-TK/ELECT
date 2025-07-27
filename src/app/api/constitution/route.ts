@@ -8,14 +8,19 @@ async function scrapeRecentAmendments() {
     'https://www.klrc.go.ke/index.php/constitution-of-kenya/amendments'
   ];
   
-  const amendments = [];
+  const amendments: Array<{title: string, summary: string, source: string}> = [];
   
   for (const url of sources) {
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
       const response = await fetch(url, {
         headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ConstitutionBot/1.0)' },
-        timeout: 5000
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
       
       if (response.ok) {
         const html = await response.text();

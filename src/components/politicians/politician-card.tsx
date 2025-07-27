@@ -1,5 +1,4 @@
 import type { Politician } from "@/types";
-import Image from "next/image";
 import Link from "next/link";
 import {
   Card,
@@ -27,14 +26,11 @@ export function PoliticianCard({ politician }: { politician: Politician }) {
   return (
     <Card className="flex flex-col max-w-xs mx-auto p-2 shadow-sm rounded-lg">
       <CardHeader className="flex flex-col items-center text-center p-2">
-        <Image
-          src={politician.imageUrl}
-          alt={`Photo of ${politician.name}`}
-          width={64}
-          height={64}
-          className="rounded-full border-2 border-primary/20 object-cover"
-          data-ai-hint="politician portrait"
-        />
+        <div className="w-16 h-16 rounded-full border-2 border-primary/20 bg-gray-200 flex items-center justify-center">
+          <span className="text-gray-500 text-xs font-medium">
+            {politician.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
+          </span>
+        </div>
         <CardTitle className="mt-2 font-headline text-base">{politician.name}</CardTitle>
         <CardDescription className="text-xs">{politician.party}</CardDescription>
         <Badge variant="secondary" className="mt-1 text-xs">{politician.level} {politician.county ? `- ${politician.county}` : ''}</Badge>

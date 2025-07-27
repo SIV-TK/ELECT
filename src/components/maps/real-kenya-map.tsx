@@ -111,20 +111,24 @@ export function RealKenyaMap({ data, sentimentMode = false }: RealKenyaMapProps)
       <MapContainer
         key={mapKey}
         ref={mapRef}
-        center={[-0.0236, 37.9062]}
+        center={[-0.0236, 37.9062] as [number, number]}
         zoom={6}
         style={{ height: '100%', width: '100%' }}
-        whenCreated={(mapInstance) => {
-          mapRef.current = mapInstance;
+        whenReady={() => {
+          // Map is ready
         }}
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         <GeoJSON
           data={kenyaCountiesGeoJSON as any}
-          onEachFeature={onEachFeature}
+          eventHandlers={{
+            add: (e: any) => {
+              const layer = e.target;
+              onEachFeature(layer.feature, layer);
+            }
+          }}
         />
       </MapContainer>
       

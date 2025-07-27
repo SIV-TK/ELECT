@@ -71,7 +71,6 @@ export default function SubmitTallyPage() {
       id: `tally-${generateMockId(8)}`,
       officerId: values.officerId,
       pollingStation: `${stationDetails.name}, ${stationDetails.ward}`,
-      registeredVoters: stationDetails.registeredVoters,
       voteDistribution: values.votes.map(v => ({ id: v.candidateId, votes: v.count })),
       timestamp: new Date(),
       verifications: 0,

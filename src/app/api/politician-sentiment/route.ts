@@ -18,8 +18,7 @@ async function scrapeGachaguaParty() {
   for (const url of sources) {
     try {
       const response = await fetch(url, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; NewsBot/1.0)' },
-        timeout: 5000
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; NewsBot/1.0)' }
       });
       
       if (response.ok) {

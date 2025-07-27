@@ -18,6 +18,7 @@ interface BiasAnalysis {
   sourceCredibility: number; // 0 to 1
   keyIndicators: string[];
   summary: string;
+  onlineSources?: string[];
 }
 
 export default function MediaBiasDetector() {
@@ -188,8 +189,24 @@ export default function MediaBiasDetector() {
 
               <div>
                 <h4 className="font-semibold mb-2">Analysis Summary</h4>
-                <p className="text-sm text-muted-foreground">{analysis.summary}</p>
+                <div 
+                  className="text-sm text-muted-foreground prose prose-sm max-w-none"
+                  dangerouslySetInnerHTML={{ __html: analysis.summary }}
+                />
               </div>
+
+              {(analysis as any).onlineSources && (
+                <div>
+                  <h4 className="font-semibold mb-2">Online Data Sources</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {(analysis as any).onlineSources.map((source: string, index: number) => (
+                      <Badge key={index} variant="secondary" className="text-xs">
+                        {source}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
