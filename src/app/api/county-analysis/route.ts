@@ -121,10 +121,10 @@ export async function POST(request: NextRequest) {
     );
 
     // Add comparisons if requested
-    if (includeComparisons) {
-      analysis.regionalComparison = await generateRegionalComparison(county, analysis);
-      analysis.similarCounties = findSimilarCounties(county);
-    }
+    // if (includeComparisons) {
+    //   analysis.regionalComparison = await generateRegionalComparison(county, analysis);
+    //   analysis.similarCounties = findSimilarCounties(county);
+    // }
 
     return NextResponse.json({
       success: true,

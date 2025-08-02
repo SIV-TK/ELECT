@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
-        narrative: aiAnalysis.advice,
+        narrative: (aiAnalysis as any).advice || 'No analysis available',
         dataPoints: allData.length,
         lastUpdated: new Date().toISOString(),
       }

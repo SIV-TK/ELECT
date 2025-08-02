@@ -271,7 +271,7 @@ export default function PoliticiansPage() {
   const [selectedCounty, setSelectedCounty] = useState('');
 
   // Extract unique counties
-  const counties = Array.from(new Set(politicians.map(p => p.county).filter(Boolean))).sort();
+  const counties = Array.from(new Set(politicians.map(p => p.county).filter(Boolean) as string[])).sort();
 
   // Filter politicians
   const filteredPoliticians = politicians.filter(politician => {

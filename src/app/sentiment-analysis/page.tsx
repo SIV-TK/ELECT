@@ -131,8 +131,7 @@ export default function SentimentAnalysisPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            candidateName: values.candidateName,
-            topic: values.topic || 'general political sentiment'
+            candidateName: values.candidateName
           })
         });
         
@@ -160,7 +159,6 @@ export default function SentimentAnalysisPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             candidateName: values.candidateName,
-            topic: values.topic || 'general election',
             sentimentScore: sentimentResult.sentimentScore
           })
         });

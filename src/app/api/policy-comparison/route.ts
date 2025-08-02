@@ -418,13 +418,13 @@ async function generatePolicyInsights(policies: any, parties: string[]) {
   insights.push(`Highest policy alignment: ${mostAligned[0]} and ${mostAligned[1]} (${Math.round(maxAlignment * 100)}% similarity)`);
   
   // Find areas of consensus
-  const consensusAreas = findConsensusAreas(policies, parties);
+  const consensusAreas: string[] = findConsensusAreas(policies, parties);
   if (consensusAreas.length > 0) {
     insights.push(`Strong consensus on: ${consensusAreas.slice(0, 3).join(', ')}`);
   }
   
   // Find areas of divergence
-  const divergentAreas = findDivergentAreas(policies, parties);
+  const divergentAreas: string[] = findDivergentAreas(policies, parties);
   if (divergentAreas.length > 0) {
     insights.push(`Major differences in: ${divergentAreas.slice(0, 3).join(', ')}`);
   }
@@ -437,7 +437,7 @@ async function generatePolicyInsights(policies: any, parties: string[]) {
 }
 
 function findConsensusAreas(policies: any, parties: string[]): string[] {
-  const consensusAreas = [];
+  const consensusAreas: string[] = [];
   const categories = Object.keys(policies);
   
   categories.forEach(category => {
@@ -462,7 +462,7 @@ function findConsensusAreas(policies: any, parties: string[]): string[] {
 }
 
 function findDivergentAreas(policies: any, parties: string[]): string[] {
-  const divergentAreas = [];
+  const divergentAreas: string[] = [];
   const categories = Object.keys(policies);
   
   categories.forEach(category => {
@@ -611,7 +611,7 @@ function analyzeCoalitionAlignment(parties: string[]) {
 
 function findCompetitiveAreas(policies: any, parties: string[]): string[] {
   // Areas with low alignment (high competition)
-  const competitive = [];
+  const competitive: string[] = [];
   
   Object.entries(policies).forEach(([category, categoryData]: [string, any]) => {
     if (!categoryData.parties) return;
@@ -642,7 +642,7 @@ function findCompetitiveAreas(policies: any, parties: string[]): string[] {
 
 function findCollaborationOpportunities(policies: any, parties: string[]): string[] {
   // Areas with high alignment (collaboration potential)
-  const collaborative = [];
+  const collaborative: string[] = [];
   
   Object.entries(policies).forEach(([category, categoryData]: [string, any]) => {
     if (!categoryData.parties) return;

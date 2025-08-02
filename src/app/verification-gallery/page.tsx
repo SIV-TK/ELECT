@@ -89,12 +89,12 @@ const IntelCard = ({ item }: { item: CrowdIntel }) => {
          {item.aiAnalysis === 'loading' ? (
            <div className="flex items-center gap-2 text-primary"><Loader2 className="h-4 w-4 animate-spin" /> AI analysis in progress...</div>
          ) : item.aiAnalysis ? (
-            <Alert variant={item.aiAnalysis.isAuthentic ? 'default' : 'destructive'}>
+            <Alert variant={(item.aiAnalysis as any).isAuthentic ? 'default' : 'destructive'}>
               <Bot className="h-4 w-4" />
               <AlertTitle className="flex items-center gap-2">
-                 AI Analysis: {item.aiAnalysis.isAuthentic ? 'Likely Authentic' : 'Potentially Manipulated'}
+                 AI Analysis: {(item.aiAnalysis as any).isAuthentic ? 'Likely Authentic' : 'Potentially Manipulated'}
               </AlertTitle>
-              <AlertDescription>{item.aiAnalysis.analysisSummary}</AlertDescription>
+              <AlertDescription>{(item.aiAnalysis as any).analysisSummary}</AlertDescription>
             </Alert>
          ) : null}
 

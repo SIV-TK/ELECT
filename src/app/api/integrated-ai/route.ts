@@ -48,7 +48,7 @@ async function handleComprehensiveAnalysis(data: any) {
       config: { temperature: 0.3, maxOutputTokens: 300 }
     });
 
-    let sentiment;
+    let sentiment: any;
     try {
       const responseText = response.text || '';
       sentiment = JSON.parse(responseText);

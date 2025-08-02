@@ -154,7 +154,7 @@ export default function CampaignAdvicePage() {
                       <div>
                         <h4 className="font-semibold mb-2">Strategic Recommendations</h4>
                         <ul className="list-disc pl-5 space-y-1">
-                          {advice.strategicRecommendations?.map((rec, i) => (
+                          {(advice as any).strategicRecommendations?.map((rec: any, i: number) => (
                             <li key={i} className="text-sm">{rec}</li>
                           ))}
                         </ul>
@@ -162,13 +162,13 @@ export default function CampaignAdvicePage() {
                       
                       <div>
                         <h4 className="font-semibold mb-2">Messaging Strategy</h4>
-                        <p className="text-sm">{advice.messagingAdvice}</p>
+                        <p className="text-sm">{(advice as any).messagingAdvice}</p>
                       </div>
                       
                       <div>
                         <h4 className="font-semibold mb-2">Target Audiences</h4>
                         <ul className="list-disc pl-5 space-y-1">
-                          {advice.targetAudiences?.map((audience, i) => (
+                          {(advice as any).targetAudiences?.map((audience: any, i: number) => (
                             <li key={i} className="text-sm">{audience}</li>
                           ))}
                         </ul>
@@ -176,14 +176,14 @@ export default function CampaignAdvicePage() {
                       
                       <div>
                         <h4 className="font-semibold mb-2">Risk Assessment</h4>
-                        <p className="text-sm">{advice.riskAssessment}</p>
+                        <p className="text-sm">{(advice as any).riskAssessment}</p>
                       </div>
                       
-                      {advice.countyAnalysis && (
+                      {(advice as any).countyAnalysis && (
                         <div>
                           <h4 className="font-semibold mb-2">47 Counties Analysis</h4>
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-40 overflow-y-auto">
-                            {advice.countyAnalysis.slice(0, 12).map((county, i) => (
+                            {(advice as any).countyAnalysis.slice(0, 12).map((county: any, i: number) => (
                               <div key={i} className="text-xs p-2 bg-muted rounded">
                                 <div className="font-medium">{county.county}</div>
                                 <div className="text-muted-foreground">{county.supportLevel}% support</div>

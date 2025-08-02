@@ -22,7 +22,8 @@ import {
   RefreshCw,
   Globe,
   Users,
-  TrendingUp
+  TrendingUp,
+  Settings
 } from 'lucide-react';
 import Link from 'next/link';
 import { AuthGuard } from '@/components/auth-guard';

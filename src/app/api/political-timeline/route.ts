@@ -167,7 +167,7 @@ async function generatePoliticalTimeline(
   regions: string[],
   eventTypes: string[]
 ) {
-  const events = [];
+  const events: any[] = [];
   const startDate = new Date(timeframe.start);
   const endDate = new Date(timeframe.end);
   
@@ -214,7 +214,7 @@ async function generatePoliticalTimeline(
 
 async function searchPoliticalEvents(source: string, timeframe: any, categories: string[], figures: string[]) {
   try {
-    const searchQueries = [];
+    const searchQueries: string[] = [];
     
     // Create search queries based on categories
     categories.forEach(category => {
@@ -229,11 +229,11 @@ async function searchPoliticalEvents(source: string, timeframe: any, categories:
       searchQueries.push(`"${figure}" Kenya political ${timeframe.start}`);
     });
 
-    const searchResults = [];
+    const searchResults: any[] = [];
     
     // Perform searches based on source type
     for (const query of searchQueries.slice(0, 5)) { // Limit to prevent overwhelming API
-      let results = [];
+      let results: any[] = [];
       
       switch (source) {
         case 'news':
@@ -350,7 +350,7 @@ function categorizeEvent(content: string, categories: string[]): string {
 }
 
 function identifyMentionedFigures(content: string, figures: string[]): string[] {
-  const mentioned = [];
+  const mentioned: string[] = [];
   const contentLower = content.toLowerCase();
   
   // Check for explicitly provided figures
@@ -616,7 +616,7 @@ function analyzeActivityPatterns(events: any[], timeframe: any) {
 }
 
 function analyzeTrends(events: any[]): string[] {
-  const trends = [];
+  const trends: string[] = [];
   
   // Category trends
   const categoryCounts = events.reduce((acc: Record<string, number>, event) => {
