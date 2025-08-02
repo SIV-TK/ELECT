@@ -8,6 +8,10 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  // Render.com specific configuration
+  output: 'standalone',
+  poweredByHeader: false,
+  compress: true,
   images: {
     remotePatterns: [
       {

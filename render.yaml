@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: elect-platform
+    runtime: node
+    buildCommand: npm install --legacy-peer-deps && npm run build
+    startCommand: npm start
+    plan: free
+    env: node
+    region: oregon
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "10000"
+      - key: NEXT_PUBLIC_FIREBASE_API_KEY
+        value: AIzaSyD05R5TMWg9QcWqkEVZnw-STsZgzY_Xe9k
+      - key: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+        value: last-35eb7.firebaseapp.com  
+      - key: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+        value: last-35eb7
+      - key: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+        value: last-35eb7.firebasestorage.app
+      - key: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+        value: "760347188535"
+      - key: NEXT_PUBLIC_FIREBASE_APP_ID
+        value: 1:760347188535:web:cb0fec7e97ee514a430eb2
+      - key: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+        value: G-40EQ7YQ4JH
+      - key: DEEPSEEK_API_KEY
+        value: sk-3cd6995fe396452b801d4fc7721a0e6c
+      - key: GEMINI_API_KEY
+        value: AIzaSyCx-ga-Ywvj8tk3BgleNd3qib5lLO8Bxss
