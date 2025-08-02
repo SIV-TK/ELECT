@@ -501,7 +501,7 @@ async function calculateConfidenceIntervals(heatMapData: any, model: any) {
 async function generateHeatMapInsights(heatMapData: any, type: string) {
   const regions = heatMapData.regions;
   const values = regions.map((r: any) => r.value);
-  const avgValue = values.reduce((a, b) => a + b, 0) / values.length;
+  const avgValue = values.reduce((a: number, b: number) => a + b, 0) / values.length;
   
   const highValueRegions = regions.filter((r: any) => r.value > avgValue + 0.2).map((r: any) => r.name);
   const lowValueRegions = regions.filter((r: any) => r.value < avgValue - 0.2).map((r: any) => r.name);

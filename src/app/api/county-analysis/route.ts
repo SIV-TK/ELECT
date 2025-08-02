@@ -486,7 +486,7 @@ function extractPoliticalFigures(data: any[], county: string): string[] {
       if (content.includes(title)) {
         // Extract names near political titles - simplified extraction
         const words = content.split(' ');
-        const titleIndex = words.findIndex(word => word.includes(title));
+        const titleIndex = words.findIndex((word: string) => word.includes(title));
         if (titleIndex >= 0 && titleIndex < words.length - 1) {
           figures.add(`${words[titleIndex + 1]} (${title})`);
         }

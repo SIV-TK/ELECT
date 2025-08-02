@@ -310,7 +310,6 @@ export default function SettingsPage() {
       setIsLoading(false);
     }
   };
-  const [isLoading, setIsLoading] = useState(false);
   const [imageError, setImageError] = useState(false);
 
   // Profile settings state
@@ -382,13 +381,6 @@ export default function SettingsPage() {
       setIsLoading(false);
       // Show success message
     }, 1000);
-  };
-
-  const handleDeleteAccount = async () => {
-    if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-      // TODO: Implement account deletion logic
-      await signOut();
-    }
   };
 
   const handleExportData = () => {
