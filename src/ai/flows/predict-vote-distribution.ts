@@ -88,7 +88,7 @@ Ensure predictions are realistic (10-90% range) and reflect actual Kenyan politi
     });
 
     try {
-      const regions = JSON.parse(response.text || response.content?.[0]?.text || "");
+      const regions = JSON.parse(response.text || "");
       return { regions };
     } catch (parseError) {
       // Fallback with realistic distribution based on sentiment

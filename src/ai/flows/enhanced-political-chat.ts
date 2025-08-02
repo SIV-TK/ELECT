@@ -57,7 +57,7 @@ Provide a comprehensive response that incorporates current political context.
     });
 
     return {
-      response: response.text || response.content?.[0]?.text || "" || 'I can help you understand current Kenyan political developments. What specific aspect would you like to explore?',
+      response: response.text || 'I can help you understand current Kenyan political developments. What specific aspect would you like to explore?',
       model: selectedModel
     };
 

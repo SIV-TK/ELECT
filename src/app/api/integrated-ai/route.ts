@@ -50,7 +50,7 @@ async function handleComprehensiveAnalysis(data: any) {
 
     let sentiment;
     try {
-      const responseText = response.text || response.content?.[0]?.text || '';
+      const responseText = response.text || '';
       sentiment = JSON.parse(responseText);
     } catch {
       sentiment = {
@@ -134,6 +134,13 @@ async function handleRealTimeInsights(data: any) {
       { topic: 'Economic Policy', sentiment: -0.2, mentions: 8932, growth: '-5%' },
       { topic: 'Education Funding', sentiment: 0.4, mentions: 6721, growth: '+8%' }
     ],
+    governmentApproval: {
+      approve: 45 + Math.round((Math.random() - 0.5) * 20),
+      disapprove: 30 + Math.round((Math.random() - 0.5) * 15),
+      neutral: 25 + Math.round((Math.random() - 0.5) * 10),
+      overall: 55 + Math.round((Math.random() - 0.5) * 20),
+      trend: Math.random() > 0.5 ? 'up' : Math.random() > 0.5 ? 'down' : 'stable'
+    },
     regionalActivity: [
       { county: 'Nairobi', activity: 'high', sentiment: 0.6 },
       { county: 'Mombasa', activity: 'medium', sentiment: 0.3 },

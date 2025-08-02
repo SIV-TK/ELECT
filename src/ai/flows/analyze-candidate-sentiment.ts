@@ -86,7 +86,7 @@ Ensure your analysis is politically neutral, factually grounded, and reflects cu
 
     // Parse AI response
     try {
-      const responseText = response.text || response.content?.[0]?.text || "" || response.content?.[0]?.text || '';
+      const responseText = response.text || '';
       const result = JSON.parse(responseText);
       return {
         sentimentScore: result.sentimentScore || 0,

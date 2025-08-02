@@ -112,7 +112,7 @@ Ensure advice is ethical, legal, and focused on democratic engagement.
     });
 
     try {
-      const responseText = response.text || response.content?.[0]?.text || '';
+      const responseText = response.text || '';
       if (!responseText.trim()) {
         throw new Error('Empty response');
       }

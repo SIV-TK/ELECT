@@ -99,7 +99,7 @@ Ensure content helps citizens understand their role in Kenyan democracy.
     });
 
     try {
-      const result = JSON.parse(response.text || response.content?.[0]?.text || "");
+      const result = JSON.parse(response.text || "");
       return {
         topic: result.topic || input.topic,
         level: result.level || 'beginner',

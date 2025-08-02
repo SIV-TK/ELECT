@@ -47,7 +47,7 @@ Keep your response concise but informative, suitable for citizens seeking to und
       }
     });
 
-    const responseText = response.text || response.content?.[0]?.text || "" || response.content?.[0]?.text || 'I can help you understand Kenyan politics, government structure, elections, and constitutional matters. What specific topic would you like to know about?';
+    const responseText = response.text || 'I can help you understand Kenyan politics, government structure, elections, and constitutional matters. What specific topic would you like to know about?';
     
     return {
       response: responseText

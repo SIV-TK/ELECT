@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Extract key terms for scraping
-    const keyTerms = statement.split(' ').filter(word => word.length > 3).slice(0, 3).join(' ');
+    const keyTerms = statement.split(' ').filter((word: string) => word.length > 3).slice(0, 3).join(' ');
     
     // Get real-time data
     const [newsData, govData, politicalData] = await Promise.all([
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
         config: { temperature: 0.2, maxOutputTokens: 500 }
       });
       
-      const responseText = response.text || response.content?.[0]?.text || '';
+      const responseText = response.text || '';
       const jsonMatch = responseText.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const factCheck = JSON.parse(jsonMatch[0]);

@@ -61,7 +61,7 @@ Consider:
     });
 
     try {
-      const result = JSON.parse(response.text || response.content?.[0]?.text || "");
+      const result = JSON.parse(response.text || "");
       return {
         isVerified: result.isVerified || false,
         confidenceScore: result.confidenceScore || 0.5,

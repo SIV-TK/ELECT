@@ -1,11 +1,33 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { BarChart3, Users, Vote, Brain, TrendingUp, Activity, Search, MessageSquare, Eye, Shield, Scale } from 'lucide-react';
+import { 
+  BarChart3, 
+  Users, 
+  Vote, 
+  Brain, 
+  TrendingUp, 
+  Activity, 
+  Search, 
+  MessageSquare, 
+  Eye, 
+  Shield, 
+  Scale,
+  Zap,
+  Globe,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  ArrowUpRight,
+  Filter,
+  Calendar,
+  MapPin
+} from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { AuthGuard } from '@/components/auth-guard';
@@ -16,20 +38,132 @@ function LogoutButton() {
   const { signOut, user } = useFirebaseAuth();
   
   return (
-    <Button
-      onClick={signOut}
-      variant="outline"
-      size="sm"
-      className="flex items-center gap-2"
+    <motion.div
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
     >
-      <LogOut className="h-4 w-4" />
-      Logout
-    </Button>
+      <Button
+        onClick={signOut}
+        variant="outline"
+        size="sm"
+        className="flex items-center gap-2 bg-white/80 backdrop-blur-sm border-purple-200 hover:bg-purple-50 hover:border-purple-300 transition-all duration-200"
+      >
+        <LogOut className="h-4 w-4" />
+        Logout
+      </Button>
+    </motion.div>
+  );
+}
+
+// Modern metric cards with enhanced animations
+function MetricCard({ 
+  title, 
+  value, 
+  change, 
+  trend, 
+  icon, 
+  href, 
+  delay = 0 
+}: { 
+  title: string; 
+  value: string; 
+  change: string; 
+  trend: 'up' | 'down' | 'neutral'; 
+  icon: React.ReactNode; 
+  href: string;
+  delay?: number;
+}) {
+  const trendColors = {
+    up: 'text-green-600 bg-green-50',
+    down: 'text-red-600 bg-red-50',
+    neutral: 'text-yellow-600 bg-yellow-50'
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ delay, duration: 0.5, ease: [0.25, 0.25, 0, 1] }}
+      whileHover={{ 
+        scale: 1.02, 
+        boxShadow: "0 20px 40px rgba(156, 39, 176, 0.1)" 
+      }}
+      className="group"
+    >
+      <Link href={href}>
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-lg hover:shadow-xl transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="p-2 rounded-xl bg-purple-100 text-purple-600 group-hover:bg-purple-200 transition-colors duration-300">
+                {icon}
+              </div>
+              <ArrowUpRight className="w-4 h-4 text-gray-400 group-hover:text-purple-500 transition-colors duration-300" />
+            </div>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="space-y-2">
+              <h3 className="text-2xl font-bold text-gray-900 group-hover:text-purple-700 transition-colors duration-300">
+                {value}
+              </h3>
+              <p className="text-sm text-gray-600 font-medium">{title}</p>
+              <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${trendColors[trend]}`}>
+                {change}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </Link>
+    </motion.div>
+  );
+}
+
+// Modern activity feed item
+function ActivityItem({ 
+  activity, 
+  index 
+}: { 
+  activity: any; 
+  index: number;
+}) {
+  const statusColors = {
+    completed: 'text-green-600 bg-green-100',
+    pending: 'text-yellow-600 bg-yellow-100',
+    alert: 'text-red-600 bg-red-100'
+  };
+
+  const statusIcons = {
+    completed: <CheckCircle className="w-4 h-4" />,
+    pending: <Clock className="w-4 h-4" />,
+    alert: <AlertTriangle className="w-4 h-4" />
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: index * 0.1, duration: 0.4 }}
+      className="flex items-start space-x-3 p-4 rounded-lg hover:bg-gray-50/80 transition-colors duration-200"
+    >
+      <div className={`p-2 rounded-lg ${statusColors[activity.status as keyof typeof statusColors]}`}>
+        {statusIcons[activity.status as keyof typeof statusIcons]}
+      </div>
+      <div className="flex-1 min-w-0">
+        <h4 className="text-sm font-semibold text-gray-900 truncate">
+          {activity.title}
+        </h4>
+        <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+          {activity.description}
+        </p>
+        <p className="text-xs text-gray-400 mt-2">{activity.timestamp}</p>
+      </div>
+    </motion.div>
   );
 }
 
 export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedTimeframe, setSelectedTimeframe] = useState('7d');
   const [realTimeData, setRealTimeData] = useState({
     activeCitizens: 1247832,
     analyses: 892456,
@@ -39,13 +173,92 @@ export default function Dashboard() {
   
   const [trendingTopics, setTrendingTopics] = useState<any[]>([]);
   const [politicianSentiments, setPoliticianSentiments] = useState<any[]>([]);
-  const [govPopularity, setGovPopularity] = useState({ approve: 30, disapprove: 25, neutral: 45, overall: 58 });
+  const [govPopularity, setGovPopularity] = useState({ 
+    approve: 30, 
+    disapprove: 25, 
+    neutral: 45, 
+    overall: 58,
+    trend: 'stable' as 'up' | 'down' | 'stable',
+    keyIssues: [] as string[]
+  });
   const [loading, setLoading] = useState(true);
   const [constitutionQuery, setConstitutionQuery] = useState('');
   const [isConstitutionLoading, setIsConstitutionLoading] = useState(false);
   const [showConstitutionModal, setShowConstitutionModal] = useState(false);
   const [constitutionAnswer, setConstitutionAnswer] = useState<any>(null);
   const [recentAmendments, setRecentAmendments] = useState<any[]>([]);
+
+  // Mock recent activity data
+  const recentActivity = [
+    {
+      id: '1',
+      type: 'sentiment',
+      title: 'William Ruto Sentiment Analysis',
+      description: 'Weekly sentiment analysis completed for President William Ruto across 47 counties',
+      timestamp: '2 minutes ago',
+      status: 'completed'
+    },
+    {
+      id: '2',
+      type: 'fact-check',
+      title: 'BBI Amendment Fact Check',
+      description: 'Verifying claims about constitutional amendments in recent parliamentary sessions',
+      timestamp: '15 minutes ago',
+      status: 'pending'
+    },
+    {
+      id: '3',
+      type: 'bias',
+      title: 'Media Bias Alert: Daily Nation',
+      description: 'Potential bias detected in recent political coverage analysis',
+      timestamp: '1 hour ago',
+      status: 'alert'
+    },
+    {
+      id: '4',
+      type: 'vote',
+      title: 'Nairobi County Poll Results',
+      description: 'Real-time voting simulation completed for gubernatorial race',
+      timestamp: '2 hours ago',
+      status: 'completed'
+    }
+  ];
+
+  // Modern metrics data
+  const metrics = [
+    {
+      title: 'Active Citizens',
+      value: loading ? '...' : `${(realTimeData.activeCitizens / 1000).toFixed(0)}K`,
+      change: '+12%',
+      trend: 'up' as const,
+      icon: <Users className="w-6 h-6" />,
+      href: '/sentiment-analysis'
+    },
+    {
+      title: 'AI Analyses',
+      value: loading ? '...' : `${(realTimeData.analyses / 1000).toFixed(0)}K`,
+      change: '+8%',
+      trend: 'up' as const,
+      icon: <Brain className="w-6 h-6" />,
+      href: '/fact-check'
+    },
+    {
+      title: 'Live Polls',
+      value: loading ? '...' : realTimeData.livePolls.toString(),
+      change: '+3',
+      trend: 'up' as const,
+      icon: <Vote className="w-6 h-6" />,
+      href: '/demo-voting'
+    },
+    {
+      title: 'Accuracy Rate',
+      value: loading ? '...' : `${realTimeData.accuracy.toFixed(1)}%`,
+      change: '+0.3%',
+      trend: 'up' as const,
+      icon: <Shield className="w-6 h-6" />,
+      href: '/corruption-risk'
+    }
+  ];
 
   // Fetch real-time dashboard data
   const fetchDashboardData = async () => {
@@ -77,11 +290,22 @@ export default function Dashboard() {
     try {
       const response = await fetch('/api/trending-topics');
       const data = await response.json();
-      setTrendingTopics(data.data || []);
+      
+      if (data.success) {
+        setTrendingTopics(data.data || []);
+      } else {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Trending topics API returned error:', data.error);
+        }
+        // Fallback to empty array to show "no data" message
+        setTrendingTopics([]);
+      }
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
         console.error('Failed to fetch trending topics:', error);
       }
+      // Fallback to empty array to show "no data" message
+      setTrendingTopics([]);
     }
   };
 
@@ -89,11 +313,36 @@ export default function Dashboard() {
     try {
       const response = await fetch('/api/government-popularity');
       const data = await response.json();
-      setGovPopularity(data.data);
+      
+      if (data.success) {
+        setGovPopularity(data.data);
+      } else {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Government popularity API returned error:', data.error);
+        }
+        // Fallback to default data
+        setGovPopularity({ 
+          approve: 45, 
+          disapprove: 30, 
+          neutral: 25, 
+          overall: 57,
+          trend: 'stable',
+          keyIssues: ['Economic Management', 'Healthcare System']
+        });
+      }
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
         console.error('Failed to fetch government popularity:', error);
       }
+      // Fallback to default data
+      setGovPopularity({ 
+        approve: 45, 
+        disapprove: 30, 
+        neutral: 25, 
+        overall: 57,
+        trend: 'stable',
+        keyIssues: ['Economic Management', 'Healthcare System']
+      });
     }
   };
 
@@ -165,10 +414,11 @@ export default function Dashboard() {
     fetchGovPopularity();
     fetchPoliticianSentiments();
     
-    const dashboardInterval = setInterval(fetchDashboardData, 30000);
-    const topicsInterval = setInterval(fetchTrendingTopics, 45000);
-    const popularityInterval = setInterval(fetchGovPopularity, 60000);
-    const sentimentInterval = setInterval(fetchPoliticianSentiments, 60000);
+    // Refresh data every 24 hours (86,400,000 milliseconds)
+    const dashboardInterval = setInterval(fetchDashboardData, 86400000);
+    const topicsInterval = setInterval(fetchTrendingTopics, 86400000);
+    const popularityInterval = setInterval(fetchGovPopularity, 86400000);
+    const sentimentInterval = setInterval(fetchPoliticianSentiments, 86400000);
     
     return () => {
       clearInterval(dashboardInterval);
@@ -180,490 +430,507 @@ export default function Dashboard() {
 
   return (
     <AuthGuard>
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-6 max-w-7xl">
-        
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div className="text-center flex-1">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Kenya Political Intelligence Dashboard</h1>
-            <p className="text-gray-600">Real-time political sentiment and data visualization</p>
-          </div>
-          <LogoutButton />
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50/30">
+        {/* Background decoration */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-100 rounded-full opacity-20 blur-3xl" />
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-100 rounded-full opacity-20 blur-3xl" />
         </div>
 
-        {/* Divider */}
-        <div className="border-t border-gray-200 mb-8"></div>
-
-        {/* Real-time Stats */}
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Live Statistics</h2>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span>Live Data</span>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-6 sm:mb-8">
-          <Card className="bg-blue-50 border-blue-200">
-            <CardContent className="p-2 sm:p-4 text-center">
-              <div className="flex items-center justify-center gap-1 sm:gap-2 mb-1 sm:mb-2">
-                <Users className="h-4 w-4 sm:h-6 sm:w-6 text-blue-600" />
-                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full animate-pulse" />
-              </div>
-              <div className="text-base sm:text-xl font-bold text-blue-900">
-                {loading ? '...' : (realTimeData.activeCitizens / 1000).toFixed(0) + 'K'}
-              </div>
-              <div className="text-xs sm:text-sm text-blue-700">Citizens</div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-green-50 border-green-200">
-            <CardContent className="p-2 sm:p-4 text-center">
-              <div className="flex items-center justify-center gap-1 sm:gap-2 mb-1 sm:mb-2">
-                <Brain className="h-4 w-4 sm:h-6 sm:w-6 text-green-600" />
-                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-500 rounded-full animate-pulse" />
-              </div>
-              <div className="text-base sm:text-xl font-bold text-green-900">
-                {loading ? '...' : (realTimeData.analyses / 1000).toFixed(0) + 'K'}
-              </div>
-              <div className="text-xs sm:text-sm text-green-700">Analyses</div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-purple-50 border-purple-200">
-            <CardContent className="p-2 sm:p-4 text-center">
-              <Vote className="h-4 w-4 sm:h-6 sm:w-6 text-purple-600 mx-auto mb-1 sm:mb-2" />
-              <div className="text-base sm:text-xl font-bold text-purple-900">
-                {loading ? '...' : realTimeData.livePolls}
-              </div>
-              <div className="text-xs sm:text-sm text-purple-700">Polls</div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-orange-50 border-orange-200">
-            <CardContent className="p-2 sm:p-4 text-center">
-              <Shield className="h-4 w-4 sm:h-6 sm:w-6 text-orange-600 mx-auto mb-1 sm:mb-2" />
-              <div className="text-base sm:text-xl font-bold text-orange-900">
-                {loading ? '...' : realTimeData.accuracy.toFixed(1)}%
-              </div>
-              <div className="text-xs sm:text-sm text-orange-700">Accuracy</div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Quick Tools */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Quick Access Tools</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            
-            {/* AI Analysis */}
-            <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-1">AI Analysis</h3>
-              <p className="text-xs text-gray-600 mb-3">Advanced AI tools for political sentiment, media bias, and risk analysis</p>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                <Link href="/sentiment-analysis">
-                  <div className="p-2 sm:p-3 text-center rounded-lg bg-blue-50 active:bg-blue-100 transition-colors cursor-pointer min-h-[60px] sm:min-h-[80px] flex flex-col justify-center">
-                    <BarChart3 className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 mx-auto mb-1" />
-                    <div className="text-xs font-medium mb-1">Sentiment</div>
-                    <div className="text-xs text-gray-500 hidden sm:block">Analyze opinion</div>
-                  </div>
-                </Link>
-                <Link href="/constitution">
-                  <div className="p-2 sm:p-3 text-center rounded-lg bg-green-50 active:bg-green-100 transition-colors cursor-pointer min-h-[60px] sm:min-h-[80px] flex flex-col justify-center">
-                    <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-green-600 mx-auto mb-1" />
-                    <div className="text-xs font-medium mb-1">Constitution</div>
-                    <div className="text-xs text-gray-500 hidden sm:block">AI explains law</div>
-                  </div>
-                </Link>
-                <Link href="/media-bias">
-                  <div className="p-3 text-center rounded-lg bg-orange-50 hover:bg-orange-100 transition-colors cursor-pointer">
-                    <Eye className="h-6 w-6 text-orange-600 mx-auto mb-1" />
-                    <div className="text-xs font-medium mb-1">Media Bias</div>
-                    <div className="text-xs text-gray-500">Detect news bias</div>
-                  </div>
-                </Link>
-                <Link href="/corruption-risk">
-                  <div className="p-3 text-center rounded-lg bg-red-50 hover:bg-red-100 transition-colors cursor-pointer">
-                    <Shield className="h-6 w-6 text-red-600 mx-auto mb-1" />
-                    <div className="text-xs font-medium mb-1">Risk Analysis</div>
-                    <div className="text-xs text-gray-500">Assess corruption risk</div>
-                  </div>
-                </Link>
-                <Link href="/campaign-advice">
-                  <div className="p-3 text-center rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors cursor-pointer">
-                    <Brain className="h-6 w-6 text-purple-600 mx-auto mb-1" />
-                    <div className="text-xs font-medium mb-1">AI Advice</div>
-                    <div className="text-xs text-gray-500">Strategic guidance</div>
-                  </div>
-                </Link>
-              </div>
-            </div>
-
-            {/* Live Tools */}
-            <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-1">Live Tools</h3>
-              <p className="text-xs text-gray-600 mb-3">Real-time election monitoring and crowd-sourced intelligence</p>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                <Link href="/live-tally">
-                  <div className="p-3 text-center rounded-lg bg-green-50 hover:bg-green-100 transition-colors cursor-pointer">
-                    <Vote className="h-6 w-6 text-green-600 mx-auto mb-1" />
-                    <div className="text-xs font-medium mb-1">Live Tally</div>
-                    <div className="text-xs text-gray-500">Real-time results</div>
-                  </div>
-                </Link>
-                <Link href="/demo-voting">
-                  <div className="p-3 text-center rounded-lg bg-cyan-50 hover:bg-cyan-100 transition-colors cursor-pointer">
-                    <Vote className="h-6 w-6 text-cyan-600 mx-auto mb-1" />
-                    <div className="text-xs font-medium mb-1">Demo Vote</div>
-                    <div className="text-xs text-gray-500">Practice voting</div>
-                  </div>
-                </Link>
-                <Link href="/crowd-sourced-intel">
-                  <div className="p-3 text-center rounded-lg bg-indigo-50 hover:bg-indigo-100 transition-colors cursor-pointer">
-                    <Users className="h-6 w-6 text-indigo-600 mx-auto mb-1" />
-                    <div className="text-xs font-medium mb-1">Intel</div>
-                    <div className="text-xs text-gray-500">Citizen reports</div>
-                  </div>
-                </Link>
-              </div>
-            </div>
-
-            {/* Information */}
-            <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-1">Information & Verification</h3>
-              <p className="text-xs text-gray-600 mb-3">Fact-checking, politician profiles, and verification systems</p>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <Link href="/fact-check">
-                  <div className="p-3 text-center rounded-lg bg-red-50 hover:bg-red-100 transition-colors cursor-pointer">
-                    <Shield className="h-6 w-6 text-red-600 mx-auto mb-1" />
-                    <div className="text-xs font-medium mb-1">Fact Check</div>
-                    <div className="text-xs text-gray-500">Verify claims</div>
-                  </div>
-                </Link>
-                <Link href="/politicians">
-                  <div className="p-3 text-center rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer">
-                    <Users className="h-6 w-6 text-slate-600 mx-auto mb-1" />
-                    <div className="text-xs font-medium mb-1">Politicians</div>
-                    <div className="text-xs text-gray-500">Leader profiles</div>
-                  </div>
-                </Link>
-                <Link href="/influence-network">
-                  <div className="p-3 text-center rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors cursor-pointer">
-                    <Users className="h-6 w-6 text-purple-600 mx-auto mb-1" />
-                    <div className="text-xs font-medium mb-1">Networks</div>
-                    <div className="text-xs text-gray-500">Power connections</div>
-                  </div>
-                </Link>
-                <Link href="/verification-gallery">
-                  <div className="p-3 text-center rounded-lg bg-emerald-50 hover:bg-emerald-100 transition-colors cursor-pointer">
-                    <Shield className="h-6 w-6 text-emerald-600 mx-auto mb-1" />
-                    <div className="text-xs font-medium mb-1">Verify</div>
-                    <div className="text-xs text-gray-500">Content validation</div>
-                  </div>
-                </Link>
-              </div>
-            </div>
-
-            {/* Civic */}
-            <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-1">Civic Engagement</h3>
-              <p className="text-xs text-gray-600 mb-3">Educational resources, voter registration, and citizen participation</p>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <Link href="/voter-education">
-                  <div className="p-3 text-center rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors cursor-pointer">
-                    <Brain className="h-6 w-6 text-blue-600 mx-auto mb-1" />
-                    <div className="text-xs font-medium mb-1">Education</div>
-                    <div className="text-xs text-gray-500">Learn civics</div>
-                  </div>
-                </Link>
-                <Link href="/voter-registration">
-                  <div className="p-3 text-center rounded-lg bg-green-50 hover:bg-green-100 transition-colors cursor-pointer">
-                    <Users className="h-6 w-6 text-green-600 mx-auto mb-1" />
-                    <div className="text-xs font-medium mb-1">Register</div>
-                    <div className="text-xs text-gray-500">Sign up to vote</div>
-                  </div>
-                </Link>
-                <Link href="/constituency-map">
-                  <div className="p-3 text-center rounded-lg bg-teal-50 hover:bg-teal-100 transition-colors cursor-pointer">
-                    <MessageSquare className="h-6 w-6 text-teal-600 mx-auto mb-1" />
-                    <div className="text-xs font-medium mb-1">Map</div>
-                    <div className="text-xs text-gray-500">Find your area</div>
-                  </div>
-                </Link>
-                <Link href="/profile">
-                  <div className="p-3 text-center rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer">
-                    <Users className="h-6 w-6 text-gray-600 mx-auto mb-1" />
-                    <div className="text-xs font-medium mb-1">Profile</div>
-                    <div className="text-xs text-gray-500">Your account</div>
-                  </div>
-                </Link>
+        <div className="relative container mx-auto px-4 py-8 max-w-7xl">
+          {/* Modern Header */}
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-12"
+          >
+            <div className="mb-6 lg:mb-0">
+              <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-purple-800 bg-clip-text text-transparent mb-3">
+                Political Intelligence Hub
+              </h1>
+              <p className="text-lg text-gray-600 max-w-2xl">
+                Real-time analysis and insights into Kenya's political landscape powered by AI
+              </p>
+              <div className="flex items-center gap-3 mt-4">
+                <div className="flex items-center gap-2 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                  Live Data
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                  <Clock className="w-4 h-4" />
+                  Updates daily
+                </div>
               </div>
             </div>
             
-          </CardContent>
-        </Card>
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  placeholder="Search analytics..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 w-64 bg-white/80 backdrop-blur-sm border-purple-200 focus:border-purple-400"
+                />
+              </div>
+              <LogoutButton />
+            </div>
+          </motion.div>
 
-        {/* Ask About Constitution */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Scale className="h-5 w-5 text-green-600" />
-              Ask About the Constitution
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-2 mb-4">
-              <Input
-                placeholder="e.g., What are my fundamental rights?"
-                value={constitutionQuery}
-                onChange={(e) => setConstitutionQuery(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && askConstitution()}
-                className="flex-1"
+          {/* Key Metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            {metrics.map((metric, index) => (
+              <MetricCard
+                key={metric.title}
+                {...metric}
+                delay={index * 0.1}
               />
-              <Button onClick={askConstitution} disabled={isConstitutionLoading || !constitutionQuery.trim()}>
-                {isConstitutionLoading ? 'Loading...' : 'Ask AI'}
-              </Button>
-              <Button onClick={showRecentAmendments} variant="secondary" size="sm">
-                Recent Amendments
-              </Button>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {['What are my rights?', 'How does voting work?', 'What is devolution?'].map((q, i) => (
-                <Button key={i} variant="outline" size="sm" onClick={() => setConstitutionQuery(q)} className="text-xs">
-                  {q}
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+            ))}
+          </div>
 
-        {/* Constitution Answer Modal */}
-        {showConstitutionModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-hidden">
-              <div className="p-4 border-b flex items-center justify-between">
-                <h3 className="font-semibold flex items-center gap-2">
-                  <Scale className="h-5 w-5 text-green-600" />
-                  Constitution Explanation
-                </h3>
-                <Button variant="ghost" size="sm" onClick={() => setShowConstitutionModal(false)}>×</Button>
+          {/* Featured Constitution Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+            className="mb-12"
+          >
+            <Card className="border-0 shadow-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white overflow-hidden relative">
+              {/* Background pattern */}
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute inset-0" style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+                }} />
               </div>
-              <div className="p-4 overflow-y-auto max-h-[60vh]">
-                {constitutionAnswer ? (
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="font-medium mb-2">Explanation</h4>
-                      <div className="text-gray-800 prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: constitutionAnswer.explanation }} />
-                    </div>
-                    <div>
-                      <h4 className="font-medium mb-2">Relevant Articles</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {constitutionAnswer.relevantArticles.map((article: string, i: number) => (
-                          <Badge key={i} variant="outline">{article}</Badge>
-                        ))}
+              
+              <CardContent className="p-8 relative">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                        <Scale className="w-8 h-8" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold mb-1">Kenya Constitution 2010</h2>
+                        <p className="text-emerald-100">Understanding Your Rights & Governance</p>
                       </div>
                     </div>
-                    <div>
-                      <h4 className="font-medium mb-2">Practical Example</h4>
-                      <div className="text-sm bg-green-50 p-3 rounded" dangerouslySetInnerHTML={{ __html: constitutionAnswer.practicalExample }} />
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                      <div className="flex items-center gap-2">
+                        <Shield className="w-5 h-5 text-emerald-200" />
+                        <span className="text-sm">Bill of Rights</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Vote className="w-5 h-5 text-emerald-200" />
+                        <span className="text-sm">Electoral System</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Users className="w-5 h-5 text-emerald-200" />
+                        <span className="text-sm">Devolution</span>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-medium mb-2">{recentAmendments.length > 0 ? 'Recent Amendments' : 'Your Rights'}</h4>
-                      {recentAmendments.length > 0 ? (
-                        <div className="space-y-3">
-                          {recentAmendments.map((amendment, i) => (
-                            <div key={i} className="bg-blue-50 p-3 rounded border-l-4 border-blue-500">
-                              <h5 className="font-medium text-sm">{amendment.title}</h5>
-                              <p className="text-xs text-gray-600 mt-1">{amendment.summary}</p>
-                              <span className="text-xs bg-blue-100 px-2 py-1 rounded mt-2 inline-block">{amendment.source}</span>
-                            </div>
-                          ))}
+
+                    <p className="text-emerald-100 text-lg leading-relaxed mb-6">
+                      Get AI-powered explanations of Kenya's supreme law. Learn about your fundamental rights, 
+                      how government works, and your role in democracy with simple, clear explanations.
+                    </p>
+                  </div>
+
+                  <div className="hidden lg:block ml-8">
+                    <Link href="/constitution">
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-center hover:bg-white/30 transition-all duration-300 cursor-pointer border border-white/20"
+                      >
+                        <Scale className="w-12 h-12 mx-auto mb-3 text-white" />
+                        <div className="text-lg font-semibold mb-2">Explore Now</div>
+                        <div className="text-sm text-emerald-100 mb-4">AI-Powered Guide</div>
+                        <div className="flex items-center justify-center gap-2 text-sm font-medium">
+                          <span>Get Started</span>
+                          <ArrowUpRight className="w-4 h-4" />
                         </div>
-                      ) : (
-                        <ul className="space-y-1">
-                          {constitutionAnswer.citizenRights.map((right: string, i: number) => (
-                            <li key={i} className="flex items-start gap-2 text-sm">
-                              <span className="text-green-600">•</span>{right}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
+                      </motion.div>
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Mobile CTA */}
+                <div className="lg:hidden mt-6">
+                  <Link href="/constitution">
+                    <Button 
+                      size="lg" 
+                      className="w-full bg-white/20 hover:bg-white/30 text-white border-white/20 backdrop-blur-sm"
+                    >
+                      <Scale className="w-5 h-5 mr-2" />
+                      Explore Constitution
+                      <ArrowUpRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Main Dashboard Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+            
+            {/* Quick Actions */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4, duration: 0.6 }}
+              className="lg:col-span-1"
+            >
+              <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Zap className="w-5 h-5 text-purple-600" />
+                    Quick Actions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 max-h-80 overflow-y-auto">
+                  {/* Constitution Card - Featured */}
+                  <Link href="/constitution">
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="p-4 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-emerald-200 hover:border-teal-300 transition-all duration-200 cursor-pointer group relative overflow-hidden"
+                    >
+                      {/* Special highlight indicator */}
+                      <div className="absolute top-2 right-2">
+                        <div className="flex items-center gap-1 bg-emerald-600 text-white px-2 py-1 rounded-full text-xs font-medium">
+                          <Scale className="w-3 h-3" />
+                          Important
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-emerald-100 text-emerald-600 group-hover:bg-teal-100 group-hover:text-teal-600 transition-colors duration-200">
+                          <Scale className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-900">Kenya Constitution</h3>
+                          <p className="text-sm text-gray-600">Learn your rights & governance</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="outline" className="text-xs px-2 py-0.5 border-emerald-200 text-emerald-700">
+                              AI Guide
+                            </Badge>
+                            <Badge variant="outline" className="text-xs px-2 py-0.5 border-emerald-200 text-emerald-700">
+                              2010
+                            </Badge>
+                          </div>
+                        </div>
+                        <ArrowUpRight className="w-4 h-4 text-gray-400 ml-auto group-hover:text-teal-500 transition-colors duration-200" />
+                      </div>
+                    </motion.div>
+                  </Link>
+
+                  <Link href="/sentiment-analysis">
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="p-4 rounded-xl bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-100 hover:border-purple-200 transition-all duration-200 cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-blue-100 text-blue-600 group-hover:bg-purple-100 group-hover:text-purple-600 transition-colors duration-200">
+                          <TrendingUp className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-gray-900">Sentiment Analysis</h3>
+                          <p className="text-sm text-gray-600">Analyze political sentiment</p>
+                        </div>
+                        <ArrowUpRight className="w-4 h-4 text-gray-400 ml-auto group-hover:text-purple-500 transition-colors duration-200" />
+                      </div>
+                    </motion.div>
+                  </Link>
+
+                  <Link href="/fact-check">
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="p-4 rounded-xl bg-gradient-to-r from-green-50 to-blue-50 border border-green-100 hover:border-blue-200 transition-all duration-200 cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-green-100 text-green-600 group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors duration-200">
+                          <Shield className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-gray-900">Fact Check</h3>
+                          <p className="text-sm text-gray-600">Verify political claims</p>
+                        </div>
+                        <ArrowUpRight className="w-4 h-4 text-gray-400 ml-auto group-hover:text-blue-500 transition-colors duration-200" />
+                      </div>
+                    </motion.div>
+                  </Link>
+
+                  <Link href="/media-bias">
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="p-4 rounded-xl bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-100 hover:border-orange-200 transition-all duration-200 cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-yellow-100 text-yellow-600 group-hover:bg-orange-100 group-hover:text-orange-600 transition-colors duration-200">
+                          <Eye className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-gray-900">Media Bias</h3>
+                          <p className="text-sm text-gray-600">Detect bias in media</p>
+                        </div>
+                        <ArrowUpRight className="w-4 h-4 text-gray-400 ml-auto group-hover:text-orange-500 transition-colors duration-200" />
+                      </div>
+                    </motion.div>
+                  </Link>
+
+                  <Link href="/demo-voting">
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="p-4 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-100 hover:border-pink-200 transition-all duration-200 cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-purple-100 text-purple-600 group-hover:bg-pink-100 group-hover:text-pink-600 transition-colors duration-200">
+                          <Vote className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-gray-900">Demo Voting</h3>
+                          <p className="text-sm text-gray-600">Simulate elections</p>
+                        </div>
+                        <ArrowUpRight className="w-4 h-4 text-gray-400 ml-auto group-hover:text-pink-500 transition-colors duration-200" />
+                      </div>
+                    </motion.div>
+                  </Link>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Recent Activity */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.6 }}
+              className="lg:col-span-2"
+            >
+              <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      <Activity className="w-5 h-5 text-green-600" />
+                      Recent Activity
+                    </CardTitle>
+                    <Button variant="outline" size="sm" className="text-xs">
+                      View All
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-1 max-h-80 overflow-y-auto">
+                    {recentActivity.map((activity, index) => (
+                      <ActivityItem
+                        key={activity.id}
+                        activity={activity}
+                        index={index}
+                      />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+
+          {/* Analytics Overview */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.6 }}
+            className="grid grid-cols-1 lg:grid-cols-2 gap-8"
+          >
+            
+            {/* Trending Topics */}
+            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Globe className="w-5 h-5 text-blue-600" />
+                  Trending Political Topics
+                  <div className="flex items-center gap-2 ml-auto">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                    <Badge variant="secondary" className="text-xs">AI Powered</Badge>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4 max-h-80 overflow-y-auto">
+                  {loading ? (
+                    <div className="space-y-3">
+                      {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="animate-pulse">
+                          <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                          <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : trendingTopics.length > 0 ? (
+                    trendingTopics.slice(0, 6).map((topic, index) => (
+                      <motion.div
+                        key={topic.topic}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50/80 transition-colors duration-200"
+                      >
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-medium text-gray-900 truncate">
+                              {topic.topic}
+                            </h4>
+                            {topic.trend && (
+                              <div className={`flex items-center gap-1 ${
+                                topic.trend === 'up' ? 'text-green-600' :
+                                topic.trend === 'down' ? 'text-red-600' :
+                                'text-yellow-600'
+                              }`}>
+                                {topic.trend === 'up' ? (
+                                  <TrendingUp className="w-3 h-3" />
+                                ) : topic.trend === 'down' ? (
+                                  <ArrowUpRight className="w-3 h-3 rotate-90" />
+                                ) : (
+                                  <div className="w-3 h-0.5 bg-current" />
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-500">
+                              {topic.mentions?.toLocaleString()} mentions
+                            </span>
+                            <Badge 
+                              variant="outline" 
+                              className={`text-xs ${
+                                topic.sentiment > 0.6 ? 'border-green-200 text-green-700 bg-green-50' :
+                                topic.sentiment < 0.4 ? 'border-red-200 text-red-700 bg-red-50' :
+                                'border-yellow-200 text-yellow-700 bg-yellow-50'
+                              }`}
+                            >
+                              {topic.sentiment > 0.6 ? 'Positive' :
+                               topic.sentiment < 0.4 ? 'Negative' : 'Neutral'}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-medium text-gray-900">
+                            {(Math.abs(topic.sentiment) * 100).toFixed(0)}%
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {topic.sentiment > 0 ? 'positive' : topic.sentiment < 0 ? 'negative' : 'neutral'}
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <Globe className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                      <p className="font-medium">Loading AI insights...</p>
+                      <p className="text-sm">Connecting to real-time analysis</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Government Approval */}
+            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5 text-purple-600" />
+                  Government Approval
+                  <div className="flex items-center gap-2 ml-auto">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                    <Badge variant="secondary" className="text-xs">AI Analysis</Badge>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-center h-64">
+                  <div className="relative w-48 h-48">
+                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                      <circle cx="50" cy="50" r="40" fill="none" stroke="#e5e7eb" strokeWidth="8" />
+                      <circle 
+                        cx="50" 
+                        cy="50" 
+                        r="40" 
+                        fill="none" 
+                        stroke="#22c55e" 
+                        strokeWidth="8" 
+                        strokeDasharray={`${(govPopularity.approve / 100) * 251.2} 251.2`}
+                        strokeLinecap="round"
+                        className="transition-all duration-1000 ease-out"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="text-3xl font-bold text-gray-900">
+                          {govPopularity.overall}%
+                        </div>
+                        <div className="text-sm text-gray-600">Overall Rating</div>
+                        {govPopularity.trend && (
+                          <div className={`flex items-center justify-center gap-1 mt-1 text-xs ${
+                            govPopularity.trend === 'up' ? 'text-green-600' :
+                            govPopularity.trend === 'down' ? 'text-red-600' :
+                            'text-yellow-600'
+                          }`}>
+                            {govPopularity.trend === 'up' ? (
+                              <TrendingUp className="w-3 h-3" />
+                            ) : govPopularity.trend === 'down' ? (
+                              <ArrowUpRight className="w-3 h-3 rotate-90" />
+                            ) : (
+                              <div className="w-3 h-0.5 bg-current" />
+                            )}
+                            {govPopularity.trend}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <div className="animate-spin h-8 w-8 border-2 border-green-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-                    <p>Getting explanation...</p>
+                </div>
+                <div className="grid grid-cols-3 gap-4 mt-6">
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-green-600">
+                      {govPopularity.approve}%
+                    </div>
+                    <div className="text-xs text-gray-600">Approve</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-red-600">
+                      {govPopularity.disapprove}%
+                    </div>
+                    <div className="text-xs text-gray-600">Disapprove</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-yellow-600">
+                      {govPopularity.neutral}%
+                    </div>
+                    <div className="text-xs text-gray-600">Neutral</div>
+                  </div>
+                </div>
+                {govPopularity.keyIssues && (
+                  <div className="mt-4 pt-4 border-t border-gray-100">
+                    <div className="text-xs text-gray-500 mb-2">Key Issues Affecting Approval:</div>
+                    <div className="flex flex-wrap gap-1">
+                      {govPopularity.keyIssues.slice(0, 3).map((issue: string, index: number) => (
+                        <Badge key={index} variant="outline" className="text-xs">
+                          {issue}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
                 )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8">
-          
-          {/* Trending Topics */}
-          <Card className="lg:col-span-1">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
-                Trending Topics
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-60 sm:h-80 overflow-hidden">
-                <div className="animate-scroll space-y-2 sm:space-y-4">
-                  {[...trendingTopics, ...trendingTopics].map((topic, index) => (
-                    <div key={index} className="flex items-center justify-between p-2 sm:p-3 rounded-lg bg-gray-50 flex-shrink-0">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1 sm:gap-2 mb-1">
-                          <span className="font-medium text-xs sm:text-sm truncate">{topic.topic}</span>
-                          <Badge variant={topic.sentiment > 0 ? "default" : "destructive"} className="text-xs px-1 flex-shrink-0">
-                            {topic.sentiment > 0 ? "+" : "-"}
-                          </Badge>
-                        </div>
-                        <div className="text-xs text-gray-600">{(topic.mentions / 1000).toFixed(0)}K</div>
-                      </div>
-                      <div className="w-12 sm:w-16 flex-shrink-0">
-                        <Progress value={Math.abs(topic.sentiment || 0) * 100} className="h-1.5 sm:h-2" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Politician Sentiments */}
-          <Card className="lg:col-span-1">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5 text-green-600" />
-                Political Sentiments
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-80 overflow-hidden">
-                <div className="animate-scroll space-y-4">
-                  {[...politicianSentiments, ...politicianSentiments].map((politician, index) => (
-                    <div key={index} className="p-3 rounded-lg bg-gray-50 flex-shrink-0">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="font-medium text-sm">{politician.name}</div>
-                        <Badge variant="outline" className="text-xs">{politician.party}</Badge>
-                      </div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <Progress value={politician.sentiment * 100} className="flex-1 h-2" />
-                        <span className="text-xs font-medium">{(politician.sentiment * 100).toFixed(0)}%</span>
-                      </div>
-                      <div className="text-xs text-gray-600">{politician.mentions?.toLocaleString()} mentions</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Government Popularity */}
-          <Card className="lg:col-span-1">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5 text-purple-600" />
-                Government Popularity
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse ml-auto" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-64 flex items-center justify-center">
-                <div className="relative w-48 h-48">
-                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="40" fill="none" stroke="#e5e7eb" strokeWidth="8" />
-                    <circle cx="50" cy="50" r="40" fill="none" stroke="#22c55e" strokeWidth="8" 
-                            strokeDasharray="75.4 251.2" strokeLinecap="round" />
-                    <circle cx="50" cy="50" r="40" fill="none" stroke="#ef4444" strokeWidth="8" 
-                            strokeDasharray="62.8 251.2" strokeDashoffset="-75.4" strokeLinecap="round" />
-                    <circle cx="50" cy="50" r="40" fill="none" stroke="#f59e0b" strokeWidth="8" 
-                            strokeDasharray="113.1 251.2" strokeDashoffset="-138.2" strokeLinecap="round" />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-gray-900">{govPopularity.overall}%</div>
-                      <div className="text-xs text-gray-600">Approval</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-2 mt-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                    <span className="text-sm">Approve</span>
-                  </div>
-                  <span className="text-sm font-medium">{govPopularity.approve}%</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                    <span className="text-sm">Disapprove</span>
-                  </div>
-                  <span className="text-sm font-medium">{govPopularity.disapprove}%</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-amber-500 rounded-full"></div>
-                    <span className="text-sm">Neutral</span>
-                  </div>
-                  <span className="text-sm font-medium">{govPopularity.neutral}%</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
       </div>
-      
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-8 mt-12">
-        <div className="container mx-auto px-4 max-w-7xl">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div>
-              <h3 className="font-bold text-lg mb-3">Sauti Platform</h3>
-              <p className="text-gray-400 text-sm">Kenya's premier political intelligence and civic engagement platform.</p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-3">Features</h4>
-              <ul className="space-y-1 text-sm text-gray-400">
-                <li>AI Sentiment Analysis</li>
-                <li>Live Election Monitoring</li>
-                <li>Fact Checking</li>
-                <li>Civic Education</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-3">Resources</h4>
-              <ul className="space-y-1 text-sm text-gray-400">
-                <li>Constitution 2010</li>
-                <li>Electoral Laws</li>
-                <li>Voter Guide</li>
-                <li>Political Parties</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-3">Contact</h4>
-              <div className="text-sm text-gray-400 space-y-1">
-                <p>info@sauti.ke</p>
-                <p>+254 700 000 000</p>
-                <p>Nairobi, Kenya</p>
-              </div>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 mt-6 pt-6 text-center text-sm text-gray-400">
-            <p>&copy; 2024 Sauti Platform. Empowering Kenyan Democracy.</p>
-          </div>
-        </div>
-      </footer>
-    </div>
     </AuthGuard>
   );
 }

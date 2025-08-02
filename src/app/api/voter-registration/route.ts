@@ -27,7 +27,7 @@ JSON: {"eligible":true/false,"reason":"explanation","age":number}`;
         config: { temperature: 0.1, maxOutputTokens: 200 }
       });
       
-      const responseText = response.text || response.content?.[0]?.text || '';
+      const responseText = response.text || '';
       const jsonMatch = responseText.match(/```json\s*\n?([\s\S]*?)\n?```/) || responseText.match(/\{[\s\S]*\}/);
       
       if (jsonMatch) {

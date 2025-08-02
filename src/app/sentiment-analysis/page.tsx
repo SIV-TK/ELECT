@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { motion, AnimatePresence } from "framer-motion";
 import { analyzeCandidateSentiment } from "@/ai/flows/analyze-candidate-sentiment";
 import type { AnalyzeCandidateSentimentOutput } from "@/ai/flows/analyze-candidate-sentiment";
 import { predictVoteDistribution } from "@/ai/flows/predict-vote-distribution";
@@ -16,7 +17,25 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { ThumbsUp, ThumbsDown, Loader2, Check, ChevronsUpDown, Trophy, Map, BarChart3, TrendingUp, AlertCircle, Sparkles } from "lucide-react";
+import { 
+  ThumbsUp, 
+  ThumbsDown, 
+  Loader2, 
+  Check, 
+  ChevronsUpDown, 
+  Trophy, 
+  Map, 
+  BarChart3, 
+  TrendingUp, 
+  AlertCircle, 
+  Sparkles,
+  Brain,
+  Users,
+  Globe,
+  Zap,
+  Eye,
+  Star
+} from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
@@ -92,19 +111,40 @@ export default function SentimentAnalysisPage() {
     try {
       let sentimentResult;
       
-      // Always use real-time AI analysis
-      const response = await fetch('/api/integrated-ai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'comprehensive_analysis',
-          data: values
-        })
-      });
-      
-      if (!response.ok) throw new Error('Real-time AI analysis failed');
-      const aiResult = await response.json();
-      sentimentResult = aiResult.sentiment;
+      // Choose API endpoint based on real-time data toggle
+      if (useRealTimeData) {
+        // Use real-time sentiment analysis API
+        const response = await fetch('/api/realtime-sentiment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            candidateName: values.candidateName
+          })
+        });
+        
+        if (!response.ok) throw new Error('Real-time sentiment analysis failed');
+        const apiResult = await response.json();
+        sentimentResult = apiResult;
+      } else {
+        // Use regular sentiment analysis API
+        const response = await fetch('/api/analyze-sentiment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            candidateName: values.candidateName,
+            topic: values.topic || 'general political sentiment'
+          })
+        });
+        
+        if (!response.ok) throw new Error('Sentiment analysis failed');
+        const apiResult = await response.json();
+        
+        if (!apiResult.success || !apiResult.data) {
+          throw new Error('Invalid response from sentiment analysis API');
+        }
+        
+        sentimentResult = apiResult.data;
+      }
       
       setResult({ sentiment: sentimentResult });
       
@@ -113,26 +153,41 @@ export default function SentimentAnalysisPage() {
       setAnalysisCount(newCount);
       localStorage.setItem('sentiment-analysis-count', newCount.toString());
 
-      // Use AI prediction from integrated response
-      const predictionResult = { regions: aiResult.voteDistribution };
-
-      // Generate AI-based prediction outcome
-      const aiPrediction = generateAIPrediction(values.candidateName, sentimentResult.sentimentScore, predictionResult.regions);
-
-      setResult(prev => prev ? {
-        ...prev,
-        prediction: {
-          regions: predictionResult.regions,
-          aiPrediction
+      // Generate vote distribution prediction using the new API
+      try {
+        const predictionResponse = await fetch('/api/predict-vote-distribution', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            candidateName: values.candidateName,
+            topic: values.topic || 'general election',
+            sentimentScore: sentimentResult.sentimentScore
+          })
+        });
+        
+        if (predictionResponse.ok) {
+          const predictionResult = await predictionResponse.json();
+          
+          if (predictionResult.success && predictionResult.data) {
+            setResult(prev => prev ? {
+              ...prev,
+              prediction: predictionResult.data
+            } : null);
+          }
+        } else {
+          console.warn('Prediction API failed, continuing without prediction map');
         }
-       } : null);
+      } catch (predictionError) {
+        console.warn('Failed to generate prediction:', predictionError);
+        // Continue without prediction rather than failing entirely
+      }
 
     } catch (error) {
-      console.error("Error during analysis or prediction:", error);
+      console.error("Error during analysis:", error);
       toast({
         variant: "destructive",
         title: "Analysis Failed",
-        description: "Could not complete the full analysis. Please try again.",
+        description: "Could not complete the sentiment analysis. Please try again.",
       });
     } finally {
       setIsLoading(false);

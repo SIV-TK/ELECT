@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Extract key terms for targeted scraping
-    const keyTerms = content.split(' ').filter(word => word.length > 3).slice(0, 3).join(' ');
+    const keyTerms = content.split(' ').filter((word: string) => word.length > 3).slice(0, 3).join(' ');
     
     // Get comprehensive online data
     const [newsData, govData, socialData] = await Promise.all([
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
         config: { temperature: 0.2, maxOutputTokens: 500 }
       });
       
-      const responseText = response.text || response.content?.[0]?.text || '';
+      const responseText = response.text || '';
       const jsonMatch = responseText.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const result = JSON.parse(jsonMatch[0]);
