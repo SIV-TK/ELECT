@@ -6,13 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
+import { CrisisEarlyWarningCard } from '@/components/crisis-early-warning-card';
 import { 
   BarChart3, 
   Users, 
   Vote, 
   Brain, 
   TrendingUp, 
-  Activity, 
   Search, 
   MessageSquare, 
   Eye, 
@@ -22,6 +22,8 @@ import {
   Globe,
   AlertTriangle,
   CheckCircle,
+  ChevronDown,
+  ChevronUp,
   Clock,
   ArrowUpRight,
   Filter,
@@ -30,7 +32,6 @@ import {
   User,
   LogOut,
   Settings,
-  ChevronDown,
   Languages
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -241,49 +242,6 @@ function MetricCard({
   );
 }
 
-// Modern activity feed item
-function ActivityItem({ 
-  activity, 
-  index 
-}: { 
-  activity: any; 
-  index: number;
-}) {
-  const statusColors = {
-    completed: 'text-green-600 bg-green-100',
-    pending: 'text-yellow-600 bg-yellow-100',
-    alert: 'text-red-600 bg-red-100'
-  };
-
-  const statusIcons = {
-    completed: <CheckCircle className="w-4 h-4" />,
-    pending: <Clock className="w-4 h-4" />,
-    alert: <AlertTriangle className="w-4 h-4" />
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: index * 0.1, duration: 0.4 }}
-      className="flex items-start space-x-3 p-4 rounded-lg hover:bg-gray-50/80 transition-colors duration-200"
-    >
-      <div className={`p-2 rounded-lg ${statusColors[activity.status as keyof typeof statusColors]}`}>
-        {statusIcons[activity.status as keyof typeof statusIcons]}
-      </div>
-      <div className="flex-1 min-w-0">
-        <h4 className="text-sm font-semibold text-gray-900 truncate">
-          {activity.title}
-        </h4>
-        <p className="text-xs text-gray-600 mt-1 line-clamp-2">
-          {activity.description}
-        </p>
-        <p className="text-xs text-gray-400 mt-2">{activity.timestamp}</p>
-      </div>
-    </motion.div>
-  );
-}
-
 export default function Dashboard() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
@@ -311,11 +269,6 @@ export default function Dashboard() {
   const [showConstitutionModal, setShowConstitutionModal] = useState(false);
   const [constitutionAnswer, setConstitutionAnswer] = useState<any>(null);
   const [recentAmendments, setRecentAmendments] = useState<any[]>([]);
-  const [aiChatResponse, setAiChatResponse] = useState<string>('');
-  const [isChatLoading, setIsChatLoading] = useState(false);
-  const [chatQuery, setChatQuery] = useState('');
-  const [selectedLanguage, setSelectedLanguage] = useState('en');
-  const [crisisAlerts, setCrisisAlerts] = useState<any[]>([]);
 
   const [countyAnalysisData, setCountyAnalysisData] = useState<any>(null);
   const [selectedCounty, setSelectedCounty] = useState('Nairobi');
@@ -329,41 +282,13 @@ export default function Dashboard() {
   const [timelineData, setTimelineData] = useState<any>(null);
   const [selectedVisualization, setSelectedVisualization] = useState<string | null>(null);
 
-  // Mock recent activity data
-  const recentActivity = [
-    {
-      id: '1',
-      type: 'sentiment',
-      title: 'William Ruto Sentiment Analysis',
-      description: 'Weekly sentiment analysis completed for President William Ruto across 47 counties',
-      timestamp: '2 minutes ago',
-      status: 'completed'
-    },
-    {
-      id: '2',
-      type: 'fact-check',
-      title: 'BBI Amendment Fact Check',
-      description: 'Verifying claims about constitutional amendments in recent parliamentary sessions',
-      timestamp: '15 minutes ago',
-      status: 'pending'
-    },
-    {
-      id: '3',
-      type: 'bias',
-      title: 'Media Bias Alert: Daily Nation',
-      description: 'Potential bias detected in recent political coverage analysis',
-      timestamp: '1 hour ago',
-      status: 'alert'
-    },
-    {
-      id: '4',
-      type: 'vote',
-      title: 'Nairobi County Poll Results',
-      description: 'Real-time voting simulation completed for gubernatorial race',
-      timestamp: '2 hours ago',
-      status: 'completed'
-    }
-  ];
+  // Collapsible state for cards
+  const [isConstitutionCardCollapsed, setIsConstitutionCardCollapsed] = useState(false);
+  const [isTrendingTopicsCollapsed, setIsTrendingTopicsCollapsed] = useState(false);
+  const [isGovernmentApprovalCollapsed, setIsGovernmentApprovalCollapsed] = useState(false);
+  const [isCountyAnalysisCollapsed, setIsCountyAnalysisCollapsed] = useState(false);
+  const [isCrisisWarningCollapsed, setIsCrisisWarningCollapsed] = useState(false);
+  const [isQuickActionsCollapsed, setIsQuickActionsCollapsed] = useState(false);
 
   // Modern metrics data
   const metrics = [
@@ -400,62 +325,6 @@ export default function Dashboard() {
       href: '/corruption-risk'
     }
   ];
-
-  // AI Chat function
-  const handleAiChat = async (query: string, language = 'en') => {
-    if (!query.trim()) return;
-    
-    setIsChatLoading(true);
-    try {
-      const response = await fetch('/api/ai-chat-multilang', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: query,
-          language: language,
-          includeContext: true
-        })
-      });
-      
-      const data = await response.json();
-      if (data.success) {
-        setAiChatResponse(data.response);
-      }
-    } catch (error) {
-      console.error('AI Chat error:', error);
-      setAiChatResponse('Sorry, I encountered an error. Please try again.');
-    } finally {
-      setIsChatLoading(false);
-    }
-  };
-
-  // Crisis monitoring function
-  const fetchCrisisAlerts = async () => {
-    try {
-      const response = await fetch('/api/crisis-early-warning', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          county: null, // Get national alerts
-          timeframe: '24h',
-          includePreventiveMeasures: false
-        })
-      });
-      
-      const data = await response.json();
-      if (data.success) {
-        setCrisisAlerts(data.data.alerts.slice(0, 3)); // Show top 3 alerts
-      } else {
-        // Set empty alerts if API fails
-        setCrisisAlerts([]);
-      }
-    } catch (error) {
-      console.error('Crisis alerts error:', error);
-      setCrisisAlerts([]);
-    }
-  };
-
-
 
   // County analysis function
   const fetchCountyAnalysis = async (county = 'Nairobi') => {
@@ -894,18 +763,32 @@ export default function Dashboard() {
               </div>
               
               <CardContent className="p-8 relative">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                        <Scale className="w-8 h-8" />
-                      </div>
-                      <div>
-                        <h2 className="text-2xl font-bold mb-1">Kenya Constitution 2010</h2>
-                        <p className="text-emerald-100">Understanding Your Rights & Governance</p>
-                      </div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                      <Scale className="w-8 h-8" />
                     </div>
-                    
+                    <div>
+                      <h2 className="text-2xl font-bold mb-1">Kenya Constitution 2010</h2>
+                      <p className="text-emerald-100">Understanding Your Rights & Governance</p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsConstitutionCardCollapsed(!isConstitutionCardCollapsed)}
+                    className="text-white hover:bg-white/20 p-2 rounded-lg"
+                  >
+                    {isConstitutionCardCollapsed ? (
+                      <ChevronDown className="w-5 h-5" />
+                    ) : (
+                      <ChevronUp className="w-5 h-5" />
+                    )}
+                  </Button>
+                </div>
+
+                {!isConstitutionCardCollapsed && (
+                  <>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                       <div className="flex items-center gap-2">
                         <Shield className="w-5 h-5 text-emerald-200" />
@@ -925,241 +808,362 @@ export default function Dashboard() {
                       Get AI-powered explanations of Kenya's supreme law. Learn about your fundamental rights, 
                       how government works, and your role in democracy with simple, clear explanations.
                     </p>
-                  </div>
 
-                  <div className="hidden lg:block ml-8">
-                    <Link href="/constitution">
-                      <motion.div
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-center hover:bg-white/30 transition-all duration-300 cursor-pointer border border-white/20"
-                      >
-                        <Scale className="w-12 h-12 mx-auto mb-3 text-white" />
-                        <div className="text-lg font-semibold mb-2">Explore Now</div>
-                        <div className="text-sm text-emerald-100 mb-4">AI-Powered Guide</div>
-                        <div className="flex items-center justify-center gap-2 text-sm font-medium">
-                          <span>Get Started</span>
-                          <ArrowUpRight className="w-4 h-4" />
-                        </div>
-                      </motion.div>
-                    </Link>
-                  </div>
-                </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        {/* Content already displayed above */}
+                      </div>
 
-                {/* Mobile CTA */}
-                <div className="lg:hidden mt-6">
-                  <Link href="/constitution">
-                    <Button 
-                      size="lg" 
-                      className="w-full bg-white/20 hover:bg-white/30 text-white border-white/20 backdrop-blur-sm"
-                    >
-                      <Scale className="w-5 h-5 mr-2" />
-                      Explore Constitution
-                      <ArrowUpRight className="w-4 h-4 ml-2" />
-                    </Button>
-                  </Link>
-                </div>
+                      <div className="hidden lg:block ml-8">
+                        <Link href="/constitution">
+                          <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-center hover:bg-white/30 transition-all duration-300 cursor-pointer border border-white/20"
+                          >
+                            <Scale className="w-12 h-12 mx-auto mb-3 text-white" />
+                            <div className="text-lg font-semibold mb-2">Explore Now</div>
+                            <div className="text-sm text-emerald-100 mb-4">AI-Powered Guide</div>
+                            <div className="flex items-center justify-center gap-2 text-sm font-medium">
+                              <span>Get Started</span>
+                              <ArrowUpRight className="w-4 h-4" />
+                            </div>
+                          </motion.div>
+                        </Link>
+                      </div>
+                    </div>
+
+                    {/* Mobile CTA */}
+                    <div className="lg:hidden mt-6">
+                      <Link href="/constitution">
+                        <Button 
+                          size="lg" 
+                          className="w-full bg-white/20 hover:bg-white/30 text-white border-white/20 backdrop-blur-sm"
+                        >
+                          <Scale className="w-5 h-5 mr-2" />
+                          Explore Constitution
+                          <ArrowUpRight className="w-4 h-4 ml-2" />
+                        </Button>
+                      </Link>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           </motion.div>
 
-          {/* Main Dashboard Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+          {/* Main Dashboard Grid - Quick Actions Full Width */}
+          <div className="mb-12">
             
-            {/* Quick Actions */}
+            {/* Quick Actions - Full Width */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4, duration: 0.6 }}
-              className="lg:col-span-1"
-            >
-              <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Zap className="w-5 h-5 text-purple-600" />
-                    Quick Actions
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4 max-h-80 overflow-y-auto">
-                  {/* Constitution Card - Featured */}
-                  <Link href="/constitution">
-                    <motion.div
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="p-4 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-emerald-200 hover:border-teal-300 transition-all duration-200 cursor-pointer group relative overflow-hidden"
-                    >
-                      {/* Special highlight indicator */}
-                      <div className="absolute top-2 right-2">
-                        <div className="flex items-center gap-1 bg-emerald-600 text-white px-2 py-1 rounded-full text-xs font-medium">
-                          <Scale className="w-3 h-3" />
-                          Important
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-emerald-100 text-emerald-600 group-hover:bg-teal-100 group-hover:text-teal-600 transition-colors duration-200">
-                          <Scale className="w-5 h-5" />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900">Kenya Constitution</h3>
-                          <p className="text-sm text-gray-600">Learn your rights & governance</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="outline" className="text-xs px-2 py-0.5 border-emerald-200 text-emerald-700">
-                              AI Guide
-                            </Badge>
-                            <Badge variant="outline" className="text-xs px-2 py-0.5 border-emerald-200 text-emerald-700">
-                              2010
-                            </Badge>
-                          </div>
-                        </div>
-                        <ArrowUpRight className="w-4 h-4 text-gray-400 ml-auto group-hover:text-teal-500 transition-colors duration-200" />
-                      </div>
-                    </motion.div>
-                  </Link>
-
-                  <Link href="/sentiment-analysis">
-                    <motion.div
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="p-4 rounded-xl bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-100 hover:border-purple-200 transition-all duration-200 cursor-pointer group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-blue-100 text-blue-600 group-hover:bg-purple-100 group-hover:text-purple-600 transition-colors duration-200">
-                          <TrendingUp className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-900">Sentiment Analysis</h3>
-                          <p className="text-sm text-gray-600">Analyze political sentiment</p>
-                        </div>
-                        <ArrowUpRight className="w-4 h-4 text-gray-400 ml-auto group-hover:text-purple-500 transition-colors duration-200" />
-                      </div>
-                    </motion.div>
-                  </Link>
-
-                  <Link href="/fact-check">
-                    <motion.div
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="p-4 rounded-xl bg-gradient-to-r from-green-50 to-blue-50 border border-green-100 hover:border-blue-200 transition-all duration-200 cursor-pointer group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-green-100 text-green-600 group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors duration-200">
-                          <Shield className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-900">Fact Check</h3>
-                          <p className="text-sm text-gray-600">Verify political claims</p>
-                        </div>
-                        <ArrowUpRight className="w-4 h-4 text-gray-400 ml-auto group-hover:text-blue-500 transition-colors duration-200" />
-                      </div>
-                    </motion.div>
-                  </Link>
-
-                  <Link href="/media-bias">
-                    <motion.div
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="p-4 rounded-xl bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-100 hover:border-orange-200 transition-all duration-200 cursor-pointer group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-yellow-100 text-yellow-600 group-hover:bg-orange-100 group-hover:text-orange-600 transition-colors duration-200">
-                          <Eye className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-900">Media Bias</h3>
-                          <p className="text-sm text-gray-600">Detect bias in media</p>
-                        </div>
-                        <ArrowUpRight className="w-4 h-4 text-gray-400 ml-auto group-hover:text-orange-500 transition-colors duration-200" />
-                      </div>
-                    </motion.div>
-                  </Link>
-
-                  {/* NEW AI Features Demo Link */}
-                  <Link href="/ai-features-demo">
-                    <motion.div
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="p-4 rounded-xl bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 hover:border-blue-300 transition-all duration-200 cursor-pointer group relative overflow-hidden"
-                    >
-                      {/* Special highlight indicator */}
-                      <div className="absolute top-2 right-2">
-                        <div className="flex items-center gap-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-2 py-1 rounded-full text-xs font-medium">
-                          <Zap className="w-3 h-3" />
-                          NEW
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-gradient-to-r from-purple-500 to-blue-500 text-white group-hover:from-purple-600 group-hover:to-blue-600 transition-all duration-200">
-                          <Brain className="w-5 h-5" />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900">AI Features Demo</h3>
-                          <p className="text-sm text-gray-600">Try new AI capabilities</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="outline" className="text-xs px-2 py-0.5 border-purple-200 text-purple-700">
-                              Live Demo
-                            </Badge>
-                            <Badge variant="outline" className="text-xs px-2 py-0.5 border-blue-200 text-blue-700">
-                              4 Features
-                            </Badge>
-                          </div>
-                        </div>
-                        <ArrowUpRight className="w-4 h-4 text-gray-400 ml-auto group-hover:text-blue-500 transition-colors duration-200" />
-                      </div>
-                    </motion.div>
-                  </Link>
-
-                  <Link href="/demo-voting">
-                    <motion.div
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="p-4 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-100 hover:border-pink-200 transition-all duration-200 cursor-pointer group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-purple-100 text-purple-600 group-hover:bg-pink-100 group-hover:text-pink-600 transition-colors duration-200">
-                          <Vote className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-900">Demo Voting</h3>
-                          <p className="text-sm text-gray-600">Simulate elections</p>
-                        </div>
-                        <ArrowUpRight className="w-4 h-4 text-gray-400 ml-auto group-hover:text-pink-500 transition-colors duration-200" />
-                      </div>
-                    </motion.div>
-                  </Link>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            {/* Recent Activity */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.6 }}
-              className="lg:col-span-2"
             >
               <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center gap-2">
-                      <Activity className="w-5 h-5 text-green-600" />
-                      Recent Activity
+                      <Zap className="w-5 h-5 text-purple-600" />
+                      Quick Actions
                     </CardTitle>
-                    <Button variant="outline" size="sm" className="text-xs">
-                      View All
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsQuickActionsCollapsed(!isQuickActionsCollapsed)}
+                      className="p-2 h-10 w-10 text-purple-600 hover:bg-purple-100"
+                    >
+                      {isQuickActionsCollapsed ? (
+                        <ChevronDown className="w-5 h-5" />
+                      ) : (
+                        <ChevronUp className="w-5 h-5" />
+                      )}
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-1 max-h-80 overflow-y-auto">
-                    {recentActivity.map((activity, index) => (
-                      <ActivityItem
-                        key={activity.id}
-                        activity={activity}
-                        index={index}
-                      />
-                    ))}
-                  </div>
+                {!isQuickActionsCollapsed && (
+                  <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-6">
+                  {/* Constitution Card - Featured */}
+                  <Link href="/constitution">
+                    <motion.div
+                      whileHover={{ scale: 1.03, y: -5 }}
+                      whileTap={{ scale: 0.97 }}
+                      className="relative group"
+                    >
+                      {/* Card Background with Gradient */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 rounded-2xl blur-lg opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                      
+                      <div className="relative p-6 rounded-2xl bg-white border border-emerald-200 shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden">
+                        {/* Featured Badge */}
+                        <div className="absolute -top-1 -right-1">
+                          <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-3 py-1 rounded-bl-xl rounded-tr-2xl text-xs font-bold shadow-lg">
+                            <Scale className="w-3 h-3 inline mr-1" />
+                            FEATURED
+                          </div>
+                        </div>
+                        
+                        {/* Icon */}
+                        <div className="mb-4">
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center group-hover:from-emerald-200 group-hover:to-teal-200 transition-colors duration-300">
+                            <Scale className="w-6 h-6 text-emerald-600" />
+                          </div>
+                        </div>
+                        
+                        {/* Content */}
+                        <div className="space-y-3">
+                          <div>
+                            <h3 className="text-lg font-bold text-gray-900 group-hover:text-emerald-700 transition-colors duration-300">
+                              Kenya Constitution 2010
+                            </h3>
+                            <p className="text-sm text-gray-600 mt-1">
+                              Learn your fundamental rights and how government works
+                            </p>
+                          </div>
+                          
+                          {/* Tags */}
+                          <div className="flex flex-wrap gap-2">
+                            <span className="px-2 py-1 bg-emerald-50 text-emerald-700 text-xs font-medium rounded-full border border-emerald-200">
+                              AI Guide
+                            </span>
+                            <span className="px-2 py-1 bg-teal-50 text-teal-700 text-xs font-medium rounded-full border border-teal-200">
+                              Interactive
+                            </span>
+                          </div>
+                        </div>
+                        
+                        {/* Action Arrow */}
+                        <div className="absolute bottom-4 right-4">
+                          <ArrowUpRight className="w-5 h-5 text-gray-400 group-hover:text-emerald-600 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-300" />
+                        </div>
+                      </div>
+                    </motion.div>
+                  </Link>
+
+                  {/* Sentiment Analysis Card */}
+                  <Link href="/sentiment-analysis">
+                    <motion.div
+                      whileHover={{ scale: 1.03, y: -5 }}
+                      whileTap={{ scale: 0.97 }}
+                      className="relative group"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl blur-lg opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                      
+                      <div className="relative p-6 rounded-2xl bg-white border border-blue-200 shadow-lg hover:shadow-2xl transition-all duration-300">
+                        <div className="mb-4">
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center group-hover:from-blue-200 group-hover:to-purple-200 transition-colors duration-300">
+                            <TrendingUp className="w-6 h-6 text-blue-600" />
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-3">
+                          <div>
+                            <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-700 transition-colors duration-300">
+                              Sentiment Analysis
+                            </h3>
+                            <p className="text-sm text-gray-600 mt-1">
+                              AI-powered political sentiment tracking
+                            </p>
+                          </div>
+                          
+                          <div className="flex flex-wrap gap-2">
+                            <span className="px-2 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-200">
+                              Real-time
+                            </span>
+                            <span className="px-2 py-1 bg-purple-50 text-purple-700 text-xs font-medium rounded-full border border-purple-200">
+                              47 Counties
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="absolute bottom-4 right-4">
+                          <ArrowUpRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-300" />
+                        </div>
+                      </div>
+                    </motion.div>
+                  </Link>
+
+                  {/* Fact Check Card */}
+                  <Link href="/fact-check">
+                    <motion.div
+                      whileHover={{ scale: 1.03, y: -5 }}
+                      whileTap={{ scale: 0.97 }}
+                      className="relative group"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-br from-green-500 to-blue-500 rounded-2xl blur-lg opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                      
+                      <div className="relative p-6 rounded-2xl bg-white border border-green-200 shadow-lg hover:shadow-2xl transition-all duration-300">
+                        <div className="mb-4">
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-100 to-blue-100 flex items-center justify-center group-hover:from-green-200 group-hover:to-blue-200 transition-colors duration-300">
+                            <Shield className="w-6 h-6 text-green-600" />
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-3">
+                          <div>
+                            <h3 className="text-lg font-bold text-gray-900 group-hover:text-green-700 transition-colors duration-300">
+                              Fact Check
+                            </h3>
+                            <p className="text-sm text-gray-600 mt-1">
+                              Verify political claims with AI precision
+                            </p>
+                          </div>
+                          
+                          <div className="flex flex-wrap gap-2">
+                            <span className="px-2 py-1 bg-green-50 text-green-700 text-xs font-medium rounded-full border border-green-200">
+                              Verified
+                            </span>
+                            <span className="px-2 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-200">
+                              Trusted Sources
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="absolute bottom-4 right-4">
+                          <ArrowUpRight className="w-5 h-5 text-gray-400 group-hover:text-green-600 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-300" />
+                        </div>
+                      </div>
+                    </motion.div>
+                  </Link>
+
+                  {/* Media Bias Card */}
+                  <Link href="/media-bias">
+                    <motion.div
+                      whileHover={{ scale: 1.03, y: -5 }}
+                      whileTap={{ scale: 0.97 }}
+                      className="relative group"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl blur-lg opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                      
+                      <div className="relative p-6 rounded-2xl bg-white border border-orange-200 shadow-lg hover:shadow-2xl transition-all duration-300">
+                        <div className="mb-4">
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center group-hover:from-orange-200 group-hover:to-red-200 transition-colors duration-300">
+                            <Eye className="w-6 h-6 text-orange-600" />
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-3">
+                          <div>
+                            <h3 className="text-lg font-bold text-gray-900 group-hover:text-orange-700 transition-colors duration-300">
+                              Media Bias Detection
+                            </h3>
+                            <p className="text-sm text-gray-600 mt-1">
+                              Identify bias in news and political content
+                            </p>
+                          </div>
+                          
+                          <div className="flex flex-wrap gap-2">
+                            <span className="px-2 py-1 bg-orange-50 text-orange-700 text-xs font-medium rounded-full border border-orange-200">
+                              Smart Analysis
+                            </span>
+                            <span className="px-2 py-1 bg-red-50 text-red-700 text-xs font-medium rounded-full border border-red-200">
+                              Multi-Source
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="absolute bottom-4 right-4">
+                          <ArrowUpRight className="w-5 h-5 text-gray-400 group-hover:text-orange-600 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-300" />
+                        </div>
+                      </div>
+                    </motion.div>
+                  </Link>
+
+                  {/* AI Features Demo Card */}
+                  <Link href="/ai-features-demo">
+                    <motion.div
+                      whileHover={{ scale: 1.03, y: -5 }}
+                      whileTap={{ scale: 0.97 }}
+                      className="relative group"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-br from-purple-500 via-blue-500 to-indigo-600 rounded-2xl blur-lg opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                      
+                      <div className="relative p-6 rounded-2xl bg-white border border-purple-200 shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden">
+                        {/* NEW Badge */}
+                        <div className="absolute -top-1 -right-1">
+                          <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1 rounded-bl-xl rounded-tr-2xl text-xs font-bold shadow-lg">
+                            <Zap className="w-3 h-3 inline mr-1" />
+                            NEW
+                          </div>
+                        </div>
+                        
+                        <div className="mb-4">
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center shadow-lg">
+                            <Brain className="w-6 h-6 text-white" />
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-3">
+                          <div>
+                            <h3 className="text-lg font-bold text-gray-900 group-hover:text-purple-700 transition-colors duration-300">
+                              AI Features Demo
+                            </h3>
+                            <p className="text-sm text-gray-600 mt-1">
+                              Experience cutting-edge AI capabilities
+                            </p>
+                          </div>
+                          
+                          <div className="flex flex-wrap gap-2">
+                            <span className="px-2 py-1 bg-purple-50 text-purple-700 text-xs font-medium rounded-full border border-purple-200">
+                              Live Demo
+                            </span>
+                            <span className="px-2 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-200">
+                              4 Features
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="absolute bottom-4 right-4">
+                          <ArrowUpRight className="w-5 h-5 text-gray-400 group-hover:text-purple-600 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-300" />
+                        </div>
+                      </div>
+                    </motion.div>
+                  </Link>
+
+                  {/* Demo Voting Card */}
+                  <Link href="/demo-voting">
+                    <motion.div
+                      whileHover={{ scale: 1.03, y: -5 }}
+                      whileTap={{ scale: 0.97 }}
+                      className="relative group"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl blur-lg opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                      
+                      <div className="relative p-6 rounded-2xl bg-white border border-purple-200 shadow-lg hover:shadow-2xl transition-all duration-300">
+                        <div className="mb-4">
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center group-hover:from-purple-200 group-hover:to-pink-200 transition-colors duration-300">
+                            <Vote className="w-6 h-6 text-purple-600" />
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-3">
+                          <div>
+                            <h3 className="text-lg font-bold text-gray-900 group-hover:text-purple-700 transition-colors duration-300">
+                              Election Simulation
+                            </h3>
+                            <p className="text-sm text-gray-600 mt-1">
+                              Simulate and predict election outcomes
+                            </p>
+                          </div>
+                          
+                          <div className="flex flex-wrap gap-2">
+                            <span className="px-2 py-1 bg-purple-50 text-purple-700 text-xs font-medium rounded-full border border-purple-200">
+                              Interactive
+                            </span>
+                            <span className="px-2 py-1 bg-pink-50 text-pink-700 text-xs font-medium rounded-full border border-pink-200">
+                              Predictive
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="absolute bottom-4 right-4">
+                          <ArrowUpRight className="w-5 h-5 text-gray-400 group-hover:text-purple-600 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-300" />
+                        </div>
+                      </div>
+                    </motion.div>
+                  </Link>
                 </CardContent>
+                )}
               </Card>
             </motion.div>
           </div>
@@ -1181,10 +1185,23 @@ export default function Dashboard() {
                   <div className="flex items-center gap-2 ml-auto">
                     <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                     <Badge variant="secondary" className="text-xs">AI Powered</Badge>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsTrendingTopicsCollapsed(!isTrendingTopicsCollapsed)}
+                      className="p-1 h-8 w-8"
+                    >
+                      {isTrendingTopicsCollapsed ? (
+                        <ChevronDown className="w-4 h-4" />
+                      ) : (
+                        <ChevronUp className="w-4 h-4" />
+                      )}
+                    </Button>
                   </div>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              {!isTrendingTopicsCollapsed && (
+                <CardContent>
                 <div className="space-y-4 max-h-80 overflow-y-auto">
                   {loading ? (
                     <div className="space-y-3">
@@ -1261,6 +1278,7 @@ export default function Dashboard() {
                   )}
                 </div>
               </CardContent>
+              )}
             </Card>
 
             {/* Government Approval */}
@@ -1272,10 +1290,23 @@ export default function Dashboard() {
                   <div className="flex items-center gap-2 ml-auto">
                     <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                     <Badge variant="secondary" className="text-xs">AI Analysis</Badge>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsGovernmentApprovalCollapsed(!isGovernmentApprovalCollapsed)}
+                      className="p-1 h-8 w-8"
+                    >
+                      {isGovernmentApprovalCollapsed ? (
+                        <ChevronDown className="w-4 h-4" />
+                      ) : (
+                        <ChevronUp className="w-4 h-4" />
+                      )}
+                    </Button>
                   </div>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              {!isGovernmentApprovalCollapsed && (
+                <CardContent>
                 <div className="flex items-center justify-center h-64">
                   <div className="relative w-48 h-48">
                     <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
@@ -1351,6 +1382,7 @@ export default function Dashboard() {
                   </div>
                 )}
               </CardContent>
+              )}
             </Card>
           </motion.div>
 
@@ -1669,223 +1701,45 @@ export default function Dashboard() {
               )}
             </motion.div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Multi-Language Political Q&A Bot */}
-              <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50/50 to-blue-50/50">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-purple-900">
-                    <MessageSquare className="w-5 h-5 text-purple-600" />
-                    Multi-Language Political Q&A Bot
-                    <Badge variant="secondary" className="ml-2 text-xs bg-purple-100 text-purple-700">
-                      NEW
-                    </Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-sm text-gray-600">
-                    Ask political questions in English, Kiswahili, Kikuyu, or Luo and get AI-powered responses with Kenyan context.
-                  </p>
-                  
-                  <div className="flex gap-2">
-                    <select
-                      value={selectedLanguage}
-                      onChange={(e) => setSelectedLanguage(e.target.value)}
-                      className="px-3 py-2 border border-purple-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    >
-                      <option value="en">English</option>
-                      <option value="sw">Kiswahili</option>
-                      <option value="ki">Kikuyu</option>
-                      <option value="luo">Luo</option>
-                    </select>
-                  </div>
+            {/* Crisis Early Warning System - Enhanced - Full Width */}
+            <div className="mb-8">
+              <CrisisEarlyWarningCard />
+            </div>
 
-                  <div className="space-y-3">
-                    <Input
-                      placeholder="Ask me about Kenyan politics..."
-                      value={chatQuery}
-                      onChange={(e) => setChatQuery(e.target.value)}
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter' && !isChatLoading) {
-                          handleAiChat(chatQuery, selectedLanguage);
-                        }
-                      }}
-                      disabled={isChatLoading}
-                    />
-                    <Button 
-                      onClick={() => handleAiChat(chatQuery, selectedLanguage)}
-                      disabled={isChatLoading || !chatQuery.trim()}
-                      className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
-                    >
-                      {isChatLoading ? (
-                        <>
-                          <motion.div
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                            className="mr-2"
-                          >
-                            <Brain className="w-4 h-4" />
-                          </motion.div>
-                          AI Thinking...
-                        </>
-                      ) : (
-                        <>
-                          <MessageSquare className="w-4 h-4 mr-2" />
-                          Ask AI
-                        </>
-                      )}
-                    </Button>
-                  </div>
-
-                  {aiChatResponse && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="p-4 bg-white rounded-lg border border-purple-200 mt-4"
-                    >
-                      <div className="flex items-center gap-2 mb-2">
-                        <Brain className="w-4 h-4 text-purple-600" />
-                        <span className="text-sm font-medium text-purple-900">AI Response:</span>
-                      </div>
-                      <p className="text-sm text-gray-700">{aiChatResponse}</p>
-                    </motion.div>
-                  )}
-
-                  <div className="flex gap-2">
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={() => handleAiChat("What are the key political issues in Kenya today?", selectedLanguage)}
-                      disabled={isChatLoading}
-                    >
-                      Sample: Key Issues
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={() => handleAiChat("Explain devolution in Kenya", selectedLanguage)}
-                      disabled={isChatLoading}
-                    >
-                      Sample: Devolution
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Crisis Early Warning System */}
-              <Card className="border-2 border-red-200 bg-gradient-to-br from-red-50/50 to-orange-50/50">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-red-900">
-                    <AlertTriangle className="w-5 h-5 text-red-600" />
-                    Political Crisis Early Warning
-                    <Badge variant="secondary" className="ml-2 text-xs bg-red-100 text-red-700">
-                      LIVE
-                    </Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-sm text-gray-600">
-                    Real-time monitoring of political stability indicators across all 47 counties.
-                  </p>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-center p-3 bg-white rounded-lg border border-red-100">
-                      <div className="text-2xl font-bold text-red-600">
-                        {crisisAlerts.length}
-                      </div>
-                      <div className="text-xs text-gray-600">Active Alerts</div>
-                    </div>
-                    <div className="text-center p-3 bg-white rounded-lg border border-green-100">
-                      <div className="text-2xl font-bold text-green-600">
-                        {47 - crisisAlerts.length}
-                      </div>
-                      <div className="text-xs text-gray-600">Stable Counties</div>
-                    </div>
-                  </div>
-
-                  {crisisAlerts.length > 0 ? (
-                    <div className="space-y-3 max-h-40 overflow-y-auto">
-                      {crisisAlerts.map((alert, index) => (
-                        <motion.div
-                          key={index}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.1 }}
-                          className={`p-3 rounded-lg border-l-4 ${
-                            alert.level === 'HIGH' || alert.level === 'CRITICAL' ? 'border-red-500 bg-red-50' :
-                            alert.level === 'MEDIUM' ? 'border-yellow-500 bg-yellow-50' :
-                            'border-blue-500 bg-blue-50'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <div className="font-medium text-sm text-gray-900">
-                                {alert.location || `Alert ${index + 1}`}
-                              </div>
-                              <div className="text-xs text-gray-600">
-                                {alert.indicators?.length > 0 
-                                  ? `Indicators: ${alert.indicators.slice(0, 2).join(', ')}` 
-                                  : 'Routine monitoring in progress'}
-                              </div>
-                              {alert.score && (
-                                <div className="text-xs text-gray-500 mt-1">
-                                  Risk Score: {(alert.score * 100).toFixed(0)}%
-                                </div>
-                              )}
-                            </div>
-                            <Badge 
-                              variant="outline"
-                              className={`text-xs ${
-                                alert.level === 'HIGH' || alert.level === 'CRITICAL' ? 'border-red-200 text-red-700' :
-                                alert.level === 'MEDIUM' ? 'border-yellow-200 text-yellow-700' :
-                                'border-blue-200 text-blue-700'
-                              }`}
-                            >
-                              {alert.level || 'LOW'}
-                            </Badge>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center p-6 bg-green-50 rounded-lg border border-green-200">
-                      <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                      <div className="text-sm font-medium text-green-900">All Clear</div>
-                      <div className="text-xs text-green-700">No crisis alerts detected</div>
-                    </div>
-                  )}
-
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full border-red-200 text-red-700 hover:bg-red-50"
-                    onClick={fetchCrisisAlerts}
-                  >
-                    <Zap className="w-4 h-4 mr-2" />
-                    Refresh Alerts
-                  </Button>
-                </CardContent>
-              </Card>
-
-
-
-              {/* County-Specific Analysis */}
+            {/* County-Specific Analysis - Full Width Below Crisis Warning */}
+            <div className="mb-8">
               <Card className="border-0 shadow-xl bg-gradient-to-br from-indigo-50 via-blue-50 to-cyan-50 overflow-hidden relative">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-200/30 to-indigo-200/30 rounded-full -translate-y-16 translate-x-16"></div>
                 <CardHeader className="relative">
-                  <CardTitle className="flex items-center gap-3 text-indigo-900">
-                    <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl">
-                      <MapPin className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                      <div className="text-lg font-bold">County Analysis</div>
-                      <div className="text-sm text-indigo-600 font-normal">AI-Powered Insights</div>
-                    </div>
-                    <Badge className="ml-auto bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-0">
-                      47 Counties
-                    </Badge>
-                  </CardTitle>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-3 text-indigo-900">
+                      <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl">
+                        <MapPin className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <div className="text-lg font-bold">County Analysis</div>
+                        <div className="text-sm text-indigo-600 font-normal">AI-Powered Insights</div>
+                      </div>
+                      <Badge className="ml-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-0">
+                        47 Counties
+                      </Badge>
+                    </CardTitle>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsCountyAnalysisCollapsed(!isCountyAnalysisCollapsed)}
+                      className="p-2 h-10 w-10 text-indigo-600 hover:bg-indigo-100"
+                    >
+                      {isCountyAnalysisCollapsed ? (
+                        <ChevronDown className="w-5 h-5" />
+                      ) : (
+                        <ChevronUp className="w-5 h-5" />
+                      )}
+                    </Button>
+                  </div>
                 </CardHeader>
-                <CardContent className="space-y-6 relative">
+                {!isCountyAnalysisCollapsed && (
+                  <CardContent className="space-y-6 relative">
                   <p className="text-sm text-indigo-700 bg-indigo-50 p-3 rounded-lg border border-indigo-200">
                     Comprehensive AI analysis of political landscape, governance effectiveness, economic indicators, and development projects for all 47 Kenyan counties using real-time data sources.
                   </p>
@@ -1986,6 +1840,7 @@ export default function Dashboard() {
                     )}
                   </Button>
                 </CardContent>
+                )}
               </Card>
             </div>
 

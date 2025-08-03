@@ -14,10 +14,11 @@ export interface AIResponse {
       };
     }>;
   };
+  output?: any; // For Genkit responses
   [key: string]: any;
 }
 
-export function validateAIResponse(response: AIResponse | null | undefined): string {
+export function validateAIResponse(response: any): string {
   if (!response) {
     throw new Error('No AI response received');
   }
@@ -25,8 +26,12 @@ export function validateAIResponse(response: AIResponse | null | undefined): str
   // Handle different response formats
   let text: string | undefined;
   
-  // Check direct text property first
-  if (response.text && typeof response.text === 'string') {
+  // Check Genkit output format first
+  if (response.output && typeof response.output === 'string') {
+    text = response.output;
+  }
+  // Check direct text property
+  else if (response.text && typeof response.text === 'string') {
     text = response.text;
   }
   // Check custom.choices format (DeepSeek direct API)
