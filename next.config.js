@@ -159,6 +159,11 @@ const nextConfig = {
         destination: '/dashboard',
         permanent: false,
       },
+       {
+        source: '/live-tally',
+        destination: '/dashboard',
+        permanent: false,
+      },
       {
         source: '/crowd-sourced-intel',
         destination: '/dashboard',
