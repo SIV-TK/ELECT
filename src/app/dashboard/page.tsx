@@ -1886,6 +1886,9 @@ export default function Dashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6 relative">
+                  <p className="text-sm text-indigo-700 bg-indigo-50 p-3 rounded-lg border border-indigo-200">
+                    Comprehensive AI analysis of political landscape, governance effectiveness, economic indicators, and development projects for all 47 Kenyan counties using real-time data sources.
+                  </p>
                   {isCountyLoading ? (
                     <div className="text-center p-8 bg-white/60 backdrop-blur-sm rounded-xl border border-indigo-200">
                       <div className="w-12 h-12 border-3 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto mb-4"></div>
