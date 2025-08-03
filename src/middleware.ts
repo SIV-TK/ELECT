@@ -31,6 +31,7 @@ const publicRoutes = [
   '/api/auth',
   '/api/health',
   '/api/scraper-health',
+  '/api/test',
   '/_next',
   '/favicon.ico',
   '/manifest.json',
@@ -57,7 +58,6 @@ const protectedApiRoutes = [
   '/api/predictive-heatmaps',
   '/api/realtime-sentiment',
   '/api/realtime',
-  '/api/scraper-health',
   '/api/voter-education',
   '/api/voter-registration'
 ];
