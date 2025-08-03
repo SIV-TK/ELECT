@@ -44,7 +44,6 @@ const protectedApiRoutes = [
   '/api/ai-chat-multilang',
   '/api/ai-dashboards',
   '/api/analyze-bias',
-  '/api/analyze-sentiment',
   '/api/campaign-advice',
   '/api/constitution',
   '/api/corruption-risk',
@@ -62,6 +61,16 @@ const protectedApiRoutes = [
   '/api/voter-registration'
 ];
 
+// Define public API routes that don't require authentication
+const publicApiRoutes = [
+  '/api/health',
+  '/api/scraper-health',
+  '/api/test',
+  '/api/auth',
+  '/api/analyze-sentiment',  // Make sentiment analysis public
+  '/api/services-test'       // Add services test endpoint
+];
+
 function isProtectedRoute(pathname: string): boolean {
   // Check if it's a protected page route
   if (protectedRoutes.some(route => pathname.startsWith(route))) {
@@ -77,7 +86,8 @@ function isProtectedRoute(pathname: string): boolean {
 }
 
 function isPublicRoute(pathname: string): boolean {
-  return publicRoutes.some(route => pathname.startsWith(route));
+  return publicRoutes.some(route => pathname.startsWith(route)) ||
+         publicApiRoutes.some(route => pathname.startsWith(route));
 }
 
 export async function middleware(request: NextRequest) {
@@ -108,9 +118,7 @@ export async function middleware(request: NextRequest) {
     );
     
     // Skip CSRF for public API endpoints and tools
-    const isPublicApiEndpoint = pathname.startsWith('/api/health') || 
-                               pathname.startsWith('/api/auth') ||
-                               pathname.startsWith('/api/scraper-health');
+    const isPublicApiEndpoint = publicApiRoutes.some(route => pathname.startsWith(route));
     
     if (!isPublicApiEndpoint && !isApiTool) {
       // Check if the request comes from the same origin or has CSRF token
