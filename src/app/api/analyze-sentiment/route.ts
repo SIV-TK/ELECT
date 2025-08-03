@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { WebScraper } from '@/lib/web-scraper';
+import { productionAI } from '@/lib/production-ai';
 
 // Direct sentiment analysis function that uses DeepSeek API directly
 async function analyzeSentimentDirect(candidateName: string, topic: string) {
@@ -116,24 +117,57 @@ Ensure your analysis is politically neutral, factually grounded, and reflects cu
 
 export async function POST(request: NextRequest) {
   try {
-    const { candidateName, topic = 'Overall Political Performance' } = await request.json();
+    const { text } = await request.json();
     
-    if (!candidateName) {
+    if (!text || typeof text !== 'string') {
       return NextResponse.json(
-        { error: 'candidateName is required' },
+        { error: 'Text is required and must be a string' },
         { status: 400 }
       );
     }
 
-    // Use direct sentiment analysis
-    const result = await analyzeSentimentDirect(candidateName, topic);
+    // Use production AI service with fallback
+    const result = await productionAI.analyzeSentiment(text);
     
-    return NextResponse.json({ success: true, data: result });
+    if (result.success) {
+      return NextResponse.json({
+        success: true,
+        sentiment: result.data,
+        fallback: result.fallback || false,
+        source: result.source
+      });
+    } else {
+      return NextResponse.json(
+        { error: result.error || 'Analysis failed' },
+        { status: 500 }
+      );
+    }
+
   } catch (error) {
     console.error('Sentiment analysis error:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Analysis failed' },
+      { error: 'Internal server error' },
       { status: 500 }
+    );
+  }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    // Health check for sentiment analysis
+    const health = await productionAI.healthCheck();
+    
+    return NextResponse.json({
+      service: 'sentiment-analysis',
+      status: health.status,
+      available: health.status === 'healthy',
+      details: health.details
+    });
+  } catch (error) {
+    console.error('Sentiment analysis health check error:', error);
+    return NextResponse.json(
+      { service: 'sentiment-analysis', status: 'down', error: 'Health check failed' },
+      { status: 503 }
     );
   }
 }
