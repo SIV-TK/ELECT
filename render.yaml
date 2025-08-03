@@ -2,7 +2,7 @@ services:
   - type: web
     name: elect-platform
     runtime: node
-    buildCommand: npm install --legacy-peer-deps && npm run build
+    buildCommand: node validate-env.js && npm install --legacy-peer-deps && npm run build
     startCommand: npm start
     plan: free
     env: node
