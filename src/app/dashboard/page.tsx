@@ -316,7 +316,7 @@ export default function Dashboard() {
   const [chatQuery, setChatQuery] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [crisisAlerts, setCrisisAlerts] = useState<any[]>([]);
-  const [factCheckReports, setFactCheckReports] = useState<any[]>([]);
+
   const [countyAnalysisData, setCountyAnalysisData] = useState<any>(null);
   const [selectedCounty, setSelectedCounty] = useState('Nairobi');
   const [isCountyLoading, setIsCountyLoading] = useState(false);
@@ -455,25 +455,7 @@ export default function Dashboard() {
     }
   };
 
-  // Fact check function
-  const fetchFactCheckReports = async () => {
-    try {
-      const response = await fetch('/api/fact-check', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          statement: 'Recent political developments in Kenya'
-        })
-      });
-      
-      const data = await response.json();
-      if (data.statement) {
-        setFactCheckReports([data].slice(0, 2)); // Show latest reports
-      }
-    } catch (error) {
-      console.error('Fact check error:', error);
-    }
-  };
+
 
   // County analysis function
   const fetchCountyAnalysis = async (county = 'Nairobi') => {
@@ -816,8 +798,7 @@ export default function Dashboard() {
     fetchTrendingTopics();
     fetchGovPopularity();
     fetchPoliticianSentiments();
-    fetchCrisisAlerts();
-    fetchFactCheckReports();
+
     // Don't auto-fetch county analysis on page load
     
     // Refresh data every 24 hours (86,400,000 milliseconds)
@@ -825,16 +806,14 @@ export default function Dashboard() {
     const topicsInterval = setInterval(fetchTrendingTopics, 86400000);
     const popularityInterval = setInterval(fetchGovPopularity, 86400000);
     const sentimentInterval = setInterval(fetchPoliticianSentiments, 86400000);
-    const crisisInterval = setInterval(fetchCrisisAlerts, 300000); // Every 5 minutes for crisis alerts
-    const factCheckInterval = setInterval(fetchFactCheckReports, 1800000); // Every 30 minutes
+
     
     return () => {
       clearInterval(dashboardInterval);
       clearInterval(topicsInterval);
       clearInterval(popularityInterval);
       clearInterval(sentimentInterval);
-      clearInterval(crisisInterval);
-      clearInterval(factCheckInterval);
+
     };
   }, []);
 
@@ -1887,94 +1866,7 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
 
-              {/* Fact Checker */}
-              <Card className="border-2 border-green-200 bg-gradient-to-br from-green-50/50 to-teal-50/50">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-green-900">
-                    <Shield className="w-5 h-5 text-green-600" />
-                    Fact Checker
-                    <Badge variant="secondary" className="ml-2 text-xs bg-green-100 text-green-700">
-                      AI POWERED
-                    </Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-sm text-gray-600">
-                    AI-powered verification of political statements using real-time Kenyan data sources.
-                  </p>
 
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="text-center p-3 bg-white rounded-lg border border-green-100">
-                      <div className="text-lg font-bold text-green-600">95.8%</div>
-                      <div className="text-xs text-gray-600">Accuracy</div>
-                    </div>
-                    <div className="text-center p-3 bg-white rounded-lg border border-blue-100">
-                      <div className="text-lg font-bold text-blue-600">
-                        {factCheckReports.length * 18}
-                      </div>
-                      <div className="text-xs text-gray-600">Verified Today</div>
-                    </div>
-                    <div className="text-center p-3 bg-white rounded-lg border border-purple-100">
-                      <div className="text-lg font-bold text-purple-600">
-                        {factCheckReports.length}
-                      </div>
-                      <div className="text-xs text-gray-600">Recent Checks</div>
-                    </div>
-                  </div>
-
-                  {factCheckReports.length > 0 ? (
-                    <div className="space-y-3 max-h-40 overflow-y-auto">
-                      {factCheckReports.map((report, index) => (
-                        <motion.div
-                          key={index}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.1 }}
-                          className={`p-3 rounded-lg border ${
-                            report.verdict === 'true' ? 'border-green-200 bg-green-50' :
-                            report.verdict === 'false' ? 'border-red-200 bg-red-50' :
-                            report.verdict === 'misleading' ? 'border-yellow-200 bg-yellow-50' :
-                            'border-gray-200 bg-gray-50'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="font-medium text-sm text-gray-900">
-                              Statement Verified
-                            </div>
-                            <Badge variant="outline" className={`text-xs ${
-                              report.verdict === 'true' ? 'border-green-200 text-green-700' :
-                              report.verdict === 'false' ? 'border-red-200 text-red-700' :
-                              report.verdict === 'misleading' ? 'border-yellow-200 text-yellow-700' :
-                              'border-gray-200 text-gray-700'
-                            }`}>
-                              {report.verdict?.toUpperCase() || 'VERIFIED'} - {Math.round((report.confidence || 0.75) * 100)}%
-                            </Badge>
-                          </div>
-                          <div className="text-xs text-gray-600">
-                            {report.explanation || 'Political statement verified against current data sources'}
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
-                      <CheckCircle className="w-6 h-6 text-green-600 mx-auto mb-1" />
-                      <div className="text-sm font-medium text-green-900">Ready to Verify</div>
-                      <div className="text-xs text-green-700">Submit statements for fact-checking</div>
-                    </div>
-                  )}
-
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full border-green-200 text-green-700 hover:bg-green-50"
-                    onClick={fetchFactCheckReports}
-                  >
-                    <Shield className="w-4 h-4 mr-2" />
-                    Run Fact Check
-                  </Button>
-                </CardContent>
-              </Card>
 
               {/* County-Specific Analysis */}
               <Card className="border-0 shadow-xl bg-gradient-to-br from-indigo-50 via-blue-50 to-cyan-50 overflow-hidden relative">
@@ -2130,8 +2022,7 @@ export default function Dashboard() {
                         <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
                           <Shield className="w-6 h-6 text-green-600" />
                         </div>
-                        <h4 className="font-semibold text-gray-900 mb-2">Fact Check</h4>
-                        <p className="text-sm text-gray-600">AI-powered verification of political statements and claims</p>
+
                       </div>
                       
                       <div className="text-center">
