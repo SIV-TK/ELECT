@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { WebScraper } from '@/lib/web-scraper';
-import { productionAI } from '@/lib/production-ai';
+import { renderAI } from '@/lib/render-ai';
 
 // Direct sentiment analysis function that uses DeepSeek API directly
 async function analyzeSentimentDirect(candidateName: string, topic: string) {

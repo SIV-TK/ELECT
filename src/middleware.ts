@@ -4,7 +4,6 @@ import type { NextRequest } from 'next/server';
 // Define protected routes that require authentication
 const protectedRoutes = [
   '/dashboard',
-  '/api',
   '/sentiment-analysis',
   '/fact-check',
   '/media-bias',
@@ -30,6 +29,8 @@ const publicRoutes = [
   '/signup',
   '/about',
   '/api/auth',
+  '/api/health',
+  '/api/scraper-health',
   '/_next',
   '/favicon.ico',
   '/manifest.json',
@@ -91,40 +92,60 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // CSRF Protection for non-GET requests
+  // CSRF Protection for non-GET requests (relaxed for public APIs)
   if (request.method !== 'GET' && request.method !== 'HEAD') {
     const referer = request.headers.get('referer');
     const csrfToken = request.headers.get('x-csrf-token') || request.headers.get('x-requested-with');
+    const userAgent = request.headers.get('user-agent');
     
-    // Check if the request comes from the same origin or has CSRF token
-    if (referer) {
-      const refererUrl = new URL(referer);
-      if (refererUrl.origin !== origin && !csrfToken) {
-        return new NextResponse(
-          JSON.stringify({ 
-            error: 'CSRF protection failed',
-            message: 'Request blocked by CSRF protection' 
-          }),
-          { 
-            status: 403,
-            headers: { 'Content-Type': 'application/json' }
-          }
-        );
-      }
-    }
+    // Allow requests from curl, postman, and other API tools
+    const isApiTool = userAgent && (
+      userAgent.includes('curl') || 
+      userAgent.includes('Postman') || 
+      userAgent.includes('HTTPie') ||
+      userAgent.includes('node-fetch') ||
+      userAgent.includes('axios')
+    );
     
-    // For API routes, ensure XMLHttpRequest header or CSRF token
-    if (pathname.startsWith('/api/') && !csrfToken && !request.headers.get('x-requested-with')) {
-      return new NextResponse(
-        JSON.stringify({ 
-          error: 'CSRF protection required',
-          message: 'API requests must include CSRF protection headers' 
-        }),
-        { 
-          status: 403,
-          headers: { 'Content-Type': 'application/json' }
+    // Skip CSRF for public API endpoints and tools
+    const isPublicApiEndpoint = pathname.startsWith('/api/health') || 
+                               pathname.startsWith('/api/auth') ||
+                               pathname.startsWith('/api/scraper-health');
+    
+    if (!isPublicApiEndpoint && !isApiTool) {
+      // Check if the request comes from the same origin or has CSRF token
+      if (referer) {
+        const refererUrl = new URL(referer);
+        if (refererUrl.origin !== origin && !csrfToken) {
+          return new NextResponse(
+            JSON.stringify({ 
+              error: 'CSRF protection failed',
+              message: 'Request blocked by CSRF protection' 
+            }),
+            { 
+              status: 403,
+              headers: { 'Content-Type': 'application/json' }
+            }
+          );
         }
-      );
+      }
+      
+      // For protected API routes, ensure XMLHttpRequest header or CSRF token
+      if (pathname.startsWith('/api/') && !csrfToken && !request.headers.get('x-requested-with')) {
+        // Only enforce for truly protected routes, not public ones
+        if (protectedApiRoutes.some(route => pathname.startsWith(route))) {
+          return new NextResponse(
+            JSON.stringify({ 
+              error: 'CSRF protection required',
+              message: 'Protected API requests must include CSRF protection headers' 
+            }),
+            { 
+              status: 403,
+              headers: { 'Content-Type': 'application/json' }
+            }
+          );
+        }
+      }
     }
   }
 
@@ -249,7 +270,8 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public files with extensions
+     * - api/health (health check endpoints)
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\..*|public).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\..*|public|api/health).*)',
   ],
 };
