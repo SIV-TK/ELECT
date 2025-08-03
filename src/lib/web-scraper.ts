@@ -9,184 +9,123 @@ interface ScrapedData {
 }
 
 export class WebScraper {
-  private static readonly KENYAN_NEWS_SOURCES = [
-    'https://www.nation.co.ke',
-    'https://www.standardmedia.co.ke',
-    'https://www.kbc.co.ke',
-    'https://www.capitalfm.co.ke'
-  ];
+  static async scrapeKenyanNews(query: string): Promise<ScrapedData[]> {
+    const results: ScrapedData[] = [];
+    
+    try {
+      // Scrape from Citizen Digital
+      const response = await axios.get('https://citizen.digital/news', {
+        timeout: 5000,
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; NewsBot/1.0)' }
+      });
+      
+      const $ = cheerio.load(response.data);
+      
+      $('article, .post, .news-item, .story').slice(0, 5).each((_, element) => {
+        const title = $(element).find('h1, h2, h3, .title, .headline, a').first().text().trim();
+        const content = $(element).find('p, .excerpt, .summary, .content').first().text().trim();
+        
+        if (title && content && title.length > 10) {
+          results.push({
+            title: title.substring(0, 100),
+            content: content.substring(0, 300),
+            source: 'Citizen Digital',
+            timestamp: new Date()
+          });
+        }
+      });
+      
+      console.log(`Scraped ${results.length} real news items from Citizen Digital`);
+    } catch (error) {
+      console.log('Real scraping failed, using fallback');
+    }
 
-  private static readonly KENYAN_POLITICAL_KEYWORDS = [
-    'corruption', 'economy', 'unemployment', 'healthcare', 'education',
-    'infrastructure', 'agriculture', 'devolution', 'security', 'housing',
-    'cost of living', 'taxation', 'governance', 'transparency'
-  ];
-
-  static async scrapeKenyanNews(candidateName: string): Promise<ScrapedData[]> {
-    // Fast mock data - no external calls
-    return [
-      {
-        title: `${candidateName} Political Update`,
-        content: `Recent political developments involving ${candidateName} show active engagement in key policy areas.`,
-        source: 'Kenya News',
-        timestamp: new Date()
-      },
-      {
-        title: `Public Response to ${candidateName}`,
-        content: `Citizens react to ${candidateName}'s latest statements on economic and social issues.`,
-        source: 'Political Monitor',
-        timestamp: new Date()
-      }
-    ];
+    return results;
   }
 
   static async scrapeSocialMedia(candidateName: string): Promise<ScrapedData[]> {
-    // Fast mock data - no external calls
-    return [
-      {
-        title: `Social Media Buzz: ${candidateName}`,
-        content: `Public discussions about ${candidateName} show varied opinions on recent political activities.`,
-        source: 'Social Monitor',
-        timestamp: new Date()
-      }
-    ];
-  }
-
-  static async scrapeGovernmentData(candidateName: string): Promise<ScrapedData[]> {
     const results: ScrapedData[] = [];
-
+    
     try {
-      // Kenya Parliament API
-      const parliamentUrl = `https://api.parliament.go.ke/v1/search?q=${encodeURIComponent(candidateName)}&type=hansard&limit=5`;
-      
-      const parliamentResponse = await axios.get(parliamentUrl, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; GovBot/1.0)' },
-        timeout: 8000
+      const citizenResponse = await axios.get('https://citizen.digital/news', {
+        timeout: 8000,
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
       });
-
-      if (parliamentResponse.data?.results) {
-        parliamentResponse.data.results.forEach((record: any) => {
-          results.push({
-            title: record.title || `Parliamentary Record: ${candidateName}`,
-            content: record.content || record.summary || 'Official parliamentary proceedings',
-            source: 'Kenya Parliament',
-            timestamp: new Date(record.date || Date.now())
-          });
-        });
-      }
-
-      // Kenya Gazette API
-      const gazetteUrl = `https://gazette.go.ke/api/search?query=${encodeURIComponent(candidateName)}&format=json&limit=3`;
       
-      const gazetteResponse = await axios.get(gazetteUrl, {
-        timeout: 6000
-      });
-
-      if (gazetteResponse.data?.notices) {
-        gazetteResponse.data.notices.forEach((notice: any) => {
+      const $citizen = cheerio.load(citizenResponse.data);
+      
+      $citizen('.comment, .user-comment, .fb-comment, .social-comment').slice(0, 10).each((_, element) => {
+        const comment = $citizen(element).text().trim();
+        if (comment && comment.length > 20) {
           results.push({
-            title: notice.title || `Official Gazette Notice`,
-            content: notice.description || 'Official government gazette notice',
-            source: 'Kenya Gazette',
-            timestamp: new Date(notice.published_date || Date.now())
+            title: `Public Comment on ${candidateName}`,
+            content: comment.substring(0, 200),
+            source: 'Citizen Comments',
+            timestamp: new Date()
           });
-        });
-      }
-
+        }
+      });
+      
+      $citizen('article, .post, .news-item').slice(0, 5).each((_, element) => {
+        const title = $citizen(element).find('h1, h2, h3, .title').first().text().trim();
+        const content = $citizen(element).find('p, .excerpt').first().text().trim();
+        
+        if (title && content) {
+          results.push({
+            title,
+            content: content.substring(0, 250),
+            source: 'Citizen Digital',
+            timestamp: new Date()
+          });
+        }
+      });
     } catch (error) {
-      console.error('Error fetching government data:', error);
+      console.log('Citizen Digital scraping failed');
     }
 
-    // Fallback
-    if (results.length === 0) {
-      results.push({
-        title: `Official records involving ${candidateName}`,
-        content: `Government records, official statements, and policy positions involving ${candidateName} from official Kenya government sources.`,
-        source: 'Kenya Government',
-        timestamp: new Date()
+    return results;
+  }
+
+  static async scrapeGovernmentData(query: string): Promise<ScrapedData[]> {
+    const results: ScrapedData[] = [];
+    
+    try {
+      // Scrape from KBC (Kenya Broadcasting Corporation)
+      const response = await axios.get('https://www.kbc.co.ke/news/', {
+        timeout: 5000,
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; NewsBot/1.0)' }
       });
+      
+      const $ = cheerio.load(response.data);
+      
+      $('article, .news-item, .post, .story').slice(0, 3).each((_, element) => {
+        const title = $(element).find('h1, h2, h3, .title, .headline, a').first().text().trim();
+        const content = $(element).find('p, .excerpt, .summary, .content').first().text().trim();
+        
+        if (title && content && title.length > 10) {
+          results.push({
+            title: title.substring(0, 100),
+            content: content.substring(0, 300),
+            source: 'KBC News',
+            timestamp: new Date()
+          });
+        }
+      });
+      
+      console.log(`Scraped ${results.length} real government items from KBC`);
+    } catch (error) {
+      console.log('Government scraping failed, using fallback');
     }
 
     return results;
   }
 
   static async scrapeAllSources(candidateName: string): Promise<ScrapedData[]> {
-    const [newsData, socialData, govData] = await Promise.all([
+    const [newsData, socialData] = await Promise.all([
       this.scrapeKenyanNews(candidateName),
-      this.scrapeSocialMedia(candidateName),
-      this.scrapeGovernmentData(candidateName)
+      this.scrapeSocialMedia(candidateName)
     ]);
 
-    return [...newsData, ...socialData, ...govData];
-  }
-
-  static async scrapePublicSentiment(candidateName: string): Promise<ScrapedData[]> {
-    const results: ScrapedData[] = [];
-    
-    try {
-      // Simulate comprehensive public sentiment data
-      const sentimentCategories = [
-        {
-          category: 'Economic Policies',
-          sentiment: 'Mixed reactions to economic proposals',
-          details: `Public opinion on ${candidateName}'s economic policies shows divided views on taxation, job creation, and cost of living measures.`
-        },
-        {
-          category: 'Leadership Style',
-          sentiment: 'Varied public perception',
-          details: `Citizens express diverse opinions about ${candidateName}'s leadership approach, communication style, and decision-making process.`
-        },
-        {
-          category: 'Policy Promises',
-          sentiment: 'Cautious optimism',
-          details: `Voters show measured interest in ${candidateName}'s campaign promises, with concerns about implementation and past performance.`
-        }
-      ];
-
-      sentimentCategories.forEach(item => {
-        results.push({
-          title: `Public Sentiment: ${item.category}`,
-          content: `${item.sentiment}. ${item.details}`,
-          source: 'Public Opinion Analysis',
-          timestamp: new Date()
-        });
-      });
-
-    } catch (error) {
-      console.error('Error scraping public sentiment:', error);
-    }
-
-    return results;
-  }
-
-  static extractTrendingTopics(data: ScrapedData[]): string[] {
-    const topics = new Set<string>();
-    
-    data.forEach(item => {
-      const content = (item.title + ' ' + item.content).toLowerCase();
-      
-      this.KENYAN_POLITICAL_KEYWORDS.forEach(keyword => {
-        if (content.includes(keyword)) {
-          topics.add('#' + keyword.replace(/\s+/g, ''));
-        }
-      });
-    });
-
-    return Array.from(topics).slice(0, 8);
-  }
-
-  static compileSentimentAnalysis(sentimentData: ScrapedData[], candidateName: string): string {
-    const analysis = sentimentData.map(item => item.content).join(' ');
-    
-    return `Comprehensive sentiment analysis for ${candidateName}: ${analysis} Overall public perception shows mixed reactions with key concerns around policy implementation, leadership effectiveness, and addressing citizen priorities.`;
-  }
-
-  static extractCandidateStance(data: ScrapedData[], candidateName: string): string {
-    const stanceData = data
-      .filter(item => item.content.toLowerCase().includes(candidateName.toLowerCase()))
-      .map(item => item.content)
-      .join(' ');
-    
-    return stanceData || `${candidateName}'s current political stance focuses on addressing key national issues including economic development, governance reforms, and citizen welfare improvements.`;
+    return [...newsData, ...socialData];
   }
 }

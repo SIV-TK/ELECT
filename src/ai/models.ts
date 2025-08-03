@@ -2,7 +2,6 @@ import { ai } from './genkit';
 
 // Available models
 export const MODELS = {
-  GEMINI: 'googleai/gemini-2.0-flash',
   DEEPSEEK_CHAT: 'deepseek/deepseek-chat',
   DEEPSEEK_CODER: 'deepseek/deepseek-coder',
 } as const;

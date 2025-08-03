@@ -26,7 +26,7 @@ export async function enhancedPoliticalChat(
       KenyaPoliticalDataService.compilePublicConcerns()
     ]);
 
-    const selectedModel = input.useDeepSeek !== false ? MODELS.DEEPSEEK_CHAT : MODELS.GEMINI;
+    const selectedModel = MODELS.DEEPSEEK_CHAT;
     
     const enhancedPrompt = `
 You are an expert on Kenyan politics with access to real-time political data. Provide comprehensive, factual responses about Kenyan political matters.
@@ -78,7 +78,7 @@ Provide a comprehensive response that incorporates current political context.
     
     return {
       response,
-      model: input.useDeepSeek ? 'deepseek-fallback' : 'gemini-fallback'
+      model: 'deepseek-fallback'
     };
   }
 }

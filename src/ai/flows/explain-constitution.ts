@@ -3,6 +3,7 @@
 
 import { ai } from '../genkit';
 import { MODELS } from '../models';
+import { validateAIResponse, parseJSONResponse, validateStringField, validateArrayField } from '../validation';
 
 export interface ExplainConstitutionInput {
   query: string;
@@ -65,42 +66,23 @@ Focus on making constitutional law accessible to all Kenyans regardless of educa
       }
     });
 
-    // Validate response exists
-    if (!response || !response.text) {
-      throw new Error('Empty AI response');
-    }
-
-    try {
-      const responseText = response.text.trim();
-      
-      // Try to extract JSON if it's wrapped in markdown or other formatting
-      let jsonText = responseText;
-      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        jsonText = jsonMatch[0];
-      }
-
-      const result = JSON.parse(jsonText);
-      
-      // Validate the structure of the parsed result
-      return {
-        explanation: (result.explanation && typeof result.explanation === 'string') 
-          ? result.explanation.trim() 
-          : 'The Kenyan Constitution provides the framework for governance and protects citizen rights.',
-        relevantArticles: Array.isArray(result.relevantArticles) && result.relevantArticles.length > 0
-          ? result.relevantArticles.filter((art: any) => typeof art === 'string' && art.trim().length > 0)
-          : ['Article 1 (Sovereignty)', 'Article 2 (Supremacy)'],
-        practicalExample: (result.practicalExample && typeof result.practicalExample === 'string')
-          ? result.practicalExample.trim()
-          : 'This constitutional provision affects how government operates and protects your rights as a citizen.',
-        citizenRights: Array.isArray(result.citizenRights) && result.citizenRights.length > 0
-          ? result.citizenRights.filter((right: any) => typeof right === 'string' && right.trim().length > 0)
-          : ['Right to life', 'Freedom of expression', 'Right to vote', 'Right to fair trial', 'Right to privacy']
-      };
-    } catch (parseError) {
-      console.warn('Failed to parse AI response, using fallback based on query:', parseError);
-      return generateFallbackResponse(input.query);
-    }
+    const responseText = validateAIResponse(response);
+    
+    const fallback = {
+      explanation: 'The Kenyan Constitution provides the framework for governance and protects citizen rights.',
+      relevantArticles: ['Article 1 (Sovereignty)', 'Article 2 (Supremacy)'],
+      practicalExample: 'This constitutional provision affects how government operates and protects your rights as a citizen.',
+      citizenRights: ['Right to life', 'Freedom of expression', 'Right to vote', 'Right to fair trial', 'Right to privacy']
+    };
+    
+    const result = parseJSONResponse(responseText, fallback);
+    
+    return {
+      explanation: validateStringField(result.explanation, fallback.explanation),
+      relevantArticles: validateArrayField(result.relevantArticles, fallback.relevantArticles),
+      practicalExample: validateStringField(result.practicalExample, fallback.practicalExample),
+      citizenRights: validateArrayField(result.citizenRights, fallback.citizenRights)
+    };
 
   } catch (error) {
     console.error('Error explaining constitution:', error);

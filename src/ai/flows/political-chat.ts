@@ -3,6 +3,7 @@
 
 import { ai } from '@/ai/genkit';
 import { MODELS } from '@/ai/models';
+import { validateAIResponse } from '@/ai/validation';
 
 export interface PoliticalChatInput {
   message: string;
@@ -47,7 +48,7 @@ Keep your response concise but informative, suitable for citizens seeking to und
       }
     });
 
-    const responseText = response.text || 'I can help you understand Kenyan politics, government structure, elections, and constitutional matters. What specific topic would you like to know about?';
+    const responseText = validateAIResponse(response);
     
     return {
       response: responseText

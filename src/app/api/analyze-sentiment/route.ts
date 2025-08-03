@@ -116,11 +116,11 @@ Ensure your analysis is politically neutral, factually grounded, and reflects cu
 
 export async function POST(request: NextRequest) {
   try {
-    const { candidateName, topic } = await request.json();
+    const { candidateName, topic = 'Overall Political Performance' } = await request.json();
     
-    if (!candidateName || !topic) {
+    if (!candidateName) {
       return NextResponse.json(
-        { error: 'candidateName and topic are required' },
+        { error: 'candidateName is required' },
         { status: 400 }
       );
     }

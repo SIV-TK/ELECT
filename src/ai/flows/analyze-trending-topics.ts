@@ -1,6 +1,11 @@
 // src/ai/flows/analyze-trending-topics.ts
 'use server';
 
+import { ai } from '@/ai/genkit';
+import { MODELS } from '@/ai/models';
+import { validateAIResponse, parseJSONResponse, validateArrayField } from '@/ai/validation';
+import { WebScraper } from '@/lib/web-scraper';
+
 export interface TrendingTopic {
   topic: string;
   mentions: number;
@@ -46,120 +51,84 @@ export async function analyzeTrendingTopics(
   input: AnalyzeTrendingTopicsInput
 ): Promise<AnalyzeTrendingTopicsOutput> {
   try {
-    // Generate dynamic trending topics based on time and randomization
-    const currentHour = new Date().getHours();
-    const dayOfWeek = new Date().getDay();
-    
-    // Select 8-12 topics to make it feel more dynamic
-    const numTopics = 8 + Math.floor(Math.random() * 5);
-    const selectedTopics = [];
-    const usedIndices = new Set();
-    
-    while (selectedTopics.length < numTopics && selectedTopics.length < KENYAN_POLITICAL_TOPICS.length) {
-      const index = Math.floor(Math.random() * KENYAN_POLITICAL_TOPICS.length);
-      if (!usedIndices.has(index)) {
-        usedIndices.add(index);
-        selectedTopics.push(KENYAN_POLITICAL_TOPICS[index]);
-      }
+    // Get real news data from multiple sources
+    const [newsData, socialData, sentimentData] = await Promise.all([
+      WebScraper.scrapeKenyanNews('Kenya politics'),
+      WebScraper.scrapeSocialMedia('trending topics'),
+      WebScraper.scrapePublicSentiment('political trends')
+    ]);
+
+    const allData = [...newsData, ...socialData, ...sentimentData];
+    const compiledContent = allData.map(item => `${item.title}: ${item.content}`).join('\n\n');
+
+    const trendsPrompt = `
+Analyze the following real-time Kenyan news data to identify trending political topics.
+
+REAL-TIME NEWS DATA:
+${compiledContent}
+
+TASK: Extract and analyze trending political topics from this data.
+
+Respond with valid JSON in this format:
+{
+  "topics": [
+    {
+      "topic": "<topic name>",
+      "mentions": <estimated mentions count>,
+      "sentiment": <number between -1 and 1>,
+      "trend": "<up|down|stable>",
+      "politicalRelevance": <number between 0 and 1>
     }
-    
-    const topics: TrendingTopic[] = selectedTopics.map((topicName, index) => {
-      // Generate more realistic data patterns
-      const basePopularity = Math.random();
-      const timeMultiplier = (currentHour >= 6 && currentHour <= 22) ? 1.3 : 0.7; // More active during day
-      const weekMultiplier = (dayOfWeek >= 1 && dayOfWeek <= 5) ? 1.2 : 0.9; // More active on weekdays
-      
-      const mentions = Math.floor(
-        (3000 + Math.random() * 25000) * basePopularity * timeMultiplier * weekMultiplier
-      );
-      
-      // Generate sentiment that varies realistically
-      let sentiment: number;
-      if (topicName.includes('Corruption') || topicName.includes('Unemployment') || topicName === 'Cost of Living') {
-        sentiment = -0.8 + Math.random() * 0.6; // Generally negative topics
-      } else if (topicName.includes('Development') || topicName.includes('Reform') || topicName.includes('Rights')) {
-        sentiment = -0.2 + Math.random() * 1; // Generally more positive topics
-      } else {
-        sentiment = -0.5 + Math.random(); // Mixed sentiment
+  ]
+}
+
+Guidelines:
+1. Extract 6-10 trending topics from the news data
+2. Base sentiment on actual content tone (-1=very negative, 1=very positive)
+3. Estimate mentions based on topic prominence in data
+4. Determine trend based on news coverage patterns
+5. Rate political relevance (1=highly political, 0=not political)
+6. Focus on Kenyan political context
+    `;
+
+    const response = await ai.generate({
+      model: MODELS.DEEPSEEK_CHAT,
+      prompt: trendsPrompt,
+      config: {
+        temperature: 0.3,
+        maxOutputTokens: 1000
       }
-      
-      // Generate trend based on sentiment and randomness
-      let trend: 'up' | 'down' | 'stable';
-      const trendRandom = Math.random();
-      if (sentiment > 0.3 && trendRandom > 0.4) {
-        trend = 'up';
-      } else if (sentiment < -0.3 && trendRandom > 0.4) {
-        trend = 'down';
-      } else {
-        trend = trendRandom > 0.7 ? 'up' : trendRandom < 0.3 ? 'down' : 'stable';
-      }
-      
-      // Political relevance based on topic type
-      let politicalRelevance: number;
-      if (topicName.includes('Electoral') || topicName.includes('Constitutional') || topicName.includes('Corruption')) {
-        politicalRelevance = 0.9 + Math.random() * 0.1;
-      } else if (topicName.includes('Economic') || topicName.includes('Policy') || topicName.includes('Reform')) {
-        politicalRelevance = 0.7 + Math.random() * 0.2;
-      } else {
-        politicalRelevance = 0.5 + Math.random() * 0.4;
-      }
-      
-      return {
-        topic: topicName,
-        mentions,
-        sentiment: Math.round(sentiment * 100) / 100, // Round to 2 decimal places
-        trend,
-        politicalRelevance: Math.round(politicalRelevance * 100) / 100
-      };
     });
+
+    const responseText = validateAIResponse(response);
     
-    // Sort by mentions (most trending first)
-    topics.sort((a, b) => b.mentions - a.mentions);
+    const fallback = {
+      topics: KENYAN_POLITICAL_TOPICS.slice(0, 8).map(topic => ({
+        topic,
+        mentions: Math.floor(Math.random() * 20000) + 5000,
+        sentiment: Math.random() * 2 - 1,
+        trend: ['up', 'down', 'stable'][Math.floor(Math.random() * 3)] as 'up' | 'down' | 'stable',
+        politicalRelevance: Math.random() * 0.5 + 0.5
+      }))
+    };
     
-    return { topics };
+    const result = parseJSONResponse(responseText, fallback);
     
+    return {
+      topics: validateArrayField(result.topics, fallback.topics)
+    };
+
   } catch (error) {
     console.error('Error in analyzeTrendingTopics:', error);
     
-    // Fallback with basic mock data
-    const fallbackTopics: TrendingTopic[] = [
-      {
-        topic: 'Housing Levy',
-        mentions: 15420,
-        sentiment: -0.3,
-        trend: 'up',
-        politicalRelevance: 0.9
-      },
-      {
-        topic: 'Healthcare Reform',
-        mentions: 12800,
-        sentiment: 0.2,
-        trend: 'stable',
-        politicalRelevance: 0.8
-      },
-      {
-        topic: 'Education Funding',
-        mentions: 9650,
-        sentiment: 0.4,
-        trend: 'up',
-        politicalRelevance: 0.7
-      },
-      {
-        topic: 'Corruption Scandals',
-        mentions: 18900,
-        sentiment: -0.7,
-        trend: 'down',
-        politicalRelevance: 0.95
-      },
-      {
-        topic: 'Economic Growth',
-        mentions: 7300,
-        sentiment: 0.1,
-        trend: 'stable',
-        politicalRelevance: 0.85
-      }
-    ];
-
-    return { topics: fallbackTopics };
+    return {
+      topics: KENYAN_POLITICAL_TOPICS.slice(0, 6).map(topic => ({
+        topic,
+        mentions: Math.floor(Math.random() * 15000) + 3000,
+        sentiment: Math.random() * 2 - 1,
+        trend: ['up', 'down', 'stable'][Math.floor(Math.random() * 3)] as 'up' | 'down' | 'stable',
+        politicalRelevance: Math.random() * 0.4 + 0.6
+      }))
+    };
   }
 }

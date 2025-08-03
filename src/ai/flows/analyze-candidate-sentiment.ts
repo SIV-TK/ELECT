@@ -3,6 +3,7 @@
 
 import { ai } from '@/ai/genkit';
 import { MODELS } from '@/ai/models';
+import { validateAIResponse, parseJSONResponse, validateStringField, validateArrayField, validateNumberField } from '@/ai/validation';
 import { WebScraper } from '@/lib/web-scraper';
 import { KenyaPoliticalDataService } from '@/lib/kenya-political-data';
 
@@ -84,25 +85,23 @@ Ensure your analysis is politically neutral, factually grounded, and reflects cu
       }
     });
 
-    // Parse AI response
-    try {
-      const responseText = response.text || '';
-      const result = JSON.parse(responseText);
-      return {
-        sentimentScore: result.sentimentScore || 0,
-        sentimentSummary: result.sentimentSummary || `Analysis of ${input.candidateName} regarding ${input.topic} shows mixed public sentiment based on current data.`,
-        positiveKeywords: result.positiveKeywords || ['leadership', 'development', 'progress'],
-        negativeKeywords: result.negativeKeywords || ['concerns', 'challenges', 'criticism']
-      };
-    } catch (parseError) {
-      // Fallback if JSON parsing fails
-      return {
-        sentimentScore: 0.1,
-        sentimentSummary: `Analysis of ${input.candidateName} regarding ${input.topic} shows mixed public sentiment based on recent news coverage and social media discussions.`,
-        positiveKeywords: ['leadership', 'development', 'progress', 'unity', 'reform'],
-        negativeKeywords: ['concerns', 'challenges', 'criticism', 'controversy', 'opposition']
-      };
-    }
+    const responseText = validateAIResponse(response);
+    
+    const fallback = {
+      sentimentScore: 0,
+      sentimentSummary: `Analysis of ${input.candidateName} regarding ${input.topic} shows mixed public sentiment based on current data.`,
+      positiveKeywords: ['leadership', 'development', 'progress'],
+      negativeKeywords: ['concerns', 'challenges', 'criticism']
+    };
+    
+    const result = parseJSONResponse(responseText, fallback);
+    
+    return {
+      sentimentScore: validateNumberField(result.sentimentScore, fallback.sentimentScore, -1, 1),
+      sentimentSummary: validateStringField(result.sentimentSummary, fallback.sentimentSummary),
+      positiveKeywords: validateArrayField(result.positiveKeywords, fallback.positiveKeywords),
+      negativeKeywords: validateArrayField(result.negativeKeywords, fallback.negativeKeywords)
+    };
 
   } catch (error) {
     console.error('Error in sentiment analysis:', error);
