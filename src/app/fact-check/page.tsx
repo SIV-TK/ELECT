@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import { trackFactCheck } from '@/lib/analytics';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -79,6 +80,11 @@ export default function FactChecker() {
       
       const data = await response.json();
       setResult(data);
+      
+      // Track fact check for analytics
+      if (data?.verdict) {
+        trackFactCheck('statement', data.verdict);
+      }
     } catch (error) {
       console.error('Fact check failed:', error);
     } finally {

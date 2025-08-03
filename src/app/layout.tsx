@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import dynamic from 'next/dynamic';
+import Script from 'next/script';
+import { GA_TRACKING_ID } from '@/lib/analytics';
+import { AnalyticsProvider } from '@/components/providers/analytics-provider';
 
 // Dynamically import components that might have SSR issues
 const DynamicToaster = dynamic(() => import('@/components/ui/toaster').then(mod => ({ default: mod.Toaster })), { ssr: false });
@@ -14,8 +17,13 @@ export const metadata: Metadata = {
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  maximumScale: 5,
+  userScalable: true,
+  viewportFit: 'cover',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: 'white' },
+    { media: '(prefers-color-scheme: dark)', color: 'black' },
+  ],
 };
 
 export default function RootLayout({
@@ -30,9 +38,31 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
-            <body className="font-body antialiased">
+      <body className="font-body antialiased">
+        {/* Google Analytics */}
+        <Script
+          strategy="afterInteractive"
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`}
+        />
+        <Script
+          strategy="afterInteractive"
+          id="google-analytics"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${GA_TRACKING_ID}', {
+                page_path: window.location.pathname,
+              });
+            `,
+          }}
+        />
+        
         <DynamicRootShell>
-          {children}
+          <AnalyticsProvider>
+            {children}
+          </AnalyticsProvider>
         </DynamicRootShell>
         <DynamicToaster />
       </body>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { trackCrisisAlert } from '@/lib/analytics';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -93,6 +94,13 @@ export function CrisisEarlyWarningCard() {
       
       const data = await response.json();
       if (data.success) {
+        // Track crisis alerts for analytics
+        if (data.data?.alerts?.length > 0) {
+          data.data.alerts.forEach((alert: any) => {
+            trackCrisisAlert(alert.type || 'unknown', alert.severity || 'medium');
+          });
+        }
+        
         setCrisisData(data.data);
         setLastUpdated(new Date());
       }

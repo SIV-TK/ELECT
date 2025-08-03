@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { pollingStations } from "@/types";
 import { predictElectionOutcome } from "@/ai/flows/predict-election-outcome";
 import type { PredictElectionOutcomeOutput } from "@/ai/flows/predict-election-outcome";
+import { trackVotingAction, trackPoliticianView } from "@/lib/analytics";
 import {
   presidentialCandidates,
   gubernatorialCandidates,
@@ -379,6 +380,16 @@ export default function DemoVotingPage() {
         description: `You can only vote once per race.`,
       });
       return;
+    }
+
+    // Find the candidate to get their name for analytics
+    const candidateList = candidateState[electionType];
+    const candidate = candidateList?.find(c => c.id === candidateId);
+    
+    // Track voting action
+    if (candidate) {
+      trackVotingAction('cast_vote', candidate.name);
+      trackPoliticianView(candidate.name, candidateId);
     }
 
     setCandidateState(prev => ({

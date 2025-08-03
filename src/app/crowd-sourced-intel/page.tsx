@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Link from 'next/link';
 import { analyzeIntelVeracity } from "@/ai/flows/analyze-intel-veracity";
+import { trackCrowdIntel } from "@/lib/analytics";
 import { politicians } from "@/lib/data";
 import type { CrowdIntel } from "@/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -105,6 +106,10 @@ export default function CrowdSourcedIntelPage() {
       };
 
       addIntel(newItem);
+      
+      // Track analytics
+      trackCrowdIntel(file.type, 'Unknown');
+      
       form.reset();
       toast({
         title: "Upload Successful",
