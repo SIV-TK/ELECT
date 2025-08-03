@@ -10,6 +10,12 @@ interface ScrapedData {
   category?: string;
 }
 
+interface CachedScrapingData {
+  data: ScrapedData[];
+  lastUpdated: Date;
+  expiresAt: Date;
+}
+
 interface ScrapingConfig {
   timeout: number;
   retries: number;
@@ -17,13 +23,15 @@ interface ScrapingConfig {
   userAgents: string[];
   headers: Record<string, string>;
   proxies?: string[];
+  cacheExpiryHours: number;
 }
 
 export class EnhancedWebScraper {
   private static config: ScrapingConfig = {
-    timeout: 15000,
-    retries: 3,
-    delay: 1000,
+    timeout: 10000, // Reduced timeout for faster failures
+    retries: 1, // Reduced retries to avoid wait times
+    delay: 500, // Reduced delay
+    cacheExpiryHours: 24, // Cache data for 24 hours
     userAgents: [
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -45,11 +53,106 @@ export class EnhancedWebScraper {
     }
   };
 
+  // Track failed URLs to avoid retrying them
+  private static failedUrls = new Set<string>();
+
+  // In-memory cache for scraped data
+  private static newsCache: CachedScrapingData | null = null;
+  private static governmentCache: CachedScrapingData | null = null;
+  private static socialCache: Map<string, CachedScrapingData> = new Map();
+
+  // Clear failed URLs cache (call this periodically or when you want to retry previously failed URLs)
+  static clearFailedUrlsCache(): void {
+    this.failedUrls.clear();
+    console.log('🧹 Cleared failed URLs cache - will retry previously failed URLs');
+  }
+
+  // Cache utility methods
+  private static isCacheExpired(cache: CachedScrapingData | null): boolean {
+    if (!cache) return true;
+    return new Date() > cache.expiresAt;
+  }
+
+  private static createCacheEntry(data: ScrapedData[]): CachedScrapingData {
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + (this.config.cacheExpiryHours * 60 * 60 * 1000));
+    
+    return {
+      data,
+      lastUpdated: now,
+      expiresAt
+    };
+  }
+
+  // Get cached data or fetch new data if cache is expired
+  private static async getCachedOrFresh<T>(
+    cache: CachedScrapingData | null,
+    fetchFunction: () => Promise<ScrapedData[]>,
+    cacheType: string
+  ): Promise<ScrapedData[]> {
+    if (!this.isCacheExpired(cache)) {
+      console.log(`📋 Using cached ${cacheType} data (expires at ${cache!.expiresAt.toLocaleString()})`);
+      return cache!.data;
+    }
+
+    console.log(`🔄 Cache expired or missing for ${cacheType}, fetching fresh data...`);
+    const freshData = await fetchFunction();
+    
+    // Update the appropriate cache
+    const newCache = this.createCacheEntry(freshData);
+    if (cacheType === 'news') {
+      this.newsCache = newCache;
+    } else if (cacheType === 'government') {
+      this.governmentCache = newCache;
+    }
+    
+    console.log(`💾 Cached ${freshData.length} ${cacheType} items until ${newCache.expiresAt.toLocaleString()}`);
+    return freshData;
+  }
+
+  // Clear all caches
+  static clearAllCaches(): void {
+    this.newsCache = null;
+    this.governmentCache = null;
+    this.socialCache.clear();
+    this.failedUrls.clear();
+    console.log('🧹 Cleared all caches - will fetch fresh data on next request');
+  }
+
+  // Get cache status
+  static getCacheStatus(): { 
+    news: { cached: boolean, expiresAt?: string, itemCount?: number },
+    government: { cached: boolean, expiresAt?: string, itemCount?: number },
+    social: { cachedQueries: number }
+  } {
+    return {
+      news: {
+        cached: !this.isCacheExpired(this.newsCache),
+        expiresAt: this.newsCache?.expiresAt.toLocaleString(),
+        itemCount: this.newsCache?.data.length
+      },
+      government: {
+        cached: !this.isCacheExpired(this.governmentCache),
+        expiresAt: this.governmentCache?.expiresAt.toLocaleString(),
+        itemCount: this.governmentCache?.data.length
+      },
+      social: {
+        cachedQueries: this.socialCache.size
+      }
+    };
+  }
+
   private static getRandomUserAgent(): string {
     return this.config.userAgents[Math.floor(Math.random() * this.config.userAgents.length)];
   }
 
   private static async makeRequest(url: string, customConfig?: Partial<AxiosRequestConfig>): Promise<string> {
+    // Skip URLs that have already failed
+    if (this.failedUrls.has(url)) {
+      console.log(`⏭️ Skipping previously failed URL: ${url}`);
+      throw new Error(`URL ${url} previously failed - skipping to avoid delays`);
+    }
+
     const config: AxiosRequestConfig = {
       timeout: this.config.timeout,
       headers: {
@@ -63,35 +166,28 @@ export class EnhancedWebScraper {
       ...customConfig
     };
 
-    for (let attempt = 1; attempt <= this.config.retries; attempt++) {
-      try {
-        console.log(`Attempting to scrape ${url} (attempt ${attempt}/${this.config.retries})`);
-        
-        const response = await axios.get(url, config);
-        
-        if (response.data && response.data.length > 100) {
-          console.log(`✅ Successfully scraped ${url} - ${response.data.length} characters`);
-          return response.data;
-        } else {
-          throw new Error('Response too short or empty');
-        }
-      } catch (error: any) {
-        console.log(`❌ Attempt ${attempt} failed for ${url}:`, error.message);
-        
-        if (attempt < this.config.retries) {
-          const delay = this.config.delay * attempt;
-          console.log(`⏳ Waiting ${delay}ms before retry...`);
-          await new Promise(resolve => setTimeout(resolve, delay));
-        } else {
-          throw error;
-        }
+    try {
+      console.log(`🔄 Attempting to scrape ${url} (single attempt - no retries)`);
+      
+      const response = await axios.get(url, config);
+      
+      if (response.data && response.data.length > 100) {
+        console.log(`✅ Successfully scraped ${url} - ${response.data.length} characters`);
+        return response.data;
+      } else {
+        throw new Error('Response too short or empty');
       }
+    } catch (error: any) {
+      console.log(`❌ Failed to scrape ${url}:`, error.message);
+      
+      // Mark this URL as failed to avoid future attempts
+      this.failedUrls.add(url);
+      
+      throw error;
     }
-    
-    throw new Error(`Failed to scrape ${url} after ${this.config.retries} attempts`);
   }
 
-  // Enhanced Kenyan news sources
+  // Enhanced Kenyan news sources with fail-fast approach
   static async scrapeKenyanNews(query?: string): Promise<ScrapedData[]> {
     const results: ScrapedData[] = [];
     
@@ -152,7 +248,8 @@ export class EnhancedWebScraper {
       }
     ];
 
-    for (const source of newsSources) {
+    // Process sources in parallel but handle failures gracefully
+    const sourcePromises = newsSources.map(async (source) => {
       try {
         console.log(`🔍 Scraping ${source.name} from ${source.url}`);
         const html = await this.makeRequest(source.url);
@@ -162,7 +259,7 @@ export class EnhancedWebScraper {
         const potentialArticles = $(source.selectors.articles);
         console.log(`📰 Found ${potentialArticles.length} potential articles on ${source.name}`);
         
-        const sourceResultsBefore = results.length;
+        const sourceResults: ScrapedData[] = [];
         
         $(source.selectors.articles).slice(0, 10).each((_, element) => {
           const $element = $(element);
@@ -253,7 +350,7 @@ export class EnhancedWebScraper {
               );
               
               if (isValidNews) {
-                results.push({
+                sourceResults.push({
                   title: title.substring(0, 150).trim(),
                   content: content.substring(0, 400).trim(),
                   source: source.name,
@@ -265,72 +362,29 @@ export class EnhancedWebScraper {
             }
           }
         });
-        
-        const sourceResultsAfter = results.length;
-        const articlesFromThisSource = sourceResultsAfter - sourceResultsBefore;
-        console.log(`✅ Extracted ${articlesFromThisSource} articles from ${source.name}`);
-        
-        // If we didn't get many articles, try a more generic approach
-        if (articlesFromThisSource === 0) {
-          console.log(`🔄 Trying fallback scraping for ${source.name}`);
-          
-          // Generic fallback selectors
-          const fallbackSelectors = [
-            'a[href*="/news/"], a[href*="/article/"], a[href*="/story/"]',
-            'h1, h2, h3, h4',
-            '.title, .headline, [class*="title"], [class*="headline"]'
-          ];
-          
-          for (const fallbackSelector of fallbackSelectors) {
-            const fallbackElements = $(fallbackSelector);
-            console.log(`🔍 Found ${fallbackElements.length} elements with selector: ${fallbackSelector}`);
-            
-            let foundInThisSelector = 0;
-            fallbackElements.slice(0, 5).each((_, element) => {
-              if (foundInThisSelector >= 3) return false; // Limit fallback results per selector
-              
-              const $element = $(element);
-              const text = $element.text().trim();
-              const link = $element.attr('href') || $element.find('a').first().attr('href');
-              
-              if (text && text.length > 20 && text.length < 200) {
-                // Check if this looks like a news title
-                const lowerText = text.toLowerCase();
-                if (lowerText.includes('kenya') || lowerText.includes('nairobi') || 
-                    lowerText.includes('president') || lowerText.includes('government') ||
-                    (!query || lowerText.includes(query.toLowerCase()))) {
-                  
-                  results.push({
-                    title: text.substring(0, 150),
-                    content: `News item from ${source.name}: ${text.substring(0, 300)}`,
-                    source: source.name + ' (Fallback)',
-                    timestamp: new Date(),
-                    url: link ? (link.startsWith('http') ? link : source.url + link) : source.url,
-                    category: 'news'
-                  });
-                  
-                  foundInThisSelector++;
-                }
-              }
-            });
-            
-            if (results.length > sourceResultsBefore) break; // Found some results, stop trying
-          }
-          
-          const fallbackResults = results.length - sourceResultsAfter;
-          if (fallbackResults > 0) {
-            console.log(`✅ Fallback method extracted ${fallbackResults} items from ${source.name}`);
-          }
-        }
-        
-        // Add delay between sources to be respectful
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
+
+        console.log(`✅ Extracted ${sourceResults.length} articles from ${source.name}`);
+        return sourceResults;
+
       } catch (error: any) {
         console.log(`❌ Failed to scrape ${source.name}:`, error.message);
+        return []; // Return empty array for failed sources
       }
-    }
+    });
 
+    // Wait for all sources to complete or fail
+    const sourceResults = await Promise.allSettled(sourcePromises);
+    
+    // Combine results from all successful sources
+    sourceResults.forEach((result, index) => {
+      if (result.status === 'fulfilled') {
+        results.push(...result.value);
+      } else {
+        console.log(`❌ Source ${newsSources[index].name} failed:`, result.reason);
+      }
+    });
+
+    console.log(`📊 Total articles collected: ${results.length} from ${newsSources.length} sources`);
     return results;
   }
 
@@ -359,10 +413,14 @@ export class EnhancedWebScraper {
       }
     ];
 
-    for (const source of govSources) {
+    // Process government sources in parallel
+    const sourcePromises = govSources.map(async (source) => {
       try {
+        console.log(`🏛️ Scraping ${source.name} from ${source.url}`);
         const html = await this.makeRequest(source.url);
         const $ = cheerio.load(html);
+        
+        const sourceResults: ScrapedData[] = [];
         
         $(source.selectors.articles).slice(0, 3).each((_, element) => {
           const $element = $(element);
@@ -374,7 +432,7 @@ export class EnhancedWebScraper {
             if (!query || title.toLowerCase().includes(query.toLowerCase()) || 
                 content.toLowerCase().includes(query.toLowerCase())) {
               
-              results.push({
+              sourceResults.push({
                 title: title.substring(0, 150),
                 content: content.substring(0, 400),
                 source: source.name,
@@ -386,16 +444,28 @@ export class EnhancedWebScraper {
           }
         });
         
-        console.log(`✅ Scraped ${results.filter(r => r.source === source.name).length} items from ${source.name}`);
-        
-        // Add delay between sources
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        console.log(`✅ Extracted ${sourceResults.length} items from ${source.name}`);
+        return sourceResults;
         
       } catch (error: any) {
         console.log(`❌ Failed to scrape ${source.name}:`, error.message);
+        return []; // Return empty array for failed sources
       }
-    }
+    });
 
+    // Wait for all government sources to complete or fail
+    const sourceResults = await Promise.allSettled(sourcePromises);
+    
+    // Combine results from all successful sources
+    sourceResults.forEach((result, index) => {
+      if (result.status === 'fulfilled') {
+        results.push(...result.value);
+      } else {
+        console.log(`❌ Government source ${govSources[index].name} failed:`, result.reason);
+      }
+    });
+
+    console.log(`🏛️ Total government items collected: ${results.length} from ${govSources.length} sources`);
     return results;
   }
 
