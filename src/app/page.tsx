@@ -198,7 +198,7 @@ export default function LandingPage() {
             <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-float" style={{ animationDelay: '4s' }}></div>
           </div>
 
-          <div className="container relative mx-auto px-4 py-20 text-center">
+          <div className="container relative mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24 text-center">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -210,11 +210,14 @@ export default function LandingPage() {
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.2, duration: 0.6 }}
-                className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-purple-200 rounded-full px-4 py-2 mb-8"
+                className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-purple-200 rounded-full px-3 py-1.5 sm:px-4 sm:py-2 mb-6 sm:mb-8"
               >
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium text-gray-700">Powered by Advanced AI • Live Data</span>
-                <Zap className="w-4 h-4 text-purple-600" />
+                <span className="text-xs sm:text-sm font-medium text-gray-700">
+                  <span className="hidden sm:inline">Powered by Advanced AI • Live Data</span>
+                  <span className="sm:hidden">AI Powered • Live</span>
+                </span>
+                <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600" />
               </motion.div>
 
               {/* Main Headline */}
@@ -222,13 +225,17 @@ export default function LandingPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4, duration: 0.8 }}
-                className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6 leading-tight"
+                className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-bold mb-4 sm:mb-6 leading-tight"
               >
                 <span className="bg-gradient-to-r from-purple-600 via-blue-600 to-purple-800 bg-clip-text text-transparent">
-                  The Future of
+                  <span className="hidden sm:inline">The Future of</span>
+                  <span className="sm:hidden">Kenya's</span>
                 </span>
                 <br />
-                <span className="text-gray-900">Democracy is Here</span>
+                <span className="text-gray-900">
+                  <span className="hidden sm:inline">Democracy is Here</span>
+                  <span className="sm:hidden">Democracy</span>
+                </span>
               </motion.h1>
 
               {/* Subtitle */}
@@ -236,9 +243,14 @@ export default function LandingPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6, duration: 0.8 }}
-                className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed"
+                className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-600 mb-8 sm:mb-12 max-w-3xl mx-auto leading-relaxed px-4 sm:px-0"
               >
-                Harness the power of AI to analyze political sentiment, verify facts, and engage with Kenya's democratic process like never before.
+                <span className="hidden sm:inline">
+                  Harness the power of AI to analyze political sentiment, verify facts, and engage with Kenya's democratic process like never before.
+                </span>
+                <span className="sm:hidden">
+                  AI-powered political analysis and fact-checking for Kenya's democracy.
+                </span>
               </motion.p>
 
               {/* CTA Buttons */}
@@ -246,7 +258,7 @@ export default function LandingPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8, duration: 0.8 }}
-                className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
+                className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-12 sm:mb-16 px-4 sm:px-0"
               >
                 <Link href="/dashboard">
                   <motion.button
