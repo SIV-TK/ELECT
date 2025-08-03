@@ -319,7 +319,7 @@ export default function Dashboard() {
       change: '+3',
       trend: 'up' as const,
       icon: <Vote className="w-6 h-6" />,
-      href: '/demo-voting'
+      href: '/live-tally'
     },
     {
       title: 'Accuracy Rate',
@@ -327,7 +327,7 @@ export default function Dashboard() {
       change: '+0.3%',
       trend: 'up' as const,
       icon: <Shield className="w-6 h-6" />,
-      href: '/corruption-risk'
+      href: '/fact-check'
     }
   ];
 
@@ -1086,95 +1086,87 @@ export default function Dashboard() {
                     </motion.div>
                   </Link>
 
-                  {/* AI Features Demo Card */}
-                  <Link href="/ai-features-demo">
+                  {/* Constitution Guide Card */}
+                  <Link href="/constitution">
                     <motion.div
                       whileHover={{ scale: 1.03, y: -5 }}
                       whileTap={{ scale: 0.97 }}
                       className="relative group"
                     >
-                      <div className="absolute inset-0 bg-gradient-to-br from-purple-500 via-blue-500 to-indigo-600 rounded-2xl blur-lg opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                      <div className="absolute inset-0 bg-gradient-to-br from-green-500 via-blue-500 to-teal-600 rounded-2xl blur-lg opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
                       
-                      <div className="relative p-6 rounded-2xl bg-white border border-purple-200 shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden">
-                        {/* NEW Badge */}
-                        <div className="absolute -top-1 -right-1">
-                          <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1 rounded-bl-xl rounded-tr-2xl text-xs font-bold shadow-lg">
-                            <Zap className="w-3 h-3 inline mr-1" />
-                            NEW
-                          </div>
-                        </div>
-                        
+                      <div className="relative p-6 rounded-2xl bg-white border border-green-200 shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden">
                         <div className="mb-4">
-                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center shadow-lg">
-                            <Brain className="w-6 h-6 text-white" />
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-teal-500 flex items-center justify-center shadow-lg">
+                            <Shield className="w-6 h-6 text-white" />
                           </div>
                         </div>
                         
                         <div className="space-y-3">
                           <div>
-                            <h3 className="text-lg font-bold text-gray-900 group-hover:text-purple-700 transition-colors duration-300">
-                              AI Features Demo
+                            <h3 className="text-lg font-bold text-gray-900 group-hover:text-green-700 transition-colors duration-300">
+                              Constitution Guide
                             </h3>
                             <p className="text-sm text-gray-600 mt-1">
-                              Experience cutting-edge AI capabilities
+                              Understand Kenya's constitutional framework
                             </p>
                           </div>
                           
                           <div className="flex flex-wrap gap-2">
-                            <span className="px-2 py-1 bg-purple-50 text-purple-700 text-xs font-medium rounded-full border border-purple-200">
-                              Live Demo
+                            <span className="px-2 py-1 bg-green-50 text-green-700 text-xs font-medium rounded-full border border-green-200">
+                              Educational
                             </span>
-                            <span className="px-2 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-200">
-                              4 Features
+                            <span className="px-2 py-1 bg-teal-50 text-teal-700 text-xs font-medium rounded-full border border-teal-200">
+                              Interactive
                             </span>
                           </div>
                         </div>
                         
                         <div className="absolute bottom-4 right-4">
-                          <ArrowUpRight className="w-5 h-5 text-gray-400 group-hover:text-purple-600 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-300" />
+                          <ArrowUpRight className="w-5 h-5 text-gray-400 group-hover:text-green-600 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-300" />
                         </div>
                       </div>
                     </motion.div>
                   </Link>
 
-                  {/* Demo Voting Card */}
-                  <Link href="/demo-voting">
+                  {/* Verification Gallery Card */}
+                  <Link href="/verification-gallery">
                     <motion.div
                       whileHover={{ scale: 1.03, y: -5 }}
                       whileTap={{ scale: 0.97 }}
                       className="relative group"
                     >
-                      <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl blur-lg opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl blur-lg opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
                       
-                      <div className="relative p-6 rounded-2xl bg-white border border-purple-200 shadow-lg hover:shadow-2xl transition-all duration-300">
+                      <div className="relative p-6 rounded-2xl bg-white border border-indigo-200 shadow-lg hover:shadow-2xl transition-all duration-300">
                         <div className="mb-4">
-                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center group-hover:from-purple-200 group-hover:to-pink-200 transition-colors duration-300">
-                            <Vote className="w-6 h-6 text-purple-600" />
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center group-hover:from-indigo-200 group-hover:to-purple-200 transition-colors duration-300">
+                            <Eye className="w-6 h-6 text-indigo-600" />
                           </div>
                         </div>
                         
                         <div className="space-y-3">
                           <div>
-                            <h3 className="text-lg font-bold text-gray-900 group-hover:text-purple-700 transition-colors duration-300">
-                              Election Simulation
+                            <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-700 transition-colors duration-300">
+                              Verification Gallery
                             </h3>
                             <p className="text-sm text-gray-600 mt-1">
-                              Simulate and predict election outcomes
+                              Browse verified content and fact-checks
                             </p>
                           </div>
                           
                           <div className="flex flex-wrap gap-2">
-                            <span className="px-2 py-1 bg-purple-50 text-purple-700 text-xs font-medium rounded-full border border-purple-200">
-                              Interactive
+                            <span className="px-2 py-1 bg-indigo-50 text-indigo-700 text-xs font-medium rounded-full border border-indigo-200">
+                              Verified
                             </span>
-                            <span className="px-2 py-1 bg-pink-50 text-pink-700 text-xs font-medium rounded-full border border-pink-200">
-                              Predictive
+                            <span className="px-2 py-1 bg-purple-50 text-purple-700 text-xs font-medium rounded-full border border-purple-200">
+                              Gallery
                             </span>
                           </div>
                         </div>
                         
                         <div className="absolute bottom-4 right-4">
-                          <ArrowUpRight className="w-5 h-5 text-gray-400 group-hover:text-purple-600 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-300" />
+                          <ArrowUpRight className="w-5 h-5 text-gray-400 group-hover:text-indigo-600 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-300" />
                         </div>
                       </div>
                     </motion.div>
@@ -1445,10 +1437,10 @@ export default function Dashboard() {
                 <Badge className="ml-auto bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs">
                   Latest
                 </Badge>
-                <Link href="/interactive-visualizations">
+                <Link href="/sentiment-analysis">
                   <Button variant="outline" size="sm" className="ml-2">
                     <ArrowUpRight className="w-4 h-4 mr-2" />
-                    View All
+                    View Analysis
                   </Button>
                 </Link>
               </div>

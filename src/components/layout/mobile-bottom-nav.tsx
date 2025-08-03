@@ -15,9 +15,9 @@ import {
 
 const bottomNavItems = [
   { href: '/', label: 'Home', icon: Home },
-  { href: '/demo-voting', label: 'Vote', icon: Vote },
+  { href: '/live-tally', label: 'Tally', icon: Vote },
   { href: '/live-tally', label: 'Tally', icon: BarChart3 },
-  { href: '/crowd-sourced-intel', label: 'Intel', icon: Users },
+  { href: '/verification-gallery', label: 'Gallery', icon: Users },
   { href: '/dashboard', label: 'More', icon: Settings },
 ];
 

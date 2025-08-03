@@ -392,14 +392,34 @@ Provide analysis in JSON format:
       config: { temperature: 0.3, maxOutputTokens: 300 }
     });
 
-    return JSON.parse(response.text || '{}');
+    // Handle different response structures
+    const responseText = response.text || '';
+    
+    if (!responseText) {
+      console.warn('Empty AI response for event analysis');
+      return {
+        significance: 0.5,
+        impact: { political: 0.5, economic: 0.3, social: 0.4 },
+        tags: [category],
+        analysis: 'Event analysis unavailable - empty response'
+      };
+    }
+
+    // Try to extract JSON from the response text
+    let jsonText = responseText;
+    const jsonMatch = responseText.match(/```json\s*([\s\S]*?)\s*```/);
+    if (jsonMatch) {
+      jsonText = jsonMatch[1];
+    }
+
+    return JSON.parse(jsonText);
   } catch (error) {
     console.error('Event analysis error:', error);
     return {
       significance: 0.5,
       impact: { political: 0.5, economic: 0.3, social: 0.4 },
       tags: [category],
-      analysis: 'Event analysis unavailable'
+      analysis: 'Event analysis unavailable due to parsing error'
     };
   }
 }

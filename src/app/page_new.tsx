@@ -439,7 +439,7 @@ export default function LandingPage() {
                 <li><Link href="/voter-education" className="hover:text-white transition-colors duration-200">Civic Education</Link></li>
                 <li><Link href="/constitution" className="hover:text-white transition-colors duration-200">Constitution Guide</Link></li>
                 <li><Link href="/politicians" className="hover:text-white transition-colors duration-200">Politicians Database</Link></li>
-                <li><Link href="/corruption-risk" className="hover:text-white transition-colors duration-200">Transparency Tools</Link></li>
+                <li><Link href="/live-tally" className="hover:text-white transition-colors duration-200">Live Election Monitoring</Link></li>
               </ul>
             </div>
           </div>

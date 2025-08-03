@@ -138,6 +138,32 @@ const nextConfig = {
         destination: '/',
         permanent: true,
       },
+      // Disable specific pages by redirecting to dashboard
+      {
+        source: '/ai-features-demo',
+        destination: '/dashboard',
+        permanent: false,
+      },
+      {
+        source: '/interactive-visualizations',
+        destination: '/dashboard',
+        permanent: false,
+      },
+      {
+        source: '/demo-voting',
+        destination: '/dashboard',
+        permanent: false,
+      },
+      {
+        source: '/corruption-risk',
+        destination: '/dashboard',
+        permanent: false,
+      },
+      {
+        source: '/crowd-sourced-intel',
+        destination: '/dashboard',
+        permanent: false,
+      },
     ];
   },
 

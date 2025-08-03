@@ -107,7 +107,7 @@ export default function LandingPage() {
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-8">
-              {['Features', 'Analytics', 'About', 'Contact'].map((item) => (
+              {['Features', 'Analytics', 'Contact'].map((item) => (
                 <motion.a
                   key={item}
                   href={`#${item.toLowerCase()}`}
@@ -117,6 +117,14 @@ export default function LandingPage() {
                   {item}
                 </motion.a>
               ))}
+              <Link href="/about">
+                <motion.a
+                  className="text-gray-700 hover:text-purple-600 font-medium transition-colors duration-200"
+                  whileHover={{ y: -2 }}
+                >
+                  About
+                </motion.a>
+              </Link>
             </nav>
 
             <div className="hidden md:flex items-center gap-4">
@@ -160,7 +168,7 @@ export default function LandingPage() {
               className="md:hidden bg-white/95 backdrop-blur-md border-t border-gray-100"
             >
               <div className="container mx-auto px-4 py-6 space-y-4">
-                {['Features', 'Analytics', 'About', 'Contact'].map((item) => (
+                {['Features', 'Analytics', 'Contact'].map((item) => (
                   <a
                     key={item}
                     href={`#${item.toLowerCase()}`}
@@ -170,6 +178,14 @@ export default function LandingPage() {
                     {item}
                   </a>
                 ))}
+                <Link href="/about">
+                  <a
+                    className="block text-gray-700 hover:text-purple-600 font-medium transition-colors duration-200 py-2"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    About
+                  </a>
+                </Link>
                 <div className="pt-4 border-t border-gray-200 space-y-3">
                   <Link href="/login">
                     <button className="block w-full text-left text-gray-700 hover:text-purple-600 font-medium transition-colors duration-200 py-2">
@@ -362,6 +378,97 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* About ELECT Section */}
+        <section className="py-20 bg-gradient-to-br from-slate-50 to-blue-50 relative overflow-hidden">
+          <div className="container mx-auto px-4">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8 }}
+              >
+                <h2 className="text-4xl md:text-5xl font-bold mb-6">
+                  <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                    About ELECT
+                  </span>
+                </h2>
+                <p className="text-xl text-gray-700 mb-6 leading-relaxed">
+                  ELECT (Electronic Civic Engagement and Transparency) is Kenya's premier digital democracy platform, 
+                  designed to strengthen democratic institutions through transparency, accountability, and empowerment 
+                  of both citizens and government institutions.
+                </p>
+                <p className="text-gray-600 mb-8 leading-relaxed">
+                  We leverage cutting-edge artificial intelligence and real-time data analytics to create an informed 
+                  ecosystem where citizens can make meaningful contributions to the democratic process, while enabling 
+                  state institutions to make data-driven decisions for better governance and more effective political 
+                  systems. Our mission is to bridge the gap between citizens and their government through shared 
+                  data, ensuring every voice is heard and every decision is informed.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Link href="/about">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 justify-center"
+                    >
+                      Learn More About Us
+                      <ArrowRight className="w-5 h-5" />
+                    </motion.button>
+                  </Link>
+                  <Link href="/dashboard">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="border border-purple-600 text-purple-600 px-8 py-3 rounded-xl font-semibold hover:bg-purple-50 transition-all duration-300 flex items-center gap-2 justify-center"
+                    >
+                      <Eye className="w-5 h-5" />
+                      Explore Dashboard
+                    </motion.button>
+                  </Link>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="relative"
+              >
+                <div className="bg-white rounded-2xl shadow-2xl p-8">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-6">Why Choose ELECT?</h3>
+                  <div className="space-y-4">
+                    {[
+                      { icon: Shield, title: "Transparency First", desc: "Every action is tracked and verified for all stakeholders" },
+                      { icon: Brain, title: "AI-Powered Insights", desc: "Advanced algorithms provide accurate analysis for informed decision-making" },
+                      { icon: Users, title: "Citizen & Government Bridge", desc: "Connecting people and state through shared data and insights" },
+                      { icon: Globe, title: "Nationwide Coverage", desc: "All 47 counties monitored with real-time policy impact tracking" }
+                    ].map((item, index) => (
+                      <motion.div
+                        key={item.title}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6, delay: 0.4 + index * 0.1 }}
+                        className="flex items-start space-x-4"
+                      >
+                        <div className="bg-blue-100 w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <item.icon className="w-6 h-6 text-blue-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-1">{item.title}</h4>
+                          <p className="text-gray-600 text-sm">{item.desc}</p>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+
         {/* CTA Section */}
         <section className="py-20 bg-gradient-to-r from-purple-600 via-blue-600 to-purple-700 text-white relative overflow-hidden">
           <div className="absolute inset-0">
@@ -441,17 +548,17 @@ export default function LandingPage() {
                 <li><Link href="/sentiment-analysis" className="hover:text-white transition-colors duration-200">Sentiment Analysis</Link></li>
                 <li><Link href="/fact-check" className="hover:text-white transition-colors duration-200">Fact Checking</Link></li>
                 <li><Link href="/media-bias" className="hover:text-white transition-colors duration-200">Bias Detection</Link></li>
-                <li><Link href="/demo-voting" className="hover:text-white transition-colors duration-200">Election Simulation</Link></li>
+                <li><Link href="/live-tally" className="hover:text-white transition-colors duration-200">Live Tally</Link></li>
               </ul>
             </div>
 
             <div>
               <h3 className="font-semibold mb-4">Resources</h3>
               <ul className="space-y-2 text-gray-400">
+                <li><Link href="/about" className="hover:text-white transition-colors duration-200">About ELECT</Link></li>
                 <li><Link href="/voter-education" className="hover:text-white transition-colors duration-200">Civic Education</Link></li>
                 <li><Link href="/constitution" className="hover:text-white transition-colors duration-200">Constitution Guide</Link></li>
-
-                <li><Link href="/corruption-risk" className="hover:text-white transition-colors duration-200">Transparency Tools</Link></li>
+                <li><Link href="/live-tally" className="hover:text-white transition-colors duration-200">Live Election Monitoring</Link></li>
               </ul>
             </div>
           </div>

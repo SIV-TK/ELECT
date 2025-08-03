@@ -25,9 +25,9 @@ import {
 
 const navigationItems = [
   { href: '/', label: 'Home', icon: Home },
-  { href: '/demo-voting', label: 'Demo Vote', icon: Vote },
+  { href: '/live-tally', label: 'Live Tally', icon: Vote },
   { href: '/live-tally', label: 'Live Tally', icon: BarChart3 },
-  { href: '/crowd-sourced-intel', label: 'Intel', icon: Users },
+  { href: '/verification-gallery', label: 'Gallery', icon: Users },
   { href: '/verification-gallery', label: 'Verify', icon: Shield },
   { href: '/fact-check', label: 'Fact Check', icon: FileText },
   { href: '/sentiment-analysis', label: 'Sentiment', icon: Brain },

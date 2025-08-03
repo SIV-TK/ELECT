@@ -25,13 +25,6 @@
   ],
   "shortcuts": [
     {
-      "name": "Demo Voting",
-      "short_name": "Vote",
-      "description": "Participate in demo voting",
-      "url": "/demo-voting",
-      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
-    },
-    {
       "name": "Live Tally",
       "short_name": "Tally",
       "description": "View live election results",
@@ -43,6 +36,13 @@
       "short_name": "Facts",
       "description": "Verify political claims",
       "url": "/fact-check",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Constitution",
+      "short_name": "Laws",
+      "description": "Constitutional guide and resources",
+      "url": "/constitution",
       "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
     }
   ],
