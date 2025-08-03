@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ai } from '@/ai/genkit';
 import { MODELS } from '@/ai/models';
-import { WebScraper } from '@/lib/web-scraper';
+import { EnhancedWebScraper } from '@/lib/enhanced-scraper';
 import { KenyaPoliticalDataService } from '@/lib/kenya-political-data';
 
 // Major Kenyan political timeline categories
@@ -237,10 +237,10 @@ async function searchPoliticalEvents(source: string, timeframe: any, categories:
       
       switch (source) {
         case 'news':
-          results = await WebScraper.scrapeKenyanNews(query);
+          results = await EnhancedWebScraper.scrapeKenyanNews(query);
           break;
         case 'government':
-          results = await WebScraper.scrapeGovernmentData(query);
+          results = await EnhancedWebScraper.scrapeGovernmentData(query);
           break;
         case 'parliamentary':
           results = await KenyaPoliticalDataService.fetchPoliticalSentiment(query);

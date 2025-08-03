@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ai } from '@/ai/genkit';
 import { MODELS } from '@/ai/models';
-import { WebScraper } from '@/lib/web-scraper';
+import { EnhancedWebScraper } from '@/lib/enhanced-scraper';
 import { KenyaPoliticalDataService } from '@/lib/kenya-political-data';
 
 // Kenya's major political parties and their common policy areas
@@ -173,9 +173,9 @@ async function fetchPartyPolicies(
   
   // Search for party-specific policy content
   const [manifestoData, implementationData, newsData] = await Promise.all([
-    includeManifestos ? WebScraper.scrapeKenyanNews(`${partyInfo.name} ${category} manifesto policy`) : Promise.resolve([]),
-    includeImplementation ? WebScraper.scrapeGovernmentData(`${partyInfo.name} ${category} implementation`) : Promise.resolve([]),
-    WebScraper.scrapeKenyanNews(`${party} ${category} policy position`)
+    includeManifestos ? EnhancedWebScraper.scrapeKenyanNews(`${partyInfo.name} ${category} manifesto policy`) : Promise.resolve([]),
+    includeImplementation ? EnhancedWebScraper.scrapeGovernmentData(`${partyInfo.name} ${category} implementation`) : Promise.resolve([]),
+    EnhancedWebScraper.scrapeKenyanNews(`${party} ${category} policy position`)
   ]);
 
   // Generate AI-powered policy analysis

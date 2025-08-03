@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { CrisisEarlyWarningCard } from '@/components/crisis-early-warning-card';
 import { 
   BarChart3, 
@@ -32,7 +33,10 @@ import {
   User,
   LogOut,
   Settings,
-  Languages
+  Languages,
+  Map,
+  Target,
+  Activity
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -281,6 +285,7 @@ export default function Dashboard() {
   const [policyComparisonData, setPolicyComparisonData] = useState<any>(null);
   const [timelineData, setTimelineData] = useState<any>(null);
   const [selectedVisualization, setSelectedVisualization] = useState<string | null>(null);
+  const [showHeatMapDialog, setShowHeatMapDialog] = useState(false);
 
   // Collapsible state for cards
   const [isConstitutionCardCollapsed, setIsConstitutionCardCollapsed] = useState(false);
@@ -423,6 +428,8 @@ export default function Dashboard() {
 
   const generateHeatMap = async (type = 'election-outcomes') => {
     try {
+      setShowHeatMapDialog(true); // Open dialog immediately
+      
       const response = await fetch('/api/predictive-heatmaps', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -438,6 +445,16 @@ export default function Dashboard() {
       if (data.success) {
         setHeatMapData(data.heatMap);
         setSelectedVisualization('heatmaps');
+        toast({
+          title: "Heat Map Generated!",
+          description: "County-level predictions are now available.",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to generate heat map. Please try again.",
+          variant: "destructive"
+        });
       }
     } catch (error) {
       console.error('Heat map generation error:', error);

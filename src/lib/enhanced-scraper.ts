@@ -187,8 +187,39 @@ export class EnhancedWebScraper {
     }
   }
 
-  // Enhanced Kenyan news sources with fail-fast approach
+  // Enhanced Kenyan news sources with caching
   static async scrapeKenyanNews(query?: string): Promise<ScrapedData[]> {
+    // If no specific query, use cached data
+    if (!query) {
+      return await this.getCachedOrFresh(
+        this.newsCache,
+        () => this.fetchFreshNewsData(),
+        'news'
+      );
+    }
+
+    // For specific queries, filter cached data or fetch fresh if cache is expired
+    if (!this.isCacheExpired(this.newsCache)) {
+      console.log(`📋 Filtering cached news data for query: "${query}"`);
+      return this.newsCache!.data.filter(item => 
+        item.title.toLowerCase().includes(query.toLowerCase()) ||
+        item.content.toLowerCase().includes(query.toLowerCase())
+      );
+    }
+
+    // Cache expired, fetch fresh data and then filter
+    console.log(`🔄 Fetching fresh news data for query: "${query}"`);
+    const freshData = await this.fetchFreshNewsData();
+    this.newsCache = this.createCacheEntry(freshData);
+    
+    return freshData.filter(item => 
+      item.title.toLowerCase().includes(query.toLowerCase()) ||
+      item.content.toLowerCase().includes(query.toLowerCase())
+    );
+  }
+
+  // Internal method to fetch fresh news data
+  private static async fetchFreshNewsData(): Promise<ScrapedData[]> {
     const results: ScrapedData[] = [];
     
     const newsSources = [
@@ -335,30 +366,24 @@ export class EnhancedWebScraper {
           
           // Quality checks and filtering
           if (title && content && title.length > 10 && content.length > 30) {
-            // Filter by query if provided
-            if (!query || 
-                title.toLowerCase().includes(query.toLowerCase()) || 
-                content.toLowerCase().includes(query.toLowerCase())) {
-              
-              // Additional quality checks
-              const isValidNews = (
-                title.length < 200 && // Not too long
-                content.length < 500 && // Not too long
-                !title.toLowerCase().includes('cookie') && // Not cookie notices
-                !title.toLowerCase().includes('subscribe') && // Not subscription prompts
-                !content.toLowerCase().includes('click here') // Not ads
-              );
-              
-              if (isValidNews) {
-                sourceResults.push({
-                  title: title.substring(0, 150).trim(),
-                  content: content.substring(0, 400).trim(),
-                  source: source.name,
-                  timestamp: new Date(),
-                  url: articleUrl || source.url,
-                  category: 'news'
-                });
-              }
+            // Additional quality checks
+            const isValidNews = (
+              title.length < 200 && // Not too long
+              content.length < 500 && // Not too long
+              !title.toLowerCase().includes('cookie') && // Not cookie notices
+              !title.toLowerCase().includes('subscribe') && // Not subscription prompts
+              !content.toLowerCase().includes('click here') // Not ads
+            );
+            
+            if (isValidNews) {
+              sourceResults.push({
+                title: title.substring(0, 150).trim(),
+                content: content.substring(0, 400).trim(),
+                source: source.name,
+                timestamp: new Date(),
+                url: articleUrl || source.url,
+                category: 'news'
+              });
             }
           }
         });
@@ -388,8 +413,39 @@ export class EnhancedWebScraper {
     return results;
   }
 
-  // Enhanced government data scraping
+  // Enhanced government data scraping with caching
   static async scrapeGovernmentData(query?: string): Promise<ScrapedData[]> {
+    // If no specific query, use cached data
+    if (!query) {
+      return await this.getCachedOrFresh(
+        this.governmentCache,
+        () => this.fetchFreshGovernmentData(),
+        'government'
+      );
+    }
+
+    // For specific queries, filter cached data or fetch fresh if cache is expired
+    if (!this.isCacheExpired(this.governmentCache)) {
+      console.log(`📋 Filtering cached government data for query: "${query}"`);
+      return this.governmentCache!.data.filter(item => 
+        item.title.toLowerCase().includes(query.toLowerCase()) ||
+        item.content.toLowerCase().includes(query.toLowerCase())
+      );
+    }
+
+    // Cache expired, fetch fresh data and then filter
+    console.log(`🔄 Fetching fresh government data for query: "${query}"`);
+    const freshData = await this.fetchFreshGovernmentData();
+    this.governmentCache = this.createCacheEntry(freshData);
+    
+    return freshData.filter(item => 
+      item.title.toLowerCase().includes(query.toLowerCase()) ||
+      item.content.toLowerCase().includes(query.toLowerCase())
+    );
+  }
+
+  // Internal method to fetch fresh government data
+  private static async fetchFreshGovernmentData(): Promise<ScrapedData[]> {
     const results: ScrapedData[] = [];
     
     const govSources = [
@@ -429,18 +485,14 @@ export class EnhancedWebScraper {
           const link = $element.find('a').first().attr('href');
           
           if (title && content && title.length > 10) {
-            if (!query || title.toLowerCase().includes(query.toLowerCase()) || 
-                content.toLowerCase().includes(query.toLowerCase())) {
-              
-              sourceResults.push({
-                title: title.substring(0, 150),
-                content: content.substring(0, 400),
-                source: source.name,
-                timestamp: new Date(),
-                url: link ? (link.startsWith('http') ? link : source.url + link) : source.url,
-                category: 'government'
-              });
-            }
+            sourceResults.push({
+              title: title.substring(0, 150),
+              content: content.substring(0, 400),
+              source: source.name,
+              timestamp: new Date(),
+              url: link ? (link.startsWith('http') ? link : source.url + link) : source.url,
+              category: 'government'
+            });
           }
         });
         
@@ -469,8 +521,29 @@ export class EnhancedWebScraper {
     return results;
   }
 
-  // Enhanced social media and public opinion scraping
+  // Enhanced social media and public opinion scraping with caching
   static async scrapeSocialSentiment(candidateName: string): Promise<ScrapedData[]> {
+    // Check if we have cached data for this candidate
+    const cacheKey = candidateName.toLowerCase();
+    const cached = this.socialCache.get(cacheKey) || null;
+    
+    if (!this.isCacheExpired(cached)) {
+      console.log(`📋 Using cached social sentiment data for "${candidateName}" (expires at ${cached!.expiresAt.toLocaleString()})`);
+      return cached!.data;
+    }
+
+    console.log(`🔄 Fetching fresh social sentiment data for "${candidateName}"`);
+    const freshData = await this.fetchFreshSocialData(candidateName);
+    
+    // Cache the fresh data
+    this.socialCache.set(cacheKey, this.createCacheEntry(freshData));
+    console.log(`💾 Cached ${freshData.length} social items for "${candidateName}"`);
+    
+    return freshData;
+  }
+
+  // Internal method to fetch fresh social data
+  private static async fetchFreshSocialData(candidateName: string): Promise<ScrapedData[]> {
     const results: ScrapedData[] = [];
     
     // Look for news articles with comments or public discussions
