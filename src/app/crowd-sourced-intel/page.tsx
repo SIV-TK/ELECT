@@ -75,6 +75,20 @@ export default function CrowdSourcedIntelPage() {
 
       const newItem: CrowdIntel = {
         id: `intel-${Date.now()}`,
+        type: 'document',
+        content: values.description,
+        author: 'Anonymous',
+        timestamp: new Date(),
+        location: {
+          county: 'Unknown'
+        },
+        verification: {
+          status: 'pending',
+          confidence: 0.5,
+          verifiers: 0
+        },
+        tags: [],
+        category: 'politics',
         politician: politician!,
         description: values.description,
         file: {

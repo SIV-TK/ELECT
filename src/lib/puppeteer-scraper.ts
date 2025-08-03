@@ -98,7 +98,7 @@ export class PuppeteerScraper {
       });
 
       // Wait for content to load
-      await page.waitForTimeout(this.config.waitFor);
+      await new Promise(resolve => setTimeout(resolve, this.config.waitFor));
 
       // Extract data using selectors
       const scrapedData = await page.evaluate((selectors, url) => {
@@ -291,7 +291,7 @@ export class PuppeteerScraper {
     try {
       page = await this.createPage();
       await page.goto(url, { waitUntil: 'domcontentloaded' });
-      await page.waitForTimeout(2000);
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
       const screenshot = await page.screenshot({ 
         fullPage,
@@ -300,7 +300,7 @@ export class PuppeteerScraper {
       });
       
       console.log(`📸 Screenshot taken for ${url}`);
-      return screenshot;
+      return Buffer.from(screenshot);
       
     } catch (error: any) {
       console.log(`❌ Screenshot failed for ${url}:`, error.message);
@@ -375,14 +375,19 @@ export class PuppeteerScraper {
     try {
       console.log(`🔍 JSDOM scraping: ${url}`);
       
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      
       const response = await fetch(url, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
           ...headers
         },
-        timeout: 15000
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);

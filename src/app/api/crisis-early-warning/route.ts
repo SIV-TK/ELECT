@@ -62,12 +62,13 @@ interface CrisisAlert {
 }
 
 export async function POST(request: NextRequest) {
+  let county = null; // Declare county outside try block for error handling
+  
   try {
-    const { 
-      county = null,
-      timeframe = '24h',
-      includePreventiveMeasures = true
-    } = await request.json();
+    const requestData = await request.json();
+    county = requestData.county || null;
+    const timeframe = requestData.timeframe || '24h';
+    const includePreventiveMeasures = requestData.includePreventiveMeasures !== false;
 
     // Enhanced scraping with multiple fallback methods
     console.log('🔍 Starting enhanced crisis monitoring data collection...');

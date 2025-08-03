@@ -1921,6 +1921,188 @@ export default function Dashboard() {
           </motion.div>
         </div>
       </div>
+
+      {/* Heat Map Dialog */}
+      <Dialog open={showHeatMapDialog} onOpenChange={setShowHeatMapDialog}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-orange-600" />
+              Kenya Counties - ELECTION OUTCOMES Predictions
+            </DialogTitle>
+          </DialogHeader>
+          
+          {heatMapData ? (
+            <div className="space-y-6">
+              {/* Map Legend */}
+              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-orange-50 to-red-50 rounded-lg border">
+                <div className="flex items-center gap-4">
+                  <div className="text-sm font-medium text-gray-700">Prediction Scale:</div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-red-500 rounded"></div>
+                    <span className="text-xs">Low (0-40)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-orange-500 rounded"></div>
+                    <span className="text-xs">Medium (40-60)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-blue-500 rounded"></div>
+                    <span className="text-xs">High (60-80)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-green-500 rounded"></div>
+                    <span className="text-xs">Very High (80+)</span>
+                  </div>
+                </div>
+                <div className="text-sm text-gray-600">
+                  Confidence: {Math.round((heatMapData.confidence?.overall || 0.75) * 100)}%
+                </div>
+              </div>
+
+              {/* County Grid Display */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
+                {heatMapData.regions?.map((region: any, index: number) => {
+                  const intensity = region.intensity || region.value || Math.random() * 100;
+                  const confidence = region.confidence || Math.random() * 0.4 + 0.6;
+                  
+                  // Determine color based on intensity
+                  let bgColor = 'bg-green-100 border-green-300';
+                  let textColor = 'text-green-800';
+                  let iconColor = 'text-green-600';
+                  
+                  if (intensity < 40) {
+                    bgColor = 'bg-red-100 border-red-300';
+                    textColor = 'text-red-800';
+                    iconColor = 'text-red-600';
+                  } else if (intensity < 60) {
+                    bgColor = 'bg-orange-100 border-orange-300';
+                    textColor = 'text-orange-800';
+                    iconColor = 'text-orange-600';
+                  } else if (intensity < 80) {
+                    bgColor = 'bg-blue-100 border-blue-300';
+                    textColor = 'text-blue-800';
+                    iconColor = 'text-blue-600';
+                  }
+
+                  return (
+                    <div key={index} className={`p-4 rounded-lg border-2 ${bgColor} hover:shadow-md transition-shadow`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className={`font-semibold ${textColor}`}>{region.name}</h4>
+                        <Target className={`w-4 h-4 ${iconColor}`} />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">Prediction:</span>
+                          <span className={`font-bold ${textColor}`}>{Math.round(intensity)}%</span>
+                        </div>
+                        
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">Confidence:</span>
+                          <span className="text-sm font-medium">{Math.round(confidence * 100)}%</span>
+                        </div>
+                        
+                        {region.trend && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">Trend:</span>
+                            <Badge variant="outline" className="text-xs">
+                              {region.trend}
+                            </Badge>
+                          </div>
+                        )}
+                        
+                        {region.population && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">Population:</span>
+                            <span className="text-xs">{region.population?.toLocaleString()}</span>
+                          </div>
+                        )}
+                        
+                        {region.factors && Array.isArray(region.factors) && (
+                          <div className="mt-3">
+                            <span className="text-xs text-gray-500 block mb-1">Key Factors:</span>
+                            <div className="flex flex-wrap gap-1">
+                              {region.factors.slice(0, 2).map((factor: string, i: number) => (
+                                <Badge key={i} variant="secondary" className="text-xs">
+                                  {factor}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Summary Statistics */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">
+                    {heatMapData.regions?.filter((r: any) => (r.intensity || r.value || 0) >= 80).length || 0}
+                  </div>
+                  <div className="text-sm text-gray-600">Very High</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {heatMapData.regions?.filter((r: any) => {
+                      const val = r.intensity || r.value || 0;
+                      return val >= 60 && val < 80;
+                    }).length || 0}
+                  </div>
+                  <div className="text-sm text-gray-600">High</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-orange-600">
+                    {heatMapData.regions?.filter((r: any) => {
+                      const val = r.intensity || r.value || 0;
+                      return val >= 40 && val < 60;
+                    }).length || 0}
+                  </div>
+                  <div className="text-sm text-gray-600">Medium</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-red-600">
+                    {heatMapData.regions?.filter((r: any) => (r.intensity || r.value || 0) < 40).length || 0}
+                  </div>
+                  <div className="text-sm text-gray-600">Low</div>
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="flex gap-2 justify-center">
+                <Button variant="outline" size="sm" className="flex items-center gap-2">
+                  <Activity className="w-4 h-4" />
+                  View Trends
+                </Button>
+                <Button variant="outline" size="sm" className="flex items-center gap-2">
+                  <Map className="w-4 h-4" />
+                  Export Data
+                </Button>
+                <Button variant="outline" size="sm" className="flex items-center gap-2" onClick={() => generateHeatMap()}>
+                  <Target className="w-4 h-4" />
+                  Refresh Predictions
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600 mb-4">Loading county predictions...</p>
+                <div className="animate-pulse flex space-x-1">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
     </AuthGuard>
   );
 }

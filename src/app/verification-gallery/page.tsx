@@ -26,9 +26,9 @@ const IntelCard = ({ item }: { item: CrowdIntel }) => {
     startAnalysis(item.id);
     try {
       const result = await analyzeIntelVeracity({
-        dataUri: item.dataUri,
-        userDescription: item.description,
-        politicianName: item.politician.name,
+        dataUri: item.dataUri || '',
+        userDescription: item.description || '',
+        politicianName: item.politician?.name || 'Unknown',
       });
       completeAnalysis(item.id, result);
     } catch (error) {
@@ -43,12 +43,13 @@ const IntelCard = ({ item }: { item: CrowdIntel }) => {
   };
 
   const renderFilePreview = (item: CrowdIntel) => {
+    if (!item.file) return null;
     const type = item.file.type;
     if (type.startsWith('video/')) {
       return <video src={item.file.url} controls className="w-full h-full object-cover" />;
     }
     if (type.startsWith('image/')) {
-      return <Image src={item.file.url} alt={item.description} layout="fill" className="object-cover" />;
+      return <Image src={item.file.url} alt={item.description || ''} layout="fill" className="object-cover" />;
     }
     if (type === 'application/pdf') {
       return (
@@ -67,7 +68,7 @@ const IntelCard = ({ item }: { item: CrowdIntel }) => {
       <CardHeader>
          <div className="flex justify-between items-start">
            <div>
-             <CardTitle>{item.politician.name}</CardTitle>
+             <CardTitle>{item.politician?.name || 'Unknown Politician'}</CardTitle>
              <CardDescription>
                {item.isVerified ? (
                   <Badge variant="default" className="bg-green-600 text-white mt-1"><ShieldCheck className="mr-1 h-3 w-3" />Verified</Badge>
@@ -76,9 +77,9 @@ const IntelCard = ({ item }: { item: CrowdIntel }) => {
                )}
              </CardDescription>
            </div>
-            {item.file.type.startsWith('video/') && <Video className="h-6 w-6 text-muted-foreground" />}
-            {item.file.type.startsWith('image/') && <ImageIcon className="h-6 w-6 text-muted-foreground" />}
-            {item.file.type.startsWith('application/') && <FileText className="h-6 w-6 text-muted-foreground" />}
+            {item.file?.type.startsWith('video/') && <Video className="h-6 w-6 text-muted-foreground" />}
+            {item.file?.type.startsWith('image/') && <ImageIcon className="h-6 w-6 text-muted-foreground" />}
+            {item.file?.type.startsWith('application/') && <FileText className="h-6 w-6 text-muted-foreground" />}
          </div>
       </CardHeader>
       <CardContent className="flex-grow space-y-4">
@@ -140,9 +141,9 @@ const IntelGrid = ({ items }: { items: CrowdIntel[] }) => {
 export default function VerificationGalleryPage() {
   const { intelItems } = useIntelStore();
 
-  const videos = intelItems.filter(item => item.file.type.startsWith('video/'));
-  const images = intelItems.filter(item => item.file.type.startsWith('image/'));
-  const documents = intelItems.filter(item => item.file.type === 'application/pdf');
+  const videos = intelItems.filter(item => item.file?.type.startsWith('video/'));
+  const images = intelItems.filter(item => item.file?.type.startsWith('image/'));
+  const documents = intelItems.filter(item => item.file?.type === 'application/pdf');
 
   return (
     <div className="space-y-6">

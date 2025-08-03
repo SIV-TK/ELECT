@@ -16,7 +16,7 @@ export const useIntelStore = create<IntelStore>((set) => ({
   verifyIntel: (id) => set((state) => ({
     intelItems: state.intelItems.map(item => {
       if (item.id === id) {
-        const newVerifications = item.verifications + 1;
+        const newVerifications = (item.verifications || 0) + 1;
         return {
           ...item,
           verifications: newVerifications,

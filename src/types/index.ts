@@ -3,6 +3,95 @@ import type { TallyAnomalyOutput } from "@/ai/flows/analyze-tally-anomaly";
 
 export type { AnalyzeIntelVeracityOutput, TallyAnomalyOutput };
 
+// CrowdIntel interface for crowd-sourced intelligence
+export interface CrowdIntel {
+  id: string;
+  type: 'text' | 'image' | 'video' | 'document';
+  content: string;
+  author: string;
+  timestamp: Date;
+  location: {
+    county: string;
+    constituency?: string;
+    ward?: string;
+    coordinates?: {
+      lat: number;
+      lng: number;
+    };
+  };
+  verification: {
+    status: 'pending' | 'verified' | 'disputed' | 'false';
+    confidence: number;
+    verifiers: number;
+  };
+  tags: string[];
+  category: 'politics' | 'election' | 'governance' | 'corruption' | 'security' | 'other';
+  source?: string;
+  attachments?: string[];
+  // Additional properties used in the UI
+  politician?: Politician;
+  description?: string;
+  dataUri?: string;
+  file?: {
+    url: string;
+    type: string;
+    name: string;
+  };
+  verifications?: number;
+  isVerified?: boolean;
+  aiAnalysis?: any;
+  blockchainTransactionId?: string;
+  storageHash?: string;
+}
+
+// Politician interface
+export interface Politician {
+  id: string;
+  name: string;
+  party: string;
+  position?: string;
+  county?: string;
+  constituency?: string;
+  avatar?: string;
+  bio?: string;
+  socialMedia?: {
+    twitter?: string;
+    facebook?: string;
+    instagram?: string;
+  };
+  stats?: {
+    followers: number;
+    engagement: number;
+    sentiment: number;
+    popularity: number;
+  };
+  level?: string;
+  imageUrl?: string;
+  trackRecord?: any;
+  legalOversight?: any;
+  academicLife?: any;
+}
+
+// Candidate interface for demo voting
+export interface Candidate {
+  id: string;
+  name: string;
+  party: string;
+  position?: string;
+  avatar?: string;
+  votes: number;
+  percentage?: number;
+  color?: string;
+  bio?: string;
+  policies?: string[];
+  experience?: string[];
+  county?: string;
+  ward?: string;
+  constituency?: string;
+  level?: string;
+  imageUrl?: string;
+}
+
 
 
 export interface LiveTally {

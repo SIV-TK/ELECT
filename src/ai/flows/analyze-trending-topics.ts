@@ -52,13 +52,13 @@ export async function analyzeTrendingTopics(
 ): Promise<AnalyzeTrendingTopicsOutput> {
   try {
     // Get real news data from multiple sources
-    const [newsData, socialData, sentimentData] = await Promise.all([
+    const [newsData, socialData, governmentData] = await Promise.all([
       WebScraper.scrapeKenyanNews('Kenya politics'),
       WebScraper.scrapeSocialMedia('trending topics'),
-      WebScraper.scrapePublicSentiment('political trends')
+      WebScraper.scrapeGovernmentData('political trends')
     ]);
 
-    const allData = [...newsData, ...socialData, ...sentimentData];
+    const allData = [...newsData, ...socialData, ...governmentData];
     const compiledContent = allData.map(item => `${item.title}: ${item.content}`).join('\n\n');
 
     const trendsPrompt = `
@@ -115,7 +115,7 @@ Guidelines:
     const result = parseJSONResponse(responseText, fallback);
     
     return {
-      topics: validateArrayField(result.topics, fallback.topics)
+      topics: Array.isArray(result.topics) ? result.topics : fallback.topics
     };
 
   } catch (error) {

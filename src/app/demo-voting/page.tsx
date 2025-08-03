@@ -133,7 +133,7 @@ const CandidateCard = ({
           {/* Avatar */}
           <div className="relative">
             <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center text-xl font-bold text-purple-700 shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-              {candidate.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
+              {candidate.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2)}
             </div>
             {candidate.votes > 0 && (
               <motion.div

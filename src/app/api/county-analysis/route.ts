@@ -77,6 +77,13 @@ interface CountyAnalysis {
   developmentProjects: any[];
   recommendations: string[];
   riskAssessment: any;
+  metadata?: {
+    realDataSources: number;
+    scrapingSuccess: boolean;
+    lastAnalyzed: string;
+    dataType: string;
+    analysisNote: string;
+  };
 }
 
 export async function POST(request: NextRequest) {
